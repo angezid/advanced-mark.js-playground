@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Playground</title>
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
+<link rel="icon" type="image/png" href="static/img/logo.png" />
+<link rel="stylesheet" href="static/css/main.css" />
+
+<link rel="stylesheet" href="static/css/highlight.css" />
+<link rel="stylesheet" href="static/css/jquery.powertip-light.css" />
+
+<script src="static/js/codejar.js"></script>
+<script src="static/js/highlight.js"></script>
+
+<script src="static/js/jquery.js"></script>
+<script src="static/js/jquery.powertip.js"></script>
+
+<!-- <script src="static/js/jquery.mark.js"></script> -->
+<script src="static/js/mark.js"></script>
+
+<script src="static/js/data.js"></script>
+<script src="static/js/main.js"></script>
+</head>
+<body>
+
+<div class="toolbar right">
+<button class="save" type="button" title="Save to local storage" onclick="save();">Save</button>
+<button class="load" type="button" title="Load from local storage" onclick="load();">Load</button>
+<button class="open-file-form" title="Open file form" type="button">File</button>
+<button class="open-json-form" title="Open JSON form" type="button">JSON</button>
+</div>
+
+<div class="json-form">
+<div class="close"></div>
+<div class="row actions right">
+<button class="export-json" type="button" title="Build JSON for current tab" onclick="exportJson();">Export JSON</button>
+<button class="import-json" type="button" title="Set options from JSON and run" onclick="importJson();">Import JSON</button>
+<button class="copy" type="button">Copy</button>
+<button class="clear" type="button" onclick="clearJsonEditor(this);"></button>
+</div>
+<p>JSON</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="file-form">
+<div class="close"></div>
+<div class="row">
+<div class="button">
+<a href="#" class="save-file">Save as</a>
+</div>
+<input class="file-name" value="" placeholder="MarkSession.json" type="text">
+</div>
+<div class="row">
+<label id="label-button" for="file-dialog">Load file</label>
+<label class="loaded-file-name">No file selected.</label>
+<input id="file-dialog" type="file" accept=".json">
+</div>
+</div>
+
+<main>
+<article id="article">
+<h1>Mark.js playground</h1>
+
+<div class="row">
+<div class="mark-type">
+<ul>
+<li class="selected" data-type="string_">String</li>
+<li data-type="array">Array of strings</li>
+<li data-type="regexp">Custom RegExp</li>
+<li data-type="ranges">Ranges</li>
+</ul>
+</div>
+</div><!-- row -->
+
+<section class="string_">
+<div class="row">
+<div class="left-column">
+
+<div class="queryString">
+<div class="actions right">
+<button class="build" type="button" onclick="buildCode();">Build</button>
+<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>String</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="testString">
+<div class="actions right">
+<button class="previous" type="button" onclick="previousMatch(this);"></button>
+<button class="next" type="button" onclick="nextMatch(this);"></button>
+<button class="html" type="button" onclick="setHtmlMode()">Html</button>
+<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Test Html</p>
+<div class="editor">
+</div>
+</div>
+
+</div><!-- left-column -->
+
+<div class="right-column">
+<div class="row">
+
+<div class="checkboxes">
+<div class="separateWordSearch">
+<input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked>
+<label for="string_-separateWordSearch">Separate word search</label>
+</div>
+<div class="diacritics">
+<input name="diacritics" id="string_-diacritics" type="checkbox" checked>
+<label for="string_-diacritics">Diacritics</label>
+</div>
+<div class="caseSensitive">
+<input name="caseSensitive" id="string_-caseSensitive" type="checkbox">
+<label for="string_-caseSensitive">Case sensitive</label>
+</div>
+<div class="ignoreJoiners">
+<input name="ignoreJoiners" id="string_-ignoreJoiners" type="checkbox">
+<label for="string_-ignoreJoiners">Ignore joiners</label>
+</div>
+<div class="acrossElements">
+<input name="acrossElements" id="string_-acrossElements" type="checkbox">
+<label for="string_-acrossElements">Across elements</label>
+</div>
+<div class="iframes">
+<input name="iframes" id="string_-iframes" type="checkbox" onchange="checkIframes(this)">
+<label for="string_-iframes">Iframes</label>
+</div>
+<div class="debug">
+<input name="debug" id="string_-debug" type="checkbox">
+<label for="string_-debug">Debug</label>
+</div>
+</div>
+
+<div class="mixed-options">
+
+<div class="element">
+<label for="string_-element">Element name:</label>
+<input name="element" id="string_-element" type="text" value="mark">
+</div>
+
+<div class="className">
+<label for="string_-className">Class name:</label>
+<input name="className" id="string_-className" type="text" placeholder="(e.g. word)">
+</div>
+
+<div class="accuracy">
+<label for="string_-accuracy">Accuracy:</label>
+<select name="accuracy" id="string_-accuracy" onchange="checkAccuracy(this)">
+<option value="object" title="The 'object' is an auxiliary option to enable the accuracy object editor">object</option>
+<option value="exactly">exactly</option>
+<option value="partially" selected>partially</option>
+<option value="complementary">complementary</option>
+</select>
+</div>
+
+<div class="wildcards">
+<label for="string_-wildcards">Wildcards:</label>
+<select name="wildcards" id="string_-wildcards">
+<option value="disabled" selected>disabled</option>
+<option value="enabled">enabled</option>
+<option value="withSpaces">withSpaces</option>
+</select>
+</div>
+<div class="iframesTimeout">
+<label for="string_-iframesTimeout">Iframes timeout:</label>
+<input name="iframesTimeout" id="string_-iframesTimeout" type="number" min="0" max="50000" value="5000">
+</div>
+</div><!-- mixed-options -->
+</div><!-- row -->
+
+<div class="row">
+<div class="edit-options">
+
+<div class="synonyms">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Synonyms</p>
+<div class="editor" name="synonyms">
+</div>
+</div>
+
+<div class="exclude">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Exclude</p>
+<div class="editor" name="exclude">
+</div>
+</div>
+
+<div class="ignorePunctuation">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Ignore punctuation</p>
+<div class="editor" name="ignorePunctuation">
+</div>
+</div>
+
+<div class="accuracyObject hide">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
+<div class="editor" name="accuracyObject">
+</div>
+</div>
+
+<div class="filterCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
+<div class="editor" name="stringArrayFilter">
+</div>
+</div>
+
+<div class="eachCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'each' : (element<span class="new">, info</span>) => {  }</p>
+<div class="editor" name="stringArrayEach">
+</div>
+</div>
+
+</div> <!-- edit-options -->
+</div><!-- row -->
+</div><!-- right-column -->
+</div><!-- row -->
+</section><!-- string_ -->
+
+<section class="array hide">
+<div class="row">
+<div class="left-column">
+
+<div class="queryArray">
+<div class="actions right">
+<button class="build" type="button" onclick="buildCode();">Build</button>
+<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Array of strings</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="testString">
+<div class="actions right">
+<button class="previous" type="button" onclick="previousMatch(this);"></button>
+<button class="next" type="button" onclick="nextMatch(this);"></button>
+<button class="html" type="button" onclick="setHtmlMode()">Html</button>
+<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Test Html</p>
+<div class="editor">
+</div>
+</div>
+
+</div><!-- left-column -->
+
+<div class="right-column">
+<div class="row">
+
+<div class="checkboxes">
+<div class="separateWordSearch">
+<input name="separateWordSearch" id="array-separateWordSearch" type="checkbox" checked>
+<label for="array-separateWordSearch">Separate word search</label>
+</div>
+<div class="diacritics">
+<input name="diacritics" id="array-diacritics" type="checkbox" checked>
+<label for="array-diacritics">Diacritics</label>
+</div>
+<div class="caseSensitive">
+<input name="caseSensitive" id="array-caseSensitive" type="checkbox">
+<label for="array-caseSensitive">Case sensitive</label>
+</div>
+<div class="ignoreJoiners">
+<input name="ignoreJoiners" id="array-ignoreJoiners" type="checkbox">
+<label for="array-ignoreJoiners">Ignore joiners</label>
+</div>
+<div class="acrossElements">
+<input name="acrossElements" id="array-acrossElements" type="checkbox">
+<label for="array-acrossElements">Across elements</label>
+</div>
+<div class="cacheTextNodes new">
+<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
+<label for="array-cacheTextNodes">Cache text nodes</label>
+</div>
+<div class="wrapAllRanges new">
+<input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
+<label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
+<div class="iframes">
+<input name="iframes" id="array-iframes" type="checkbox" onchange="checkIframes(this)">
+<label for="array-iframes">Iframes</label>
+</div>
+<div class="debug">
+<input name="debug" id="array-debug" type="checkbox">
+<label for="array-debug">Debug</label>
+</div>
+</div>
+
+<div class="mixed-options">
+
+<div class="element">
+<label for="array-element">Element name:</label>
+<input name="element" id="array-element" type="text" value="mark">
+</div>
+
+<div class="className">
+<label for="array-className">Class name:</label>
+<input name="className" id="array-className" type="text" placeholder="(e.g. word)">
+</div>
+
+<div class="accuracy">
+<label for="array-accuracy">Accuracy:</label>
+<select name="accuracy" id="array-accuracy" onchange="checkAccuracy(this)">
+<option value="object" title="The 'object' is an auxiliary option to enable the accuracy object editor">object</option>
+<option value="exactly">exactly</option>
+<option value="partially" selected>partially</option>
+<option value="complementary">complementary</option>
+</select>
+</div>
+
+<div class="wildcards">
+<label for="array-wildcards">Wildcards:</label>
+<select name="wildcards" id="array-wildcards">
+<option value="disabled" selected>disabled</option>
+<option value="enabled">enabled</option>
+<option value="withSpaces">withSpaces</option>
+</select>
+</div>
+<div class="iframesTimeout">
+<label for="array-iframesTimeout">Iframes timeout:</label>
+<input name="iframesTimeout" id="array-iframesTimeout" type="number" min="0" max="50000" value="5000">
+</div>
+</div><!-- mixed-options -->
+</div><!-- row -->
+
+<div class="row">
+<div class="edit-options">
+
+<div class="synonyms">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Synonyms</p>
+<div class="editor" name="synonyms">
+</div>
+</div>
+
+<div class="exclude">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Exclude</p>
+<div class="editor" name="exclude">
+</div>
+</div>
+
+<div class="ignorePunctuation">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Ignore punctuation</p>
+<div class="editor" name="ignorePunctuation">
+</div>
+</div>
+
+<div class="accuracyObject hide">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
+<div class="editor" name="accuracyObject">
+</div>
+</div>
+
+<div class="filterCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
+<div class="editor" name="stringArrayFilter">
+</div>
+</div>
+
+<div class="eachCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'each' : (element<span class="new">, info</span>) => {  }</p>
+<div class="editor" name="stringArrayEach">
+</div>
+</div>
+
+</div> <!-- edit-options -->
+</div><!-- row -->
+</div><!-- right-column -->
+</div><!-- row -->
+</section><!-- array -->
+
+<section class="regexp hide">
+<div class="row">
+<div class="left-column">
+
+<div class="queryRegExp">
+<div class="actions right">
+<button class="build" type="button" onclick="buildCode();">Build</button>
+<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>RegExp pattern</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="testString">
+<div class="actions right">
+<button class="previous" type="button" onclick="previousMatch(this);"></button>
+<button class="next" type="button" onclick="nextMatch(this);"></button>
+<button class="html" type="button" onclick="setHtmlMode()">Html</button>
+<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Test Html</p>
+<div class="editor">
+</div>
+</div>
+</div><!-- left-column -->
+
+<div class="right-column">
+<div class="row">
+
+<div class="checkboxes">
+<div class="acrossElements">
+<input name="acrossElements" id="regexp-acrossElements" type="checkbox">
+<label for="regexp-acrossElements">Across elements</label>
+</div>
+<div class="separateGroups new">
+<input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="checkSeparateGroups(this)">
+<label for="regexp-separateGroups">Separate groups</label>
+</div>
+<div class="blockElementsBoundary new">
+<input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox">
+<label for="regexp-blockElementsBoundary">Block elements boundary</label>
+</div>
+<div class="wrapAllRanges new">
+<input name="wrapAllRanges" id="regexp-wrapAllRanges" type="checkbox">
+<label for="regexp-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
+<div class="iframes">
+<input name="iframes" id="regexp-iframes" type="checkbox" onchange="checkIframes(this)">
+<label for="regexp-iframes">Iframes</label>
+</div>
+<div class="debug">
+<input name="debug" id="regexp-debug" type="checkbox">
+<label for="regexp-debug">Debug</label>
+</div>
+</div>
+
+<div class="mixed-options">
+
+<div class="element">
+<label for="regexp-element">Element name:</label>
+<input name="element" id="regexp-element" type="text" placeholder="mark">
+</div>
+
+<div class="className">
+<label for="regexp-className">Class name:</label>
+<input name="className" id="regexp-className" type="text" placeholder="(e.g. word)">
+</div>
+
+<div class="ignoreGroups">
+<label for="regexp-ignoreGroups">Ignore groups:</label>
+<input name="ignoreGroups" id="regexp-ignoreGroups" type="number" min="0" max="5" value="0">
+</div>
+
+<div class="iframesTimeout">
+<label for="regexp-iframesTimeout">Iframes timeout:</label>
+<input name="iframesTimeout" id="regexp-iframesTimeout" type="number" min="0" max="50000" value="5000">
+</div>
+</div><!-- mixed-options -->
+</div><!-- row -->
+
+<div class="row">
+<div class="edit-options">
+
+<div class="exclude">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Exclude</p>
+<div class="editor" name="exclude">
+</div>
+</div>
+
+<div class="blockElements new hide">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom block elements (e.g. [ 'div', 'p' ])</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="filterCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'filter' : (node, match, total<span class="new">, info</span>) => { return true; }</p>
+<div class="editor" name="regexpFilter">
+</div>
+</div>
+
+<div class="eachCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'each' : (element<span class="new">, info</span>) => {  }</p>
+<div class="editor" name="regexpEach">
+</div>
+</div>
+
+</div> <!-- edit-options -->
+</div><!-- row -->
+</div><!-- right-column -->
+</div><!-- row -->
+</section><!-- regexp -->
+
+<section class="ranges hide">
+<div class="row">
+<div class="left-column">
+
+<div class="queryRanges">
+<div class="actions right">
+<button class="build" type="button" onclick="buildCode();">Build</button>
+<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Array of ranges</p>
+<div class="editor">
+</div>
+</div>
+
+<div class="testString">
+<div class="actions right">
+<button class="previous" type="button" onclick="previousMatch(this);"></button>
+<button class="next" type="button" onclick="nextMatch(this);"></button>
+<button class="html" type="button" onclick="setHtmlMode()">Html</button>
+<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Test Html</p>
+<div class="editor">
+</div>
+</div>
+
+</div><!-- left-column -->
+
+<div class="right-column">
+<div class="row">
+
+<div class="checkboxes">
+<div class="wrapAllRanges new">
+<input name="wrapAllRanges" id="ranges-wrapAllRanges" type="checkbox">
+<label for="ranges-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
+<div class="iframes">
+<input name="iframes" id="ranges-iframes" type="checkbox" onchange="checkIframes(this)">
+<label for="ranges-iframes">Iframes</label>
+</div>
+<div class="debug">
+<input name="debug" id="ranges-debug" type="checkbox">
+<label for="ranges-debug">Debug</label>
+</div>
+</div>
+
+<div class="mixed-options">
+
+<div class="element">
+<label for="ranges-element">Element name:</label>
+<input name="element" id="ranges-element" type="text" value="mark">
+</div>
+
+<div class="className">
+<label for="ranges-className">Class name:</label>
+<input name="className" id="ranges-className" type="text" placeholder="(e.g. word)">
+</div>
+
+<div class="iframesTimeout">
+<label for="ranges-iframesTimeout">Iframes timeout:</label>
+<input name="iframesTimeout" id="ranges-iframesTimeout" type="number" min="0" max="50000" value="5000">
+</div>
+</div><!-- mixed-options -->
+</div><!-- row -->
+
+<div class="row">
+<div class="edit-options">
+
+<div class="exclude">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Exclude</p>
+<div class="editor" name="exclude">
+</div>
+</div>
+
+<div class="filterCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'filter' : (node, range, match, counter) => { return true; }</p>
+<div class="editor" name="rangeFilter">
+</div>
+</div>
+
+<div class="eachCallback">
+<div class="actions right">
+<button class="clear" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>'each' : (element, range) => {  }</p>
+<div class="editor" name="each">
+</div>
+</div>
+
+</div> <!-- edit-options -->
+</div><!-- row -->
+</div><!-- right-column -->
+</div><!-- row -->
+</section><!-- ranges -->
+
+<div class="row">
+
+<div class="column">
+<div class="results">
+<p>Results</p>
+<pre><code class="language-bash"></code></pre>
+</div>
+
+<div class="row">
+<div class="internal-code hide">
+<details><summary>Internal code</summary>
+<pre><code class="language-js"></code></pre>
+</details>
+</div>
+</div>
+
+</div>
+
+<div class="generated-code column">
+<div class="unmark-method right">
+<input id="unmark" type="checkbox" onchange="unmarkCode(this)">
+<label for="unmark">unmark method</label>
+</div>
+
+<details><summary>Generated code</summary>
+<pre><code class="language-js"></code></pre>
+</details>
+
+</div>
+
+</div><!-- row -->
+
+
+</article>
+
+<article class="option-info">
+
+<div id="stringArrayFilter">
+A callback to filter or limit matches. It will be called for each match and receives the following parameters:
+<ol>
+<li>The text node which includes the match</li>
+<li>The term that has been found</li>
+<li>A counter indicating the total number of all marks at the time of the function call</li>
+<li>A counter indicating the number of marks for the term</li>
+<li class="new">An object containing the match information:
+  <ol>
+    <li>The 'match' object is result of RegExp exec() method</li>
+    <li class="acrossElements">The 'matchStart' is a boolean property indicating the start of the match</li>
+    <li>The 'execution' object with a boolean 'abort' property</li>
+    <li>The 'offset' numerical property can be used to translate local text node indexes to the absolute ones, e.g build ranges.</li>
+  </ol>
+</li>
+</ol>
+The function must return false if the mark should be stopped, otherwise true
+</div>
+
+<div id="stringArrayEach">
+A callback for each marked element.<div class="old-library hide"> Receives the marked DOM element as a parameter.</div>
+<div class="new">
+<ol>
+  <li>The marked DOM element</li>
+  <li>An object containing the match information:
+  <ol>
+	<li>The 'match' object is result of RegExp exec() method</li>
+	<li class="acrossElements">The 'matchStart' is a boolean property indicating the start of the match</li>
+	<li>The 'count' property indicating a current number of matches</li>
+  </ol>
+</li>
+</ol>
+</div>
+</div>
+
+</article>
+
+</main>
+<footer><div class="info">
+</div></footer>
+<br><br><br><br>
+</body></html>
+
