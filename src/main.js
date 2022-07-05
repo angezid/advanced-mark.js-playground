@@ -58,7 +58,6 @@ const defaultOptions = {
 	separateWordSearch : [ true, 'checkbox' ],
 	diacritics : [ true, 'checkbox' ],
 	accuracy : [ 'partially', 'select' ],
-	accuracyObject : [ {}, 'editor' ],    // isn't default option
 	synonyms : [ {}, 'editor' ],
 	iframes : [ false, 'checkbox' ],
 	iframesTimeout : [ '5000', 'number' ],
@@ -288,9 +287,7 @@ const tab = {
 		for(const key in obj.editors) {
 			if(obj.editors[key] === null) {
 				let selector = `section.${type} .${key} .editor`;
-
 				obj.editors[key] = CodeJar(document.querySelector(selector), () => {});
-				//obj.editors[key].onUpdate(code => { console.log(code); });
 			}
 		}
 	},
@@ -661,9 +658,8 @@ const codeBuilder = {
 
 		} else {
 			const context = jqueryMark ? `$('${testInfo.selector}')` : `new Mark(document.querySelector('${testInfo.selector}'))`,
-				variables = 'let a, b, c, e, d, f;'
-					//code += `${context}.unmark({\n  'done' : () => {\n    ${context}`;
-					code += `${context}.unmark({\n  'done' : () => {\n    ${variables}\n    ${context}`;
+				variables = 'let a, b, c, e, d, f;';
+			code += `${context}.unmark({\n  'done' : () => {\n    ${variables}\n    ${context}`;
 		}
 
 		if(info && (text = info.editor.toString().trim()).length) {
