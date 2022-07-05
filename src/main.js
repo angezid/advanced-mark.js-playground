@@ -11,7 +11,6 @@ let version = '1.0.0',
 	testContainerSelector = '',
 	markElementSelector = '',
 	markElement = '',
-	matchCount = 0,
 	jsonEditor = null,
 	marks = $(),
 	startElements = $(),
@@ -58,7 +57,6 @@ const defaultOptions = {
 	separateWordSearch : [ true, 'checkbox' ],
 	diacritics : [ true, 'checkbox' ],
 	accuracy : [ 'partially', 'select' ],
-	accuracyObject : [ {}, 'editor' ],    // isn't default option
 	synonyms : [ {}, 'editor' ],
 	iframes : [ false, 'checkbox' ],
 	iframesTimeout : [ '5000', 'number' ],
@@ -87,7 +85,7 @@ $(document).ready(function() {
 	tab.selectTab();
 	tab.initTab();
 
-	console.log('ready  ' + (performance.now() - t0));
+	console.log('total time - ' + (performance.now() - t0));
 });
 
 const tab = {
@@ -288,9 +286,7 @@ const tab = {
 		for(const key in obj.editors) {
 			if(obj.editors[key] === null) {
 				let selector = `section.${type} .${key} .editor`;
-
 				obj.editors[key] = CodeJar(document.querySelector(selector), () => {});
-				//obj.editors[key].onUpdate(code => { console.log(code); });
 			}
 		}
 	},
@@ -607,8 +603,9 @@ function runCode() {
 			try { eval(`'use strict'; ${code}`); } catch(e) {
 				log('Failed to evaluate the code\n' + e.message, true);
 			}
-			$('.internal-code').removeClass('hide')
-				$('.internal-code pre>code').text(code);
+			$('.internal-code').removeClass('hide');
+			$('.internal-code pre>code').text(code);
+
 			hljs.highlightElement($('.internal-code pre>code')[0]);
 		}
 
@@ -619,13 +616,12 @@ function runCode() {
 
 const codeBuilder = {
 	build : function(kind) {
-		const jsCode = this.buildCode('js'),
-			jqCode = this.buildCode('jq');
+		const jsCode = this.buildCode('js');
+		if( !jsCode) return  '';
 
-		if(jsCode) {
-			$('.generated-code pre>code').text(jsCode);
-		}
+		$('.generated-code pre>code').text(jsCode);
 
+		const jqCode = this.buildCode('jq');
 		if(jqCode) {
 			$('.generated-code pre>code').append('\n\n' + jqCode);
 		}
@@ -661,9 +657,8 @@ const codeBuilder = {
 
 		} else {
 			const context = jqueryMark ? `$('${testInfo.selector}')` : `new Mark(document.querySelector('${testInfo.selector}'))`,
-				variables = 'let a, b, c, e, d, f;'
-					//code += `${context}.unmark({\n  'done' : () => {\n    ${context}`;
-					code += `${context}.unmark({\n  'done' : () => {\n    ${variables}\n    ${context}`;
+				variables = 'let a, b, c, e, d, f;';
+			code += `${context}.unmark({\n  'done' : () => {\n    ${variables}\n    ${context}`;
 		}
 
 		if(info && (text = info.editor.toString().trim()).length) {
@@ -1070,7 +1065,6 @@ const highlighter = {
 			'done' : () => {
 				marks = $(markElementSelector);
 				startElements = marks.filter(function() { return  $(this).data('markjs') === 'start-1'; });
-				matchCount = startElements.length;
 
 				if(marks.length) {
 					highlightMatch(marks.first()[0]);
@@ -1332,11 +1326,6 @@ const highlighter = {
 
 		marks = $(markElementSelector);
 		startElements = marks.filter(function() { return  $(this).data('markjs') === 'start-1'; });
-		if( !startElements.length) {
-			//startElements = marks.map(function() { return  $(this).attr('data-markjs', 'start-1'); });
-			//startElements = marks.filter(function() { $(this).attr('data-markjs', 'start-1'); return  true; });
-		}
-		matchCount = startElements.length;
 
 		if(marks.length > 0) {
 			highlightMatch(marks.first()[0]);
