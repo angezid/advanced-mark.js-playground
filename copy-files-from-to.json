@@ -25,12 +25,12 @@
       "to": "static/js/jquery.powertip.js"
     },
     {
-      "from": "node_modules/jquery-powertip/dist/css/jquery.powertip-light.css",
-      "to": "static/css/jquery.powertip-light.css"
-    },
-    {
       "from": "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js",
       "to": "static/js/highlight.js"
+    },
+    {
+      "from": "https://raw.githubusercontent.com/angezid/mark.js/master/dist/jquery.mark.js",
+      "to": "static/js/jquery.mark.js"
     },
     {
       "from": "node_modules/mark.js/dist/mark.js",

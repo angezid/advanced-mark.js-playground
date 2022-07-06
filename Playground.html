@@ -17,8 +17,8 @@
 <script src="static/js/jquery.js"></script>
 <script src="static/js/jquery.powertip.js"></script>
 
-<!-- <script src="static/js/jquery.mark.js"></script> -->
-<script src="static/js/mark.js"></script>
+<script src="static/js/jquery.mark.js"></script>
+<script src="static/js/mark.js"></script> 
 
 <script src="static/js/data.js"></script>
 <script src="static/js/main.js"></script>
@@ -81,8 +81,8 @@
 
 <div class="queryString">
 <div class="actions right">
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="run" type="button" onclick="runCode();">Run</button>
+<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>String</p>
@@ -246,8 +246,8 @@
 
 <div class="queryArray">
 <div class="actions right">
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="run" type="button" onclick="runCode();">Run</button>
+<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Array of strings</p>
@@ -419,8 +419,8 @@
 
 <div class="queryRegExp">
 <div class="actions right">
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="run" type="button" onclick="runCode();">Run</button>
+<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>RegExp pattern</p>
@@ -548,8 +548,8 @@
 
 <div class="queryRanges">
 <div class="actions right">
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="run" type="button" onclick="runCode();">Run</button>
+<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Array of ranges</p>
@@ -627,7 +627,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'filter' : (node, range, match, counter) => { return true; }</p>
-<div class="editor" name="rangeFilter">
+<div class="editor" name="rangesFilter">
 </div>
 </div>
 
@@ -636,7 +636,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'each' : (element, range) => {  }</p>
-<div class="editor" name="each">
+<div class="editor" name="rangesEach">
 </div>
 </div>
 
@@ -661,28 +661,31 @@
 </details>
 </div>
 </div>
+</div><!-- column -->
 
-</div>
-
-<div class="generated-code column">
+<div class="column">
+<div class="generated-code">
 <div class="unmark-method right">
 <input id="unmark" type="checkbox" onchange="unmarkCode(this)">
 <label for="unmark">unmark method</label>
 </div>
 
+<div class="switch-library right hide">
+<input id="library" type="checkbox" onchange="switchLibrary(this)">
+<label for="library">New library</label>
+</div>
+
 <details><summary>Generated code</summary>
 <pre><code class="language-js"></code></pre>
 </details>
-
 </div>
-
+</div><!-- column -->
 </div><!-- row -->
 
 
 </article>
 
 <article class="option-info">
-
 <div id="stringArrayFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
 <ol>
@@ -692,10 +695,10 @@ A callback to filter or limit matches. It will be called for each match and rece
 <li>A counter indicating the number of marks for the term</li>
 <li class="new">An object containing the match information:
   <ol>
-    <li>The 'match' object is result of RegExp exec() method</li>
-    <li class="acrossElements">The 'matchStart' is a boolean property indicating the start of the match</li>
-    <li>The 'execution' object with a boolean 'abort' property</li>
-    <li>The 'offset' numerical property can be used to translate local text node indexes to the absolute ones, e.g build ranges.</li>
+    <li>the <code>match</code> object is result of RegExp exec() method</li>
+    <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
+    <li>the <code>execution</code> object with a boolean </code>abort</code> property</li>
+    <li>the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
   </ol>
 </li>
 </ol>
@@ -709,9 +712,47 @@ A callback for each marked element.<div class="old-library hide"> Receives the m
   <li>The marked DOM element</li>
   <li>An object containing the match information:
   <ol>
-	<li>The 'match' object is result of RegExp exec() method</li>
-	<li class="acrossElements">The 'matchStart' is a boolean property indicating the start of the match</li>
-	<li>The 'count' property indicating a current number of matches</li>
+	<li>the <code>match</code> object is result of RegExp exec() method</li>
+	<li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
+	<li>the <code>count</code> property indicating a current number of matches</li>
+  </ol>
+</li>
+</ol>
+</div>
+</div>
+
+<div id="regexpFilter">
+A callback to filter or limit matches. It will be called for each match and receives the following parameters:
+<ol>
+<li>The text node which includes the match</li>
+<li>The term that has been found</li>
+<li>A counter indicating the total number of all marks at the time of the function call</li>
+<li>A counter indicating the number of marks for the term</li>
+<li class="new">An object containing the match information:
+  <ol>
+    <li>the <code>match</code> object is result of RegExp exec() method</li>
+    <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
+    <li class="separateGroups">the <code>groupIndex</code> is index of match group</li>
+    <li>the <code>execution</code> object with a boolean </code>abort</code> property</li>
+    <li class="acrossElements">the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
+  </ol>
+</li>
+</ol>
+The function must return false if the mark should be stopped, otherwise true
+</div>
+
+<div id="regexpEach">
+A callback for each marked element.<div class="old-library hide"> Receives the marked DOM element as a parameter.</div>
+<div class="new">
+<ol>
+  <li>The marked DOM element</li>
+  <li>An object containing the match information:
+  <ol>
+	<li>the <code>match</code> object is result of RegExp exec() method</li>
+	<li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
+	<li class="separateGroups">the <code>groupIndex</code> is index of match group</li>
+	<li class="acrossElements separateGroups">the <code>groupStart</code> - indicates the start of group</li>
+	<li>the <code>count</code> property indicating a current number of matches</li>
   </ol>
 </li>
 </ol>
@@ -721,8 +762,7 @@ A callback for each marked element.<div class="old-library hide"> Receives the m
 </article>
 
 </main>
-<footer><div class="info">
-</div></footer>
-<br><br><br><br>
+<footer></footer>
+<br><br>
 </body></html>
 

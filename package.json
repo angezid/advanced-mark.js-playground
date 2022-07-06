@@ -1,5 +1,5 @@
 {
-  "name": "Mark.js-playground",
+  "name": "Markjs-playground",
   "version": "1.0.0",
   "dependencies": {
     "codejar": "^3.6.0",
@@ -8,7 +8,6 @@
     "mark.js": "^8.11.1"
   },
   "scripts": {
-    "eslint": "eslint src/",
     "build": "npm run copyFiles && npm run replace",
     "copyFiles": "copy-files-from-to",
     "replace": "replace-in-file --configFile=replace-config.js"
