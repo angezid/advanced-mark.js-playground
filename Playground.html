@@ -14,10 +14,10 @@
 <script src="static/js/codejar.js"></script>
 <script src="static/js/highlight.js"></script>
 
-<script src="static/js/jquery.js"></script>
+<script src="static/js/jquery.js"></script> 
 <script src="static/js/jquery.powertip.js"></script>
 
-<script src="static/js/jquery.mark.js"></script>
+<script src="static/js/jquery.mark.js"></script> 
 <script src="static/js/mark.js"></script> 
 
 <script src="static/js/data.js"></script>
@@ -51,7 +51,7 @@
 <div class="button">
 <a href="#" class="save-file">Save as</a>
 </div>
-<input class="file-name" value="" placeholder="MarkSession.json" type="text">
+<input class="file-name" value="" placeholder="playground.json" type="text">
 </div>
 <div class="row">
 <label id="label-button" for="file-dialog">Load file</label>
@@ -81,7 +81,7 @@
 
 <div class="queryString">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="run" type="button" onclick="runCode(this);">Run</button>
 <button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -246,7 +246,7 @@
 
 <div class="queryArray">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="run" type="button" onclick="runCode(this);">Run</button>
 <button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -419,7 +419,7 @@
 
 <div class="queryRegExp">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="run" type="button" onclick="runCode(this);">Run</button>
 <button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -548,7 +548,7 @@
 
 <div class="queryRanges">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode();">Run</button>
+<button class="run" type="button" onclick="runCode(this);">Run</button>
 <button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -666,13 +666,13 @@
 <div class="column">
 <div class="generated-code">
 <div class="unmark-method right">
-<input id="unmark" type="checkbox" onchange="unmarkCode(this)">
+<input id="unmark" type="checkbox" onchange="unmarkMethod(this)">
 <label for="unmark">unmark method</label>
 </div>
 
 <div class="switch-library right hide">
 <input id="library" type="checkbox" onchange="switchLibrary(this)">
-<label for="library">New library</label>
+<label for="library">mark library</label>
 </div>
 
 <details><summary>Generated code</summary>
@@ -688,16 +688,17 @@
 <article class="option-info">
 <div id="stringArrayFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
+<!-- A callback to filter or limit matches. It will be called for each <span class="acrossElements">text node</span><span class="not-acrossElements">match</span> with the following parameters: -->
 <ol>
-<li>The text node which includes the match</li>
-<li>The term that has been found</li>
+<li>The text node which includes<span class="acrossElements"> or is part of</span> the match</li>
+<li>The current term</li>
 <li>A counter indicating the total number of all marks at the time of the function call</li>
-<li>A counter indicating the number of marks for the term</li>
+<li>A counter indicating the number of marks for the current term</li>
 <li class="new">An object containing the match information:
   <ol>
     <li>the <code>match</code> object is result of RegExp exec() method</li>
     <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
-    <li>the <code>execution</code> object with a boolean </code>abort</code> property</li>
+    <li>the <code>execution</code> object with a boolean <code>abort</code> property</li>
     <li>the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
   </ol>
 </li>
@@ -733,7 +734,7 @@ A callback to filter or limit matches. It will be called for each match and rece
     <li>the <code>match</code> object is result of RegExp exec() method</li>
     <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
     <li class="separateGroups">the <code>groupIndex</code> is index of match group</li>
-    <li>the <code>execution</code> object with a boolean </code>abort</code> property</li>
+    <li>the <code>execution</code> object with a boolean <code>abort</code> property</li>
     <li class="acrossElements">the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
   </ol>
 </li>

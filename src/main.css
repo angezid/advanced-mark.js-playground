@@ -43,12 +43,12 @@ template { display: none; }
 
 
 body { font: 16px/135% Arial, sans-serif; color: #000; font-style: normal; font-weight: normal; background: #f8f8f8; overflow: auto; overflow-y: scroll; }
-h1, h2, h3, h4, h5, h6 { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; }
+h1, h2, h3 { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; }
 h1 { font-size: 1.6em; line-height: 1.2em; color: #444; font-weight: 700; padding: 0 0 20px 0; margin: 20px 0; }
 h2 { font-size: 1.4em; line-height: 1.1em; color: #444; font-weight: 700; margin: 10px 0 15px 0; }
 h3 { font-size: 1.1em; line-height: 1.1em; font-weight: 400; margin: 25px 0 10px 0; color: #000; }
 p { max-width: 1100px; font-size: 1em; margin: 5px 0 5px 0; }
-a { font-family: "Lucida Sans Unicode"; font-size: 0.9375em; color: #0055cc; text-decoration: none; cursor: pointer; }
+a { font-size: 1em; color: #0055cc; text-decoration: none; cursor: pointer; }
 a:hover { color: #0044aa; text-decoration: underline; }
 a:focus, a:active { color: #c48; text-decoration: underline; }
 
@@ -58,7 +58,6 @@ article { padding: 0 20px 20px 0; margin: 0; }
 section { padding: 0; margin: 0; }
 
 footer { float: bottom; width: 100%; height: 40px; margin: 40px 20px 20px 0; font-size: 0.8125em; border-top: #ccc 1px solid; }
-footer div.info { float: right; padding: 20px 40px 0 0; }
 
 
 .row { display: flex; flex-direction: row; }
@@ -71,8 +70,8 @@ footer div.info { float: right; padding: 20px 40px 0 0; }
 .mark-type ul li:hover { background-color: #c8c8c8; }
 .mark-type ul li.selected { background-color: #20758f; color: #fff; }
 
-.toolbar { float: right; width: 300px; position: fixed; top: 0; right: 0; height: 30px; padding: 5px 10px 0 15px; background: #e5e5e5; border: #ccc 1px solid; border-radius: 3px; z-index: 20; box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2); }
-.toolbar button { width: 40px; height: 20px; font-size: 0.75em; margin-right: 20px; background: #ddd; padding: 0; cursor: pointer; border: #888 1px solid; border-radius: 3px; }
+.toolbar { float: right; width: 300px; position: fixed; top: 0; right: 0; height: 30px; padding: 5px 10px 0 15px; background: #e8e8e8; border: #ddd 1px solid; border-radius: 3px; z-index: 20; box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2); }
+.toolbar button { width: 40px; height: 20px; font-size: 0.75em; margin-right: 20px; background: #d8d8d8; padding: 0; cursor: pointer; border: #999 1px solid; border-radius: 3px; }
 .toolbar button:hover { background: #c8c8c8; }
 
 .file-form,
@@ -134,25 +133,29 @@ input[type=checkbox] { color: #f88; background: #888; cursor: pointer; }
 .blockElementsBoundary label,
 .debug label { cursor: pointer; }
 
-.actions button { width: 44px; height: 20px; font-size: 0.75em; color: #222; float: left; background: #ddd; padding: 0; margin: 0 20px 0 0; border: #888 1px solid; border-radius: 3px; cursor: pointer; }
+.actions button { width: 55px; height: 20px; font-size: 0.75em; color: #222; float: left; background: #ddd; padding: 0; margin: 0 20px 0 0; border: #888 1px solid; border-radius: 3px; cursor: pointer; }
 .actions button:hover { background: #c8c8c8; }
+
 .actions button.pressed,
 .actions button.pressed:hover { color: #fff; background: #20758f; }
 .actions button:last-child { margin: 0; }
 
+.actions button.previous,
+.actions button.next { width: 44px; }
 .actions button.previous:before { content: '\25B2'; }
 .actions button.next:before { content: '\25BC'; }
 
 .actions button.clear { width: 25px; background: #eee; border-color: #bbb; }
 .actions button.clear:hover { background: #ccc; }
-.actions button.clear:before { content: '\2716'; }
+.actions button.clear:before { content: '\2716'; color: #666; }
 /*274C*/
+.actions button:active { font-weight: bold; }
 
 .left-column .actions { padding: 0; margin-right: 2.5vw; }
 .edit-options .actions { padding: 0; margin-right: .15vw; }
 .json-form .actions { padding: 0; margin: 5px 2.5vw 0 0; }
 
-.generated-code { max-width: 44vw; }
+.generated-code, .internal-code { max-width: 44vw; }
 
 .unmark-method { margin-right: 0px; }
 .switch-library { margin-right: 50px; }
@@ -169,6 +172,23 @@ input[type=checkbox] { color: #f88; background: #888; cursor: pointer; }
 .mixed-options select { float: right; width: 128px; background: #f0f0f0; border: #999 1px solid; }
 
 .edit-options { margin: 25px 0 0 0; width: 44vw; }
+
+.editor {
+	font-family: Consolas, monospace;
+	font-size: 1em;
+	border: #ccc 1px solid;
+	border-radius: 3px;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 5px 0 rgba(0, 0, 0, 0.07), 0 3px 1px -2px rgba(0, 0, 0, 0.05);
+	font-size: 14px;
+	font-weight: 400;
+	height: 20px;
+	max-width: 44vw;
+	letter-spacing: normal;
+	line-height: 20px;
+	margin: 0;
+	padding: 5px 10px;
+	tab-size: 4;
+}
 
 .element,
 .className,
@@ -193,31 +213,13 @@ input[type=checkbox] { color: #f88; background: #888; cursor: pointer; }
 .testString { margin: 25px 0 20px 0; }
 .testString .editor { font-family: Arial, sans-serif; height: 50vh; }
 
-.editor {
-	font-family: Consolas, monospace;
-	font-size: 1em;
-	border: #ccc 1px solid;
-	border-radius: 3px;
-	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 5px 0 rgba(0, 0, 0, 0.07), 0 3px 1px -2px rgba(0, 0, 0, 0.05);
-	font-size: 14px;
-	font-weight: 400;
-	height: 20px;
-	max-width: 44vw;
-	letter-spacing: normal;
-	line-height: 20px;
-	margin: 0;
-	padding: 10px;
-	tab-size: 4;
-}
-
 .queryString .editor,
 .queryArray .editor,
 .queryRegExp .editor,
-.queryRanges .editor,
+.queryRanges .editor { height: auto; padding: 10px; }
+
 .filterCallback .editor,
 .eachCallback .editor { height: auto; }
-
-.warning { background-color: #f9d; }
 
 mark,
 .custom-element { background: #b7f5ff; padding: 0; border: #a5f3ff 1px solid; }
@@ -227,9 +229,11 @@ mark.current,
 
 mark.groups { background: #ffe9a8; }
 mark.groups.current { border-width: 1px; }
-mark.whole-match.current { border-width: 0; }
+mark.mark-element.current { border-width: 0; }
 
 details>summary { width: 15em; cursor: pointer; }
+
+.warning { background-color: #f9d; }
 
 code { font-family: Consolas, monospace; font-size: 1em; padding: 0 3px; color: #b12; background: #f8f8f8; border: #d8d8d8 1px solid; }
 pre code { padding: 0; color: #000; background: #ececec; border: none; }
