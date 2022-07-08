@@ -1059,7 +1059,7 @@ const highlighter = {
 
 		const elem = markElement,
 			open = '<mark data-markjs=[^>]+>',
-			pattern = `(?<=(${open})\s*)((?:(?!</mark>|${open})[^])+)(</mark>|${open})|(?<=(</mark>))\s*((?:(?!${open}|<)[^])+?)(</mark>)`,
+			pattern = `(?<=(${open})\s*)((?:(?!</mark>|${open})[^])+)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
 			regex = new RegExp(pattern, 'dg');
 
 		markElement = 'mark';

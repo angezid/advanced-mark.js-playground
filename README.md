@@ -44,7 +44,7 @@ The generated code for all other than default option is in the 'Generated code'.
 Note:
 - due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.
 In the Html mode and in the 'Ranges' tab for both libraries expected behavior - next/previous mark element.
-- switching to the Html mode with big Html content is slowly due to using not efficient regExp
+- switching to the Html mode with big Html content is slowly due to using not efficient RegExp
 - if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
 Warning: currently there is no protection on unsaved state on the browser reload or on load from local storage.  
