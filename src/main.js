@@ -2,10 +2,11 @@
 'use strict';
 
 let version = '1.0.0',
-	maxLength = 500000,
+	maxLength = 100000,
 	time = 0,
 	oldLibrary = false,
 	jqueryMark = false,
+	dFlagSupport = true,
 	showTooltips = false,
 	currentIndex = 0,
 	currentTab = '',
@@ -82,6 +83,8 @@ $(document).ready(function() {
 	detectLibrary();
 	//testSaveLoad();
 
+	try { new RegExp('\\w', 'd'); } catch(e) { dFlagSupport = false; }
+
 	registerEvents();
 	tab.selectTab();
 	tab.initTab();
@@ -103,14 +106,14 @@ const tab = {
 
 	selectTab : function(type) {
 		if( !type) {
-			type = getValue('tabType');
+			type = loadValue('tabType');
 			if( !type) type = 'string_';
 		}
 
 		$('.mark-type li').removeClass('selected');
 		$('.mark-type li[data-type=' + type + ']').addClass('selected');
 
-		setValue('tabType', type);
+		saveValue('tabType', type);
 
 		if(type === 'string_') {
 			this.setVisibleString();
@@ -127,10 +130,10 @@ const tab = {
 
 		checkIframes($(`section.${type} .iframes input`)[0]);
 
-		testContainerSelector = `section.${type} .testString .editor`;
-
 		this.initializeEditors();
 		this.clear();
+
+		testContainerSelector = `section.${type} .testString .editor`;
 	},
 
 	setVisibleString : function() {
@@ -181,7 +184,6 @@ const tab = {
 				//$(info.selector).html(minHtml);
 				$(info.selector).html(defaultHtml);
 
-				testContainerSelector = info.selector;
 				types[info.type].testEditorMode = 'text';
 				this.highlightButton('.text');
 			}
@@ -209,12 +211,12 @@ const tab = {
 	setHtmlMode : function(content, highlight = true) {
 		const info = this.getTestEditorInfo();
 
-		if( !info || types[info.type].testEditorMode === 'html') return;
+		if( !info || types[info.type].testEditorMode === 'html' && !content) return;
 
 		types[info.type].testEditorMode = 'html';
 
 		const editor = $(info.selector),
-			html = content !== null ? content : editor.html();
+			html = content ? content : editor.html();
 
 		if(html !== '') {
 			// as it turn out, the performance problem causes contenteditable attribute
@@ -223,20 +225,9 @@ const tab = {
 
 			const parent = editor.parent();
 			editor.remove();
-			parent.append('<div class="editor lang-html"></div>');
+			parent.append('<div class="editor lang-html" ondragover="onDragover(event)" ondrop="onDrop(event)"></div>');
 
-			$(info.selector).text(html);
-
-			if(highlight) {
-				// it's still better to avoid syntax highlighting in some cases - the performance is more important
-				let forbid = html.length > maxLength || oldLibrary && (isChecked('acrossElements') || info.type === 'ranges') && html.length > maxLength / 10;
-				if( !forbid) {
-					hljs.highlightElement($(info.selector)[0]);
-				}
-
-				highlighter.highlightRawHtml(info.selector);
-			}
-
+			this.setHtmlContent(html, info, highlight);
 			this.initializeEditors();
 
 		} else {
@@ -244,6 +235,20 @@ const tab = {
 		}
 
 		this.highlightButton('.html');
+	},
+
+	setHtmlContent : function(html, info, highlight) {
+		$(info.selector).text(html);
+
+		if(highlight) {
+			// it's still better to avoid syntax highlighting in some cases - the performance is more important
+			let forbid = html.length > maxLength || oldLibrary && (isChecked('acrossElements') || info.type === 'ranges') && html.length > maxLength / 2;
+			if( !forbid) {
+				hljs.highlightElement($(info.selector)[0]);
+			}
+
+			highlighter.highlightRawHtml(info.selector, html.length, forbid);
+		}
 	},
 
 	setTextMode : function(content = null) {
@@ -263,7 +268,7 @@ const tab = {
 
 			const parent = editor.parent();
 			editor.remove();
-			parent.append('<div class="editor"></div>');
+			parent.append('<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)"></div>');
 
 			$(info.selector).html(text);
 
@@ -292,9 +297,24 @@ const tab = {
 		for(const key in obj.editors) {
 			if(obj.editors[key] === null) {
 				let selector = `section.${type} .${key} .editor`;
-				obj.editors[key] = CodeJar(document.querySelector(selector), () => {});
+
+				if(key === 'testString') {
+					obj.editors[key] = this.initTestEditor(obj, selector);
+
+				} else {
+					obj.editors[key] = CodeJar(document.querySelector(selector), () => {});
+					if(key !== obj.queryEditor) {
+						obj.editors[key].onUpdate(code => tab.onUpdateEditor(code, selector));
+					}
+				}
 			}
 		}
+	},
+
+	initTestEditor : function(obj, selector) {
+		obj.editors.testString = CodeJar(document.querySelector(selector), () => {});
+		obj.editors.testString.onUpdate(code => tab.updateTestEditor(code));
+		return  obj.editors.testString;
 	},
 
 	destroyTestEditor : function() {
@@ -302,6 +322,19 @@ const tab = {
 
 		obj.editors.testString.destroy();
 		obj.editors.testString = null;
+	},
+
+	updateTestEditor : function(code) {
+		if(types[this.getType()].testEditorMode === 'html') {
+			this.setHtmlMode(importer.sanitizeHtml(code));
+		}
+	},
+
+	onUpdateEditor : function(code, selector) {
+		const button = $(selector).parent().find('button.clear');
+
+		if(code.trim().length) button.removeClass('hide');
+		else button.addClass('hide');
 	},
 
 	getSearchEditorInfo : function() {
@@ -321,10 +354,7 @@ const tab = {
 			selector = `section.${type} .testString .editor`,
 			editor = obj.editors.testString;
 
-		//if( !editor) return  null;
-		if( !editor) { obj.editors.testString = CodeJar(document.querySelector(selector), () => {}); }
-
-		return  { type, selector, editor };
+		return  { type, selector, editor : (editor ? editor : tab.initTestEditor(obj, selector)) };
 	},
 
 	getOptionEditor : function(option) {
@@ -336,20 +366,25 @@ const tab = {
 		return  null;
 	},
 
-	clear : function() {
+	clear : function(keep) {
 		$('.results code').empty();
-		$('.generated-code code').empty();
+		if( !keep) $('.generated-code code').empty();
 		$('body *').removeClass('warning');
 		marks = $();
 		startElements = $();
 	},
 
+	setEditableAttribute : function(on) {
+		const info = this.getTestEditorInfo();
+		$(info.selector).attr('contenteditable', on);
+	},
+
 	setLoadButton : function() {
-		$('.toolbar button.load').css('opacity', getValue('section_' + this.getType()) ? 1 : 0.5);
+		$('.toolbar button.load').css('opacity', loadValue('section_' + this.getType()) ? 1 : 0.5);
 	},
 
 	getType : function() {
-		return  $("article .mark-type li.selected").data('type');
+		return  $(".mark-type li.selected").data('type');
 	}
 };
 
@@ -377,6 +412,27 @@ function checkAccuracy(elem) {
 	else div.addClass('hide');
 }
 
+// DOM 'ondragover' event
+function onDragover(e) {
+	if(types[tab.getType()].testEditorMode === 'html') {
+		e.preventDefault();
+	}
+}
+
+// DOM 'ondrop' event
+function onDrop(e) {
+	let text = e.dataTransfer.getData("text/plain");
+	if(text) {
+		const info = tab.getTestEditorInfo();
+
+		if(types[info.type].testEditorMode === 'html') {
+			text = importer.sanitizeHtml(text);
+			tab.setHtmlContent(text, info, true);
+			e.preventDefault();
+		}
+	}
+}
+
 // DOM 'onclick' event
 function setTextMode() {
 	tab.setTextMode();
@@ -397,7 +453,7 @@ function save() {
 	const str = Json.buildJson();
 
 	if(str) {
-		setValue('section_' + tab.getType(), str);
+		saveValue('section_' + tab.getType(), str);
 		tab.setLoadButton();
 	}
 }
@@ -432,6 +488,7 @@ function clearJsonEditor() {
 function clearEditor(elem) {
 	const type = tab.getType(),
 		parent = elem.parentNode.parentNode,
+		className = parent.className,
 		obj = types[type];
 
 	let editor = obj.editors[parent.className];
@@ -439,12 +496,15 @@ function clearEditor(elem) {
 	if(editor) {
 		editor.updateCode('');
 	}
+	if(className !== obj.queryEditor && className !== 'testString') {
+		$(elem).addClass('hide');
+	}
 }
 
 const importer = {
 	loadOptions : function() {
 		const type = tab.getType(),
-			str = getValue('section_' + type);
+			str = loadValue('section_' + type);
 
 		if(str) {
 			const json = Json.parseJson(str);
@@ -550,8 +610,8 @@ const importer = {
 				editor.updateCode('');
 
 			} else if(key === 'testString') {
-				const mode = typeof saved.mode === 'undefined' || saved.mode !== 'html' ? 'text' : saved.mode;
-				const content = typeof saved.content === 'undefined' ? '' : saved.content;
+				const mode = typeof saved.mode === 'undefined' || saved.mode !== 'text' ? 'html' : saved.mode;
+				const content = typeof saved.content === 'undefined' ? '' : this.sanitizeHtml(saved.content);
 
 				if(mode === 'text') {
 					tab.setTextMode(content);
@@ -565,10 +625,65 @@ const importer = {
 			}
 		}
 
-		if(textMode) {
+		if( !textMode) {
 			tab.setTextMode();
 			highlighter.highlight();
 		}
+	},
+
+	sanitizeHtml : function(str) {
+		const doc = new DOMParser().parseFromString(str, "text/html"),
+			elements = doc.querySelectorAll("*"),
+			report = {};
+
+		for(let i = 0; i < elements.length; i++) {
+			let elem = elements[i];
+
+			if(/^(?:script|style|link|meta)$/i.test(elem.nodeName)) {
+				elem.parentNode.removeChild(elem);
+				add(`removed element '${elem.nodeName.toLowerCase()}'`);
+				continue;
+			}
+
+			checkAttributes(elem);
+		}
+
+		function checkAttributes(elem) {
+			for(let i = 0; i < elem.attributes.length; i++) {
+				const attr = elem.attributes[i],
+					name = attr.name.toLowerCase();
+
+				if(name === 'href' || name === 'src') {
+					const val = decodeURIComponent(attr.value);
+
+					if(/^(?:https?:)\//i.test(val)) {
+						attr.value = '#';
+						add(`replaced '${name}' attribute value by '#'`);
+
+					} else if(/\bjavascript(?::|&colon;)/.test(val)) {
+						elem.removeAttribute(attr.name);
+						add(`removed ${name} attribute containing 'javascript:'`);
+					}
+
+				} else if(/^xlink:href/.test(name)) {
+					attr.value = '#';
+					add(`replaced '${name}' attribute value by '#'`);
+
+				} else if(/^on[a-z]+/.test(name)) {    // on event attribute
+					elem.removeAttribute(attr.name);
+					add(`removed '${name}' attribute`);
+				}
+			}
+		}
+
+		function add(msg) {
+			report[msg] = !report[msg] ? 1 : report[msg] + 1;
+		}
+
+		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
+		//log(toText(report, 'Html sanitizer report:', ' Ok'));
+
+		return  doc.documentElement.innerHTML;
 	}
 };
 
@@ -594,20 +709,22 @@ function switchLibrary(elem) {
 		jqueryMark = info.jquery === 'old';
 	}
 
-	setValue('library', oldLibrary ? 'old' : 'new');
-
+	saveValue('library', oldLibrary ? 'old' : 'new');
 	setVisibility();
+
+	tab.setTextMode();
 	runCode();
 }
 
 // DOM 'onclick' event
 function unmarkMethod(elem) {
-	codeBuilder.build('all', $(elem).prop('checked'));
+	codeBuilder.build('js-jq', $(elem).prop('checked'));
 }
 
 // DOM 'onclick' event
 function buildCode() {
-	codeBuilder.build('all');
+	tab.clear();
+	codeBuilder.build('js-jq');
 }
 
 // also DOM 'onclick' event
@@ -620,10 +737,15 @@ function runCode(button) {
 		let code = codeBuilder.build('internal');
 
 		if(code) {
+			// disable contenteditable attribute for performance reason
+			tab.setEditableAttribute(false);
+
 			log('Evaluating the whole expression\n');
+			time = performance.now();
 
 			try { eval(`'use strict'; ${code}`); } catch(e) {
 				log('Failed to evaluate the code\n' + e.message, true);
+				tab.setEditableAttribute(true);
 			}
 			$('.internal-code').removeClass('hide');
 			$('.internal-code pre>code').text(code);
@@ -1036,7 +1158,7 @@ const highlighter = {
 		currentIndex = 0;
 
 		tab.clear();
-		codeBuilder.build('all');
+		codeBuilder.build('js-jq');
 
 		const type = tab.getType();
 
@@ -1053,22 +1175,36 @@ const highlighter = {
 		hljs.highlightElement($('.results pre>code')[0]);
 	},
 
-	highlightRawHtml : function(selector) {
-		tab.clear();
+	highlightRawHtml : function(selector, length, forbid) {
+		tab.clear(true);
 		time = performance.now();
 
-		const elem = markElement,
+		const limited = oldLibrary || !dFlagSupport,
 			open = '<mark data-markjs=[^>]+>',
-			pattern = `(?<=(${open})\s*)((?:(?!</mark>|${open})[^])+)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
-			regex = new RegExp(pattern, 'dg');
+			pattern = `(?<=${open}\s*)[^<]+(?=</mark>|${open})|(?<=</mark>)\s*(?:(?!${open})[^])+?(?=</mark>)`,
+			groupPattern = `(?<=(${open})\s*)([^<]+)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
+			regex = new RegExp(limited ? pattern : groupPattern, (limited ? '' : 'd') + 'g');
 
 		markElement = 'mark';
-		markElementSelector = `${selector} mark`;
+		markElementSelector = `${selector} mark[data-markjs]`;
+
+		let totalMarks = 0,
+			totalMatches = 0,
+			max = Math.max(2000 - length / 1000, 200);
+
+		if( !limited && /firefox/i.test(window.navigator.userAgent)) {
+			max = forbid ? 200 : 1000;
+		}
 
 		getContext(selector, jqueryMark).markRegExp(regex, {
 			'acrossElements' : true,
-			'separateGroups' : oldLibrary ? false : true,
-			'wrapAllRanges' : true,
+			'separateGroups' : !oldLibrary && dFlagSupport,
+			'filter' : function(n, m, t, info) {
+				if(limited || info && info.matchStart) totalMatches++;
+
+				totalMarks++;
+				return  totalMatches < max;
+			},
 			'each' : (elem, info) => {
 				if(oldLibrary) {
 					$(elem).attr('data-markjs', 'start-1');
@@ -1085,7 +1221,12 @@ const highlighter = {
 					}
 				}
 			},
-			'done' : this.finish
+			done : () => {
+				if(totalMatches > max) {
+					log(`Total highlighted matches are limited to ${max}\n`);
+				}
+				this.finish(totalMarks, totalMatches, null);
+			}
 		});
 	},
 
@@ -1251,7 +1392,7 @@ const highlighter = {
 
 	getCurrentSettings : function(section, type) {
 		// disable contenteditable attribute for performance reason
-		$(`section.${tab.getType()} .testString .editor`).attr('contenteditable', 'false');
+		tab.setEditableAttribute(false);
 
 		const obj = {},
 			context = getContext(testContainerSelector, jqueryMark),
@@ -1328,26 +1469,17 @@ const highlighter = {
 	},
 
 	finish : function(totalMarks, totalMatches, termStats) {
-		let stats = '';
+		let matchCount = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
+			totalTime = (performance.now() - time) | 0,
+			stats = termStats ? toText(termStats, '\n\nTerms statics:') : '';
 
-		if(termStats) {
-			stats = 'Terms statics:\n';
-
-			for(let term in termStats) {
-				stats += `${term} = ${termStats[term]}\n`;
-			}
-		}
-
-		let result = `${totalMatches ? 'totalMatches = ' + totalMatches : ''}\ntotalMarks = ${totalMarks}` +
-			`\nmark time = ${(performance.now() - time)} ms\n\n${stats}`;
-
-		log(result);
+		log(`${matchCount}totalMarks = ${totalMarks}\nmark time = ${totalTime} ms${stats}`);
 
 		marks = $(markElementSelector);
-		startElements = marks.filter(function() { return  $(this).data('markjs') === 'start-1'; });
+		startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
 
 		if(marks.length > 0) {
-			highlightMatch(marks.first()[0]);
+			highlightMatch(0);
 
 			if(markElement !== 'mark') {
 				$(markElementSelector).addClass('custom-element');
@@ -1356,11 +1488,12 @@ const highlighter = {
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', marks.length ? 1 : 0.5);
 		// restore contenteditable attribute
-		$(`section.${tab.getType()} .testString .editor`).attr('contenteditable', 'true');
+		tab.setEditableAttribute(true);
 	}
 };
 
 function registerEvents() {
+
 	$("body").on('mouseup', function() {
 		$('body *').removeClass('warning');
 	});
@@ -1381,7 +1514,7 @@ function registerEvents() {
 	});
 
 	$("input[type=checkbox], input[type=number], select[name]").on('change', function(e) {
-		codeBuilder.build('all');
+		codeBuilder.build('js-jq');
 	});
 
 	$("input[name], select[name], div.editor[name]").on('mouseenter', function(e) {
@@ -1444,7 +1577,7 @@ function registerEvents() {
 			URL.revokeObjectURL(this.href);
 
 			$('.file-form .file-name').val(name);
-			setValue(tab.getType() + '-fileName', name);
+			saveValue(tab.getType() + '-fileName', name);
 		}
 	});
 
@@ -1472,9 +1605,18 @@ function registerEvents() {
 
 }
 
+function toText(obj, title, msg) {
+	let text = '';
+
+	for(let key in obj) {
+		text += `\n${key} = ${obj[key]}`;
+	}
+	return  text ? title + text : msg2 ? title + msg : '';
+}
+
 function getFileName() {
 	const type = tab.getType();
-	let name = getValue(type + '-fileName');
+	let name = loadValue(type + '-fileName');
 
 	return  name || (type === 'string_' ? 'string' : type) + '-tab-session.json';
 }
@@ -1537,45 +1679,47 @@ function log(message, warning) {
 }
 
 function previousMatch(elem) {
+	if( !startElements.length) return;
+
 	if(--currentIndex <= 0) {
 		currentIndex = 0;
 		previousButton.css('opacity', 0.5);
 	}
+	highlightMatch(currentIndex);
 
-	let startElem = startElements.eq(currentIndex);
-	if(startElem.length) {
-		highlightMatch(startElem[0]);
-	}
 	nextButton.css('opacity', 1);
 }
 
 function nextMatch(elem) {
+	if( !startElements.length) return;
+
 	if(++currentIndex >= startElements.length - 1) {
 		currentIndex = startElements.length - 1;
 		nextButton.css('opacity', 0.5);
 	}
+	highlightMatch(currentIndex);
 
-	let startElem = startElements.eq(currentIndex);
-	if(startElem.length) {
-		highlightMatch(startElem[0]);
-	}
 	previousButton.css('opacity', 1);
 }
 
-function highlightMatch(elem) {
+function highlightMatch(index) {
 	marks.removeClass('current');
 
-	let found = false;
-	marks.each(function(i, el) {
-		if( !found) {
-			if(el === elem) found = true;
+	let startElem = startElements.eq(index);
+	if(startElem.length) {
+		let found = false;
 
-		} else if($(this).data('markjs') === 'start-1') return  false;    // the start of the next 'start element' means the end of the current match
+		marks.each(function(i, el) {
+			if( !found) {
+				if(el === startElem[0]) found = true;
 
-		if(found) $(this).addClass('current');
-	});
+			} else if($(this).data('markjs') === 'start-1') return  false;    // the start of the next 'start element' means the end of the current match
 
-	scrollIntoView($(elem));
+			if(found) $(this).addClass('current');
+		});
+
+		scrollIntoView(startElem);
+	}
 }
 
 function scrollIntoView(elem) {
@@ -1590,7 +1734,7 @@ function detectLibrary() {
 	let both = info.jquery && info.javascript && info.jquery !== info.javascript;
 
 	if(both) {
-		const lib = getValue('library');
+		const lib = loadValue('library');
 
 		if( !lib || lib === 'old') {
 			jqueryMark = info.jquery === 'old';
@@ -1669,7 +1813,7 @@ function setVisibility() {
 	$('.switch-library label').text((oldLibrary ? 'standard' : 'advanced') + ' library');
 }
 
-function getValue(key) {
+function loadValue(key) {
 	try {
 		return  localStorage.getItem(key);
 	} catch(e) {
@@ -1678,7 +1822,7 @@ function getValue(key) {
 	return  null;
 }
 
-function setValue(key, value) {
+function saveValue(key, value) {
 	try {
 		const saved = localStorage.getItem(key);
 

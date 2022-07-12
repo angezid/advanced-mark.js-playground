@@ -8,29 +8,41 @@
 <link rel="icon" type="image/png" href="static/img/logo.png" />
 <link rel="stylesheet" href="static/css/main.css" />
 
-<link rel="stylesheet" href="static/css/highlight.css" />
-<link rel="stylesheet" href="static/css/jquery.powertip-light.css" />
-
 <script src="static/js/codejar.js"></script>
 <script src="static/js/highlight.js"></script>
 
-<script src="static/js/jquery.js"></script> 
+<script src="static/js/jquery.js"></script>
 <script src="static/js/jquery.powertip.js"></script>
 
-<script src="static/js/jquery.mark.js"></script> 
-<script src="static/js/mark.js"></script> 
+<script src="static/js/jquery.mark.js"></script>
+<script src="static/js/mark.js"></script>
 
 <script src="static/js/data.js"></script>
 <script src="static/js/main.js"></script>
 </head>
 <body>
+<div class="toolbar">
 
-<div class="toolbar right">
+<div class="mark-type left">
+<ul>
+<li class="selected" data-type="string_">String</li>
+<li data-type="array">Array of strings</li>
+<li data-type="regexp">Custom RegExp</li>
+<li data-type="ranges">Ranges</li>
+</ul>
+</div>
+
+<div class="button-block left">
+<button class="run" type="button" onclick="runCode(this);">Run</button>
+</div>
+
+<div class="button-block right">
 <button class="save" type="button" title="Save to local storage" onclick="save();">Save</button>
 <button class="load" type="button" title="Load from local storage" onclick="load();">Load</button>
 <button class="open-file-form" title="Open file form" type="button">File</button>
 <button class="open-json-form" title="Open JSON form" type="button">JSON</button>
 </div>
+</div><!-- toolbar -->
 
 <div class="json-form">
 <div class="close"></div>
@@ -48,7 +60,7 @@
 <div class="file-form">
 <div class="close"></div>
 <div class="row">
-<div class="button">
+<div class="save-button">
 <a href="#" class="save-file">Save as</a>
 </div>
 <input class="file-name" value="" placeholder="playground.json" type="text">
@@ -62,18 +74,7 @@
 
 <main>
 <article id="article">
-<h1>Mark.js playground</h1>
-
-<div class="row">
-<div class="mark-type">
-<ul>
-<li class="selected" data-type="string_">String</li>
-<li data-type="array">Array of strings</li>
-<li data-type="regexp">Custom RegExp</li>
-<li data-type="ranges">Ranges</li>
-</ul>
-</div>
-</div><!-- row -->
+<h1 class="title">Mark.js playground</h1>
 
 <section class="string_">
 <div class="row">
@@ -81,8 +82,6 @@
 
 <div class="queryString">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode(this);">Run</button>
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>String</p>
@@ -100,7 +99,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor">
+<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)">
 </div>
 </div>
 
@@ -182,7 +181,7 @@
 
 <div class="synonyms">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Synonyms</p>
 <div class="editor" name="synonyms">
@@ -191,7 +190,7 @@
 
 <div class="exclude">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Exclude</p>
 <div class="editor" name="exclude">
@@ -200,7 +199,7 @@
 
 <div class="ignorePunctuation">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Ignore punctuation</p>
 <div class="editor" name="ignorePunctuation">
@@ -209,7 +208,7 @@
 
 <div class="accuracyObject hide">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
@@ -218,7 +217,7 @@
 
 <div class="filterCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
 <div class="editor" name="stringArrayFilter">
@@ -227,7 +226,7 @@
 
 <div class="eachCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'each' : (element<span class="new">, info</span>) => {  }</p>
 <div class="editor" name="stringArrayEach">
@@ -246,8 +245,6 @@
 
 <div class="queryArray">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode(this);">Run</button>
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Array of strings</p>
@@ -265,7 +262,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor">
+<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)">
 </div>
 </div>
 
@@ -355,7 +352,7 @@
 
 <div class="synonyms">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Synonyms</p>
 <div class="editor" name="synonyms">
@@ -364,7 +361,7 @@
 
 <div class="exclude">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Exclude</p>
 <div class="editor" name="exclude">
@@ -373,7 +370,7 @@
 
 <div class="ignorePunctuation">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Ignore punctuation</p>
 <div class="editor" name="ignorePunctuation">
@@ -382,7 +379,7 @@
 
 <div class="accuracyObject hide">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
@@ -391,7 +388,7 @@
 
 <div class="filterCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
 <div class="editor" name="stringArrayFilter">
@@ -400,7 +397,7 @@
 
 <div class="eachCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'each' : (element<span class="new">, info</span>) => {  }</p>
 <div class="editor" name="stringArrayEach">
@@ -419,11 +416,9 @@
 
 <div class="queryRegExp">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode(this);">Run</button>
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>RegExp pattern</p>
+<p>RegExp</p>
 <div class="editor">
 </div>
 </div>
@@ -438,7 +433,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor">
+<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)">
 </div>
 </div>
 </div><!-- left-column -->
@@ -502,7 +497,7 @@
 
 <div class="exclude">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Exclude</p>
 <div class="editor" name="exclude">
@@ -511,7 +506,7 @@
 
 <div class="blockElements new hide">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Custom block elements (e.g. [ 'div', 'p' ])</p>
 <div class="editor">
@@ -520,7 +515,7 @@
 
 <div class="filterCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'filter' : (node, match, total<span class="new">, info</span>) => { return true; }</p>
 <div class="editor" name="regexpFilter">
@@ -529,7 +524,7 @@
 
 <div class="eachCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'each' : (element<span class="new">, info</span>) => {  }</p>
 <div class="editor" name="regexpEach">
@@ -548,8 +543,6 @@
 
 <div class="queryRanges">
 <div class="actions right">
-<button class="run" type="button" onclick="runCode(this);">Run</button>
-<button class="build" type="button" onclick="buildCode();">Build</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Array of ranges</p>
@@ -567,7 +560,7 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor">
+<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)">
 </div>
 </div>
 
@@ -615,7 +608,7 @@
 
 <div class="exclude">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Exclude</p>
 <div class="editor" name="exclude">
@@ -624,7 +617,7 @@
 
 <div class="filterCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'filter' : (node, range, match, counter) => { return true; }</p>
 <div class="editor" name="rangesFilter">
@@ -633,7 +626,7 @@
 
 <div class="eachCallback">
 <div class="actions right">
-<button class="clear" type="button" onclick="clearEditor(this);"></button>
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>'each' : (element, range) => {  }</p>
 <div class="editor" name="rangesEach">
@@ -681,7 +674,6 @@
 </div>
 </div><!-- column -->
 </div><!-- row -->
-
 
 </article>
 
