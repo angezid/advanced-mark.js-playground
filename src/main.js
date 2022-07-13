@@ -928,7 +928,7 @@ const codeBuilder = {
 
 			} else {
 				const stats = type === 'string_' || type === 'array';
-				code = `{\n${code}${indent}done : done : (totalMarks, totalMatches${stats ? ', termStats' : ''}) => {}\n${end}}`;
+				code = `{\n${code}${indent}done : (totalMarks, totalMatches${stats ? ', termStats' : ''}) => {}\n${end}}`;
 			}
 		}
 
@@ -1518,7 +1518,7 @@ function registerEvents() {
 	});
 
 	$("input[name], select[name], div.editor[name]").on('mouseenter', function(e) {
-		if(showTooltips || e.ctrlKey) {
+		if(showTooltips || e.ctrlKey || e.metaKey) {
 			showTooltip($(this), e);
 		}
 	}).on('mouseleave', function() {
@@ -1715,7 +1715,10 @@ function highlightMatch(index) {
 
 			} else if($(this).data('markjs') === 'start-1') return  false;    // the start of the next 'start element' means the end of the current match
 
-			if(found) $(this).addClass('current');
+			if(found) {
+				$(this).addClass('current');
+				$(this).find(markElement + '[data-markjs]').addClass('current');
+			}
 		});
 
 		scrollIntoView(startElem);

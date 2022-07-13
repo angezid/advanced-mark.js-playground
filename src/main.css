@@ -218,16 +218,16 @@ button:active { font-weight: bold; }
 .queryString .editor,
 .queryArray .editor,
 .queryRegExp .editor,
-.queryRanges .editor { height: auto; padding: 10px; }
+.queryRanges .editor { height: auto; max-height: 5em; padding: 10px; }
 
 .filterCallback .editor,
-.eachCallback .editor { height: auto; }
+.eachCallback .editor { height: auto; max-height: 5em; }
 
 mark,
 .custom-element { background: #b7f5ff; padding: 0; border: #a5f3ff 1px solid; }
 
 mark.current,
-.custom-element.current { font-size: 110%; border-bottom: #006771 2px solid; }
+.custom-element.current { font-size: 110%; background: #ffe9a8; border-color: #ffe9a8; border-bottom: #006771 2px solid; }
 
 mark.groups { background: #ffe9a8; }
 mark.groups.current { border-width: 1px; }
