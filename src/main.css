@@ -157,7 +157,7 @@ button:active { font-weight: bold; }
 .edit-options .actions { padding: 0; margin-right: .15vw; }
 .json-form .actions { padding: 0; margin: 5px 2.5vw 0 0; }
 
-.generated-code, .internal-code { max-width: 44vw; }
+/*.generated-code, .internal-code { max-width: 44vw; }*/
 
 .unmark-method { margin-right: 0px; }
 .switch-library { margin-right: 50px; }
@@ -204,6 +204,7 @@ button:active { font-weight: bold; }
 .ignorePunctuation,
 .blockElements,
 .accuracyObject,
+.customCode,
 .filterCallback,
 .eachCallback { margin: 15px 0 15px 0; }
 
@@ -218,10 +219,12 @@ button:active { font-weight: bold; }
 .queryString .editor,
 .queryArray .editor,
 .queryRegExp .editor,
-.queryRanges .editor { height: auto; max-height: 5em; padding: 10px; }
+.queryRanges .editor { height: auto; max-height: 10em; padding: 10px; }
 
 .filterCallback .editor,
-.eachCallback .editor { height: auto; max-height: 5em; }
+.eachCallback .editor { height: auto; max-height: 10em; }
+
+.customCode .editor { height: auto; max-height: 100vh; background: #f0f0f0; }
 
 mark,
 .custom-element { background: #b7f5ff; padding: 0; border: #a5f3ff 1px solid; }
@@ -236,6 +239,7 @@ mark.mark-element.current { border-width: 0; }
 details>summary { width: 15em; cursor: pointer; }
 
 .warning { background-color: #f9d; }
+.toolbar .mark-type ul li.warning { background-color: #f9d; }
 
 code { font-family: Consolas, monospace; font-size: 1em; padding: 0 3px; color: #b12; background: #f8f8f8; border: #d8d8d8 1px solid; }
 pre code { padding: 0; color: #000; background: #ececec; border: none; }
@@ -255,6 +259,7 @@ pre { font-family: "Lucida Sans Unicode", "Lucida Grande", monospace; padding: 6
 .hljs-tag .hljs-name { color: #00796e; }
 .hljs-tag .hljs-attr { color: #5829ff; }
 .hljs-string { color: #a33b00; }
+.hljs-keyword { color: #0044ff; }
 .hljs-number { color: #000; }
 .hljs-deletion, .hljs-quote, .hljs-selector-class, .hljs-selector-id, .hljs-template-tag, .hljs-type { color: #800; }
 .hljs-section, .hljs-title { color: #006c8d; }

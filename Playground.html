@@ -21,8 +21,8 @@
 <script src="static/js/main.js"></script>
 </head>
 <body>
-<div class="toolbar">
 
+<div class="toolbar">
 <div class="mark-type left">
 <ul>
 <li class="selected" data-type="string_">String</li>
@@ -215,22 +215,14 @@
 </div>
 </div>
 
-<div class="filterCallback">
+<div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
-<div class="editor" name="stringArrayFilter">
+<details><summary>Custom code editor</summary>
+<div class="editor language-js" name="stringArrayCustomCode">
 </div>
-</div>
-
-<div class="eachCallback">
-<div class="actions right">
-<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
-</div>
-<p>'each' : (element<span class="new">, info</span>) => {  }</p>
-<div class="editor" name="stringArrayEach">
-</div>
+</details>
 </div>
 
 </div> <!-- edit-options -->
@@ -386,22 +378,14 @@
 </div>
 </div>
 
-<div class="filterCallback">
+<div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>'filter' : (node, term, marks, count<span class="new">, info</span>) => { return true; }</p>
-<div class="editor" name="stringArrayFilter">
+<details><summary>Custom code editor</summary>
+<div class="editor language-js" name="stringArrayCustomCode">
 </div>
-</div>
-
-<div class="eachCallback">
-<div class="actions right">
-<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
-</div>
-<p>'each' : (element<span class="new">, info</span>) => {  }</p>
-<div class="editor" name="stringArrayEach">
-</div>
+</details>
 </div>
 
 </div> <!-- edit-options -->
@@ -513,22 +497,14 @@
 </div>
 </div>
 
-<div class="filterCallback">
+<div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>'filter' : (node, match, total<span class="new">, info</span>) => { return true; }</p>
-<div class="editor" name="regexpFilter">
+<details><summary>Custom code editor</summary>
+<div class="editor language-js" name="regexpCustomCode">
 </div>
-</div>
-
-<div class="eachCallback">
-<div class="actions right">
-<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
-</div>
-<p>'each' : (element<span class="new">, info</span>) => {  }</p>
-<div class="editor" name="regexpEach">
-</div>
+</details>
 </div>
 
 </div> <!-- edit-options -->
@@ -615,22 +591,14 @@
 </div>
 </div>
 
-<div class="filterCallback">
+<div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>'filter' : (node, range, match, counter) => { return true; }</p>
-<div class="editor" name="rangesFilter">
+<details><summary>Custom code editor</summary>
+<div class="editor language-js" name="rangesCustomCode">
 </div>
-</div>
-
-<div class="eachCallback">
-<div class="actions right">
-<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
-</div>
-<p>'each' : (element, range) => {  }</p>
-<div class="editor" name="rangesEach">
-</div>
+</details>
 </div>
 
 </div> <!-- edit-options -->
@@ -649,7 +617,7 @@
 
 <div class="row">
 <div class="internal-code hide">
-<details><summary>Internal code</summary>
+<details id="internal-code"><summary>Internal code</summary>
 <pre><code class="language-js"></code></pre>
 </details>
 </div>

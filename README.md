@@ -33,12 +33,11 @@ Locate and leave only problematic place(s) which can be easily visually examine.
 
 There are two test content modes - Text and Html . If you want to add a HTML content, you need to switch to the Html mode.
 
-An `object` option was added to the Accuracy selector, just to enable an `accuracy` editor. This option is not part of the mark.js library.
+An `object` option was added to the Accuracy selector, just to enable an `accuracy` object editor. This option is not part of the mark.js library.
 
-If some code is added to the `filter` or/and `each` callbacks, the program evaluate the whole internal code (see 'Internal code' which appears below the 'Results').  
+If you enable custom editor, the program evaluate the whole internal code (see 'Internal code' which appears below the 'Results').
 Otherwise, only the option that accept Objects, Arrays or RegExp are evaluated.
 
-For the internal code, six variables are declared, just in case.  
 The generated code for all other than default option is in the 'Generated code'.
 
 Note:
@@ -50,5 +49,26 @@ In the Html mode and in the 'Ranges' tab for both libraries expected behavior - 
 Warning: currently there is no protection on unsaved state on the browser reload or on load from local storage.  
 You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
 
+### Custom code example
+It's a simplify hack to improve performance in the `mark()` method with the large array.  
+Switch to the `advanced library` first, then copy below code, paste to the JSON form and press 'Import JSON' button.
+
+``` json
+{
+    "version": "1.0.0",
+    "section": {
+        "type": "array",
+        "diacritics": false,
+        "acrossElements": true,
+        "customCode": "const ranges=[];\n<<markjsCode>>\n\nfunction filter(node, term, marks, count, info) {\n  const range = {\n    start : info.offset + info.match.index + info.match[1].length,\n    length : info.match[2].length,\n  };\n  range.startElement = true;  \n  ranges.push(range);\n  return  false;\n}\n\nfunction each(element, info) {}\n\nfunction done() {\n  $('section.array .testString .editor').markRanges(ranges, {\n    // 'wrapAllRanges' : true,\n    'each' : function(elem, range) {\n      if(range.startElement) {\n        elem.setAttribute('data-markjs', 'start-1');\n      }\n    },\n    done : (totalMarks, totalMatches) => highlighter.finish(totalMarks, totalMatches)\n  });\n}",
+        "queryArray": "wordsArray_50",
+        "testString": {
+            "mode": "html",
+            "content" : "<p>Load default Html and press Run button</p>"
+        }
+    }
+}
+```
+
 ### TODO
-A loooot ...
+A lot ...
