@@ -2,20 +2,22 @@
 'use strict';
 
 let version = '1.0.0',
+	library = '',
 	maxLength = 100000,
 	time = 0,
 	oldLibrary = false,
 	jqueryMark = false,
 	dFlagSupport = true,
 	showTooltips = false,
+	scroll = true,
 	currentIndex = 0,
 	currentType = '',
 	testContainerSelector = '',
 	markElementSelector = '',
 	markElement = '',
 	comment = '// declare your variables here',
-	defaultCustomCode = `\n<<markjsCode>>\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {\n  highlighter.finish();\n}`,
-	customCode = '',
+	defaultSnippet = `\n<<markjsCode>> // don't remove it\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
+	snippet = '',
 	jsonEditor = null,
 	marks = $(),
 	startElements = $(),
@@ -122,7 +124,6 @@ const tab = {
 
 		saveValue('tabType', type);
 		currentType = type;
-		customCode = defaultCustomCode;
 
 		if(type === 'string_') {
 			this.setVisibleString();
@@ -132,18 +133,14 @@ const tab = {
 
 		} else if(type === 'regexp') {
 			this.setVisibleRegExp();
-			customCode = customCode.replace(/, termStats/g, '');
 
 		} else if(type === 'ranges') {
 			this.setVisibleRanges();
-			customCode = customCode.replace(/, termStats/g, '');
 		}
 
-		customCode = customCode.replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters());
-		customCode = customCode.replace(/\beach\(\)/g, 'each' + codeBuilder.getEachParameters());
-		customCode = customCode.replace(/\b(done|finish)\(\)/g, '$1' + codeBuilder.getDoneParameters());
-
 		checkIframes($(`section.${type} .iframes input`)[0]);
+
+		codeBuilder.initCustomCode();
 
 		this.initializeEditors();
 		this.clear();
@@ -324,7 +321,7 @@ const tab = {
 		} else {
 			editor.onUpdate(code => this.onUpdateEditor(code, selector));
 		}
-		return editor;
+		return  editor;
 	},
 
 	destroyTestEditor : function() {
@@ -340,19 +337,20 @@ const tab = {
 		}
 	},
 
+	onUpdateEditor : function(code, selector) {
+		const button = $(selector).parents('div').first().find('button.clear');
+
+		if(code.trim().length) button.removeClass('hide');
+		else button.addClass('hide');
+	},
+
 	updateCustomCode : function(content) {
 		const info = this.getCodeEditorInfo();
 		info.editor.updateCode(content);
 
 		$(info.selector).parent().attr('open', true);
+		//$(info.selector).parents('.customCode').first().find('button.clear').removeClass('hide');
 		hljs.highlightElement($(info.selector)[0]);
-	},
-
-	onUpdateEditor : function(code, selector) {
-		const button = $(selector).parent().find('button.clear');
-
-		if(code.trim().length) button.removeClass('hide');
-		else button.addClass('hide');
 	},
 
 	getSearchEditorInfo : function() {
@@ -360,9 +358,9 @@ const tab = {
 			selector = `section.${currentType} .${obj.queryEditor} .editor`,
 			editor = obj.editors[obj.queryEditor];
 
-		if( !editor) return null;
+		if( !editor) return  null;
 
-		return { currentType, selector, editor };
+		return  { currentType, selector, editor };
 	},
 
 	getCodeEditorInfo : function() {
@@ -374,7 +372,7 @@ const tab = {
 			types[currentType].customCodeEditor = tab.initEditor(editor, selector, false);
 		}
 
-		return { selector, editor : types[currentType].customCodeEditor };
+		return  { selector, editor : types[currentType].customCodeEditor };
 	},
 
 	getTestEditorInfo : function() {
@@ -386,18 +384,19 @@ const tab = {
 			types[currentType].editors.testString = tab.initEditor(editor, selector, true);
 		}
 
-		return { selector, editor : types[currentType].editors.testString };
+		return  { selector, editor : types[currentType].editors.testString };
 	},
 
 	getOptionEditor : function(option) {
 		if(option) {
-			return types[currentType].editors[option];
+			return  types[currentType].editors[option];
 		}
-		return null;
+		return  null;
 	},
 
 	clear : function(keep) {
 		$('.results code').empty();
+		$('.internal-code code').empty();
 		if( !keep) $('.generated-code code').empty();
 		$('body *').removeClass('warning');
 		marks = $();
@@ -505,6 +504,19 @@ function importJson() {
 }
 
 // DOM 'onclick' event
+function clearCodeEditor(elem) {
+	const editor = types[currentType].customCodeEditor;
+	if(editor) {
+		editor.updateCode('');
+	}
+	$(elem).addClass('hide');
+
+	scroll = false;
+	runCode();
+	scroll = true;
+}
+
+// DOM 'onclick' event
 function clearJsonEditor() {
 	jsonEditor.updateCode('');
 	$('button.import-json').attr('disabled', true);
@@ -591,10 +603,16 @@ const importer = {
 		const obj = types[currentType],
 			textMode = obj.testEditorMode === 'text';
 
-		let opt, editor, value, saved;
+		let opt, editor, value,
+			saved = json.library;
+
+		if(typeof saved !== 'undefined') {
+			$('#library').prop('checked', saved === 'advanced');
+			switchLibrary($('#library')[0]);
+		}
 
 		obj.options.every(option => {
-			if(oldLibrary && newOptions.indexOf(option) !== -1) return false;
+			if(oldLibrary && newOptions.indexOf(option) !== -1) return  false;
 
 			const selector = `section.${currentType} .${option}`;
 
@@ -623,7 +641,7 @@ const importer = {
 					default : break;
 				}
 			}
-			return true;
+			return  true;
 		});
 
 		for(const key in obj.editors) {
@@ -657,7 +675,6 @@ const importer = {
 
 		if(textMode) {
 			tab.setTextMode();
-			//runCode();
 		}
 	},
 
@@ -713,7 +730,7 @@ const importer = {
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
 		//log(toText(report, 'Html sanitizer report:', ' Ok'));
 
-		return doc.documentElement.innerHTML;
+		return  doc.documentElement.innerHTML;
 	}
 };
 
@@ -741,9 +758,14 @@ function switchLibrary(elem) {
 
 	saveValue('library', oldLibrary ? 'old' : 'new');
 	setVisibility();
+	codeBuilder.initCustomCode();
 
-	tab.setTextMode();
-	runCode();
+	scroll = false;
+
+	if(types[currentType].testEditorMode === 'text') runCode();
+	else tab.setTextMode();
+
+	scroll = true;
 }
 
 // DOM 'onclick' event
@@ -758,7 +780,7 @@ function buildCode() {
 }
 
 // also DOM 'onclick' event
-function runCode(button) {
+function runCode() {
 	//if(types[currentType].testEditorMode === 'html') return;
 
 	tab.clear();
@@ -800,7 +822,7 @@ function runCode(button) {
 const codeBuilder = {
 	build : function(kind) {
 		const jsCode = this.buildCode('js');
-		if( !jsCode) return '';
+		if( !jsCode) return  '';
 
 		$('.generated-code pre>code').text(jsCode);
 
@@ -814,13 +836,13 @@ const codeBuilder = {
 		$('.internal-code').addClass('hide');
 
 		if(kind === 'internal') {
-			return this.buildCode(kind);
+			return  this.buildCode(kind);
 		}
 	},
 
 	buildCode : function(kind) {
 		const info = tab.getSearchEditorInfo();
-		if( !info) return null;
+		if( !info) return  null;
 
 		const unmark = kind === 'internal' ? true : $('.unmark-method input').prop('checked'),
 			optionCode = this.buildOptions(kind, unmark);
@@ -830,15 +852,20 @@ const codeBuilder = {
 			text;
 
 		if(kind === 'jq') {
-			code = `//jQuery\n$('selector')` + (unmark ? `.unmark({\n  'done' : () => {\n    $('selector')` : '');
+			code = `$('selector')` + (unmark ? `.unmark({\n  'done' : () => {\n    $('selector')` : '');
 
 		} else if(kind === 'js') {
-			code = `// javascript\nconst instance = new Mark(document.querySelector('selector'));\ninstance` + (unmark ? `.unmark({\n  'done' : () => {\n    instance` : '');
+			code = `const instance = new Mark(document.querySelector('selector'));\ninstance` + (unmark ? `.unmark({\n  'done' : () => {\n    instance` : '');
 
 		} else {
-			const testInfo = tab.getTestEditorInfo();
-			const context = jqueryMark ? `$('${testInfo.selector}')` : `new Mark(document.querySelector('${testInfo.selector}'))`;
-			code += `${context}.unmark({\n  'done' : () => {\n    ${context}`;
+			const selector = tab.getTestEditorInfo().selector;
+			if(jqueryMark) {
+				code = `let options;\nconst context = $('${selector}');\n`;
+				code += `context.unmark({\n  done : () => {\n    context`;
+
+			} else {
+				code = `let options;\nconst instance = new Mark(document.querySelector('${selector}'));\ninstance.unmark({\n  done : () => {\n    instance`;
+			}
 		}
 
 		if(info && (text = info.editor.toString().trim()).length) {
@@ -863,26 +890,48 @@ const codeBuilder = {
 			}
 		}
 
-		code += str + (unmark ? '\n  }\n});' : '');
-
-		const editor = types[currentType].customCodeEditor;
-		if(editor) {
-			let text = editor.toString();
-
-			if(/<<markjsCode>>/.test(text)) {
-				if(kind !== 'internal') {
-					text = text.replace(/\bhighlighter\.finish(\([^)]+\))/g, '$1 => {}');
-				}
-				code = text.replace(/<<markjsCode>>/, code);
-			}
-		}
-
 		if( !str) {
 			$('.generated-code code').text('');
 			log(`Missing ${ currentType } search parameter`, true);
-			return '';
+			return  '';
 		}
-		return code;
+
+		code += str + (unmark ? '\n  }\n});' : '');
+
+		code = this.buildCustomCode(code, kind);
+
+		if(kind !== 'internal') {
+			code = (kind === 'jq' ? '//jQuery\n' : kind === 'js' ? '//javascript\n' : '') + code;
+		}
+
+		return  code;
+	},
+
+	buildCustomCode : function(code, kind) {
+		let text;
+		const reg = /\s+/g,
+			editor = types[currentType].customCodeEditor;
+
+		if(editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
+			if(kind === 'internal') {
+				const every = currentType === 'ranges' || !isChecked('acrossElements'),
+					// necessary for the next/previous buttons functionality
+					fn = `highlighter.flagStartElement(element, ${oldLibrary ? null : 'info'}, ${every})`,
+					eachParam = this.getEachParameters(),
+					doneParam = this.getDoneParameters();
+
+				text = addCode(text, fn, eachParam, /\bfunction\s+each(\([^)]+\))\s*\{/);
+				text = addCode(text,`highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
+			}
+			text = text.replace(comment, '');
+			code = text.replace(/<<markjsCode>>(?:[ \t]\/\/.*)?/, code);
+		}
+
+		function addCode(text, fn, param, regex) {
+			return  text.replace(regex, (m, gr1) => gr1.replace(reg, '') === param.replace(reg, '') ? `${m}\n  ${fn};\n` : m);
+		}
+
+		return  code;
 	},
 
 	buildOptions : function(kind, unmark) {
@@ -890,7 +939,7 @@ const codeBuilder = {
 			indent = ' '.repeat(unmark ? 6 : 2),
 			end = unmark ? ' '.repeat(4) : '';
 
-		if( !obj) return '{}';
+		if( !obj) return  '{}';
 
 		let opt, text, element, className, code = '';
 
@@ -965,94 +1014,87 @@ const codeBuilder = {
 			}
 		});
 
-		const editor = types[currentType].customCodeEditor;
-
-		if(editor && /\bfunction\s+done\s*\(/.test(editor.toString())) {
-			code += this.buildCallbacks(kind, unmark);
-
-			code = `{\n${code}${indent}done : done\n${end}}`;
-
-		} else {
-			if(kind === 'internal') {
-				code = `{\n${code}${indent}done : highlighter.finish\n${end}}`;
-
-			} else {
-				code = `{\n${code}${indent}done : ${this.getDoneParameters()} => {}\n${end}}`;
-			}
-		}
+		code += this.buildCallbacks(kind, unmark);
+		code = kind === 'internal' ? `options = {\n${code}}` : `{\n${code}}`;
 
 		updateVariables(element, className);
 
-		return code;
+		return  code;
 	},
 
 	buildCallbacks : function(kind, unmark) {
-		const cb = this;
 		let code = '',
 			indent = ' '.repeat(unmark ? 6 : 2),
-			indent2 = ' '.repeat(unmark ? 8 : 4);
+			end = unmark ? ' '.repeat(4) : '';
 
-		code = `${indent}${getFilter()}\n${indent2}${getFilterFn()}\n${indent}},\n`;
+		const editor = types[currentType].customCodeEditor;
 
-		if(kind !== 'internal') {
-			code += `${indent}${getEach()}\n${indent2}${getEachFn()}\n${indent}},\n`;
+		if(editor) {
+			const text = editor.toString();
 
-		} else if(code || each) {
-			// necessary for the next/previous buttons functionality in the internal code
-			const acrossElements = currentType === 'ranges' ? false : isChecked('acrossElements'),
-				flagStartElem = `highlighter.flagStartElement(element, ${oldLibrary ? null : 'info'}, ${acrossElements});`;
+			if(/\bfunction\s+filter\s*\(/.test(text)) {
+				code += `${indent}filter : filter,\n`;
+			}
 
-			code += `${indent}${getEach()}\n${indent2}${flagStartElem}\n${indent}`;
-			code += `  ${getEachFn()}\n${indent}},\n`;
+			if(/\bfunction\s+each\s*\(/.test(text)) {
+				code += `${indent}each : each,\n`;
+			}
+
+			if(/\bfunction\s+done\s*\(/.test(text)) {
+				code += `${indent}done : done\n`;
+			}
+
+		} else {
+			if(kind === 'internal') {
+				code = `${code}${indent}done : highlighter.finish\n${end}`;
+
+			} else if($('#callbacks').prop('checked')) {
+				code = `${indent}filter : ${this.getFilterParameters()} => {},\n`;
+				code += `${indent}each : ${this.getEachParameters()} => {},\n`;
+				code = `${code}${indent}done : ${this.getDoneParameters()} => {}\n`;
+			}
 		}
 
-		function getFilter() {
-			return `'filter' : ${cb.getFilterParameters()} => {`;
-		}
+		code = `${code}${end}`;
 
-		function getFilterFn() {
-			return `return filter${cb.getFilterParameters()};`;
-		}
-
-		function getEach() {
-			return `'each' : ${cb.getEachParameters()} => {`;
-		}
-
-		function getEachFn() {
-			return `each${cb.getEachParameters()};`;
-		}
-
-		return code;
+		return  code;
 	},
 
 	getFilterParameters : function() {
 		if(currentType === 'string_' || currentType === 'array') {
-			return `(node, term, marks, count${oldLibrary ? '' : ', info'})`;
+			return  `(node, term, marks, count${oldLibrary ? '' : ', info'})`;
 
 		} else if(currentType === 'regexp') {
-			return `(node, matchString, count${oldLibrary ? '' : ', info'})`;
+			return  `(node, matchString, count${oldLibrary ? '' : ', info'})`;
 
 		}
-		return `(node, range, matchString, index)`;
+		return  `(node, range, matchString, index)`;
 	},
 
 	getEachParameters : function() {
 		if(currentType === 'ranges') {
-			return `(element, range)`;
+			return  `(element, range)`;
 		}
-		return `(element${oldLibrary ? '' : ', info'})`;
+		return  `(element${oldLibrary ? '' : ', info'})`;
 	},
 
 	getDoneParameters : function() {
 		if(oldLibrary) {
-			return `(totalMarks)`;
+			return  `(totalMarks)`;
 
 		} else {
 			const stats = currentType === 'string_' || currentType === 'array';
-			return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
+			return  `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
 		}
-	}
+	},
 
+	initCustomCode : function() {
+		snippet = defaultSnippet;
+
+		snippet = snippet.replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters())
+			.replace(/\beach\(\)/g, 'each' + codeBuilder.getEachParameters())
+			.replace(/\bdone\(\)/g, 'done' + codeBuilder.getDoneParameters());
+	}
 };
 
 const Json = {
@@ -1066,7 +1108,7 @@ const Json = {
 			textMode = true;
 		}
 
-		let json = this.serialiseOptions(`{"version":"${version}","section":{`),
+		let json = this.serialiseOptions(`{"version":"${version}","library":"${library}","section":{`),
 			editor = tab.getOptionEditor(obj.queryEditor),
 			text;
 
@@ -1095,7 +1137,7 @@ const Json = {
 		json += '}}';
 
 		const jsonObj = Json.parseJson(json);
-		if( !jsonObj) return null;
+		if( !jsonObj) return  null;
 
 		if(format) {
 			json = JSON.stringify(jsonObj, null, '    ');
@@ -1105,7 +1147,7 @@ const Json = {
 			tab.setTextMode();
 		}
 
-		return json;
+		return  json;
 	},
 
 	serialiseOptions : function(json) {
@@ -1177,7 +1219,7 @@ const Json = {
 			}
 		});
 
-		return json;
+		return  json;
 	},
 
 	serialiseCustomCode : function() {
@@ -1185,9 +1227,9 @@ const Json = {
 		const editor = types[currentType].customCodeEditor;
 
 		if(editor && (code = editor.toString().trim())) {
-			return `,"customCode":${JSON.stringify(code)}`;
+			return  `,"customCode":${JSON.stringify(code)}`;
 		}
-		return '';
+		return  '';
 	},
 
 	parseJson : function(str) {
@@ -1195,7 +1237,7 @@ const Json = {
 		try { json = JSON.parse(str); } catch(e) {
 			log('Failed to parse this json\n' + e.message, true);
 		}
-		return json;
+		return  json;
 	}
 };
 
@@ -1248,7 +1290,7 @@ const highlighter = {
 				if(limited || info && info.matchStart) totalMatches++;
 
 				totalMarks++;
-				return totalMatches < max;
+				return  totalMatches < max;
 			},
 			'each' : (elem, info) => {
 				if(oldLibrary) {
@@ -1305,10 +1347,10 @@ const highlighter = {
 			'exclude' : settings.exclude,
 
 			'filter' : (node, term, marks, count, info) => {
-				return true;
+				return  true;
 			},
 			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info, settings.acrossElements);
+				hl.flagStartElement(elem, info, !settings.acrossElements);
 			},
 			'debug' : $(`${section} .debug input`).prop('checked'),
 			'done' : hl.finish
@@ -1366,10 +1408,10 @@ const highlighter = {
 			'exclude' : settings.exclude,
 
 			'filter' : (node, match, totalMarks, info) => {
-				return true;
+				return  true;
 			},
 			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info, settings.acrossElements);
+				hl.flagStartElement(elem, info, !settings.acrossElements);
 			},
 			'debug' : $(`${section} .debug input`).prop('checked'),
 			'done' : hl.finish,
@@ -1407,10 +1449,10 @@ const highlighter = {
 			'exclude' : settings.exclude,
 			'wrapAllRanges' : settings.wrapAllRanges,
 			'filter' : (node, range, match, counter) => {
-				return true;
+				return  true;
 			},
 			'each' : (elem, range) => {
-				hl.flagStartElement(elem, null, false);
+				hl.flagStartElement(elem, null, true);
 			},
 			'debug' : $(`${section} .debug input`).prop('checked'),
 			'done' : hl.finish
@@ -1429,8 +1471,8 @@ const highlighter = {
 		});
 	},
 
-	flagStartElement : function(elem, info, acrossElements) {
-		if( !info || !acrossElements || info.matchStart) {
+	flagStartElement : function(elem, info, every) {
+		if(every || !info || info.matchStart) {
 			$(elem).attr('data-markjs', 'start-1');
 		}
 	},
@@ -1483,7 +1525,7 @@ const highlighter = {
 			obj.wrapAllRanges = $(`${section} .wrapAllRanges input`).prop('checked');
 		}
 
-		return obj;
+		return  obj;
 	},
 
 	tryToEvaluate : function(option, minLength) {
@@ -1492,25 +1534,25 @@ const highlighter = {
 
 		if(editor && (text = editor.toString().trim()).length > minLength) {
 			try {
-				return eval(`'use strict'; (${text})`);
+				return  eval(`'use strict'; (${text})`);
 
 			} catch(e) {
 				log(`Failed to evaluate ${option} object:\n${e.message}`, true);
 				$(`${section} .${option} .editor`).addClass('warning');
 			}
 		}
-		return null;
+		return  null;
 	},
 
 	tryEvaluate : function(parameter, selector, name) {
 		try {
-			return eval("'use strict';" + parameter);
+			return  eval("'use strict';" + parameter);
 
 		} catch(e) {
 			log(`Failed to evaluate the ${name}:\n${e.message}`, true);
 			$(selector).addClass('warning');
 		}
-		return null;
+		return  null;
 	},
 
 	finish : function(totalMarks, totalMatches, termStats) {
@@ -1554,12 +1596,21 @@ function registerEvents() {
 	});
 
 	$(".customCode details, .customCode details>summary").on('toggle', function(e) {
+		const button = $(this).parents('.customCode').first().find('button.clear');
+
 		if($(this).attr('open')) {
 			const editor = types[currentType].customCodeEditor;
 
-			if( !editor) {
-				tab.updateCustomCode(comment + customCode);
+			if( !editor || !editor.toString().trim()) {
+				tab.updateCustomCode(comment + snippet);
+				scroll = false;
+				runCode();
+				scroll = true;
 			}
+			button.removeClass('hide');
+
+		} else {
+			button.addClass('hide');
 		}
 	});
 
@@ -1671,13 +1722,13 @@ function toText(obj, title, msg) {
 	for(let key in obj) {
 		text += `\n${key} = ${obj[key]}`;
 	}
-	return text ? title + text : msg ? title + msg : '';
+	return  text ? title + text : msg ? title + msg : '';
 }
 
 function getFileName() {
 	let name = loadValue(currentType + '-fileName');
 
-	return name || (currentType === 'string_' ? 'string' : currentType) + '-tab-session.json';
+	return  name || (currentType === 'string_' ? 'string' : currentType) + '-tab-session.json';
 }
 
 function showTooltip(elem, e) {
@@ -1725,7 +1776,7 @@ function showHideInfo(id) {
 }
 
 function isChecked(option) {
-	return $(`section.${currentType} .${option} input`).prop('checked');
+	return  $(`section.${currentType} .${option} input`).prop('checked');
 }
 
 function log(message, warning) {
@@ -1773,7 +1824,7 @@ function highlightMatch(index) {
 			if( !found) {
 				if(el === startElem[0]) found = true;
 
-			} else if($(this).data('markjs') === 'start-1') return false;    // the start of the next 'start element' means the end of the current match
+			} else if($(this).data('markjs') === 'start-1') return  false;    // the start of the next 'start element' means the end of the current match
 
 			if(found) {
 				$(this).addClass('current');
@@ -1786,9 +1837,10 @@ function highlightMatch(index) {
 }
 
 function scrollIntoView(elem) {
-	if(elem.length) {
+	if(scroll && elem.length) {
 		elem[0].scrollIntoView(true);
 		window.scrollBy(0, -10000);
+		//window.scrollBy(0, -60);
 	}
 }
 
@@ -1827,6 +1879,8 @@ function detectLibrary() {
 		$('.switch-library label').css('opacity', .4);
 	}
 
+	library = oldLibrary ? 'standard' : 'advanced';
+
 	setVisibility();
 }
 
@@ -1846,7 +1900,7 @@ function getLibrariesInfo() {
 	if(js) {
 		info.javascript = isOldLibrary(false) ? 'old' : 'new';
 	}
-	return info;
+	return  info;
 }
 
 function isOldLibrary(jquery) {
@@ -1854,14 +1908,14 @@ function isOldLibrary(jquery) {
 	getContext('article h1', jquery).markRegExp(/^\s*\w/g, {
 		'filter' : (n, m, t, info) => {
 			if( !info) old = true;
-			return false;
+			return  false;
 		}
 	});
-	return old;
+	return  old;
 }
 
 function getContext(selector, jquery) {
-	return jquery ? $(selector) : new Mark(document.querySelector(selector));
+	return  jquery ? $(selector) : new Mark(document.querySelector(selector));
 }
 
 function setVisibility() {
@@ -1878,11 +1932,11 @@ function setVisibility() {
 
 function loadValue(key) {
 	try {
-		return localStorage.getItem(key);
+		return  localStorage.getItem(key);
 	} catch(e) {
 		log('localStorage ' + e.message);
 	}
-	return null;
+	return  null;
 }
 
 function saveValue(key, value) {

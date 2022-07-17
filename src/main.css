@@ -157,10 +157,9 @@ button:active { font-weight: bold; }
 .edit-options .actions { padding: 0; margin-right: .15vw; }
 .json-form .actions { padding: 0; margin: 5px 2.5vw 0 0; }
 
-/*.generated-code, .internal-code { max-width: 44vw; }*/
-
-.unmark-method { margin-right: 0px; }
-.switch-library { margin-right: 50px; }
+.unmark-method { margin-right: 30px; }
+.callbacks { margin-right: 20px; }
+.switch-library { margin-right: 20px; }
 
 .unmark-method label,
 .switch-library label { cursor: pointer; }
@@ -204,9 +203,7 @@ button:active { font-weight: bold; }
 .ignorePunctuation,
 .blockElements,
 .accuracyObject,
-.customCode,
-.filterCallback,
-.eachCallback { margin: 15px 0 15px 0; }
+.customCode { margin: 15px 0 15px 0; }
 
 .queryString,
 .queryArray,
@@ -214,23 +211,22 @@ button:active { font-weight: bold; }
 .queryRanges { margin: 25px 0 15px 0; }
 
 .testString { margin: 25px 0 20px 0; }
-.testString .editor { font-family: Arial, sans-serif; height: 50vh; }
+/*.testString .editor { font-family: Arial, sans-serif; height: 50vh; }*/
+.testString .editor { font-family: Arial, sans-serif; min-height: 50vh; }
 
 .queryString .editor,
 .queryArray .editor,
 .queryRegExp .editor,
 .queryRanges .editor { height: auto; max-height: 10em; padding: 10px; }
 
-.filterCallback .editor,
-.eachCallback .editor { height: auto; max-height: 10em; }
-
 .customCode .editor { height: auto; max-height: 100vh; background: #f0f0f0; }
+.results pre { max-height: 15em; }
 
 mark,
 .custom-element { background: #b7f5ff; padding: 0; border: #a5f3ff 1px solid; }
 
 mark.current,
-.custom-element.current { font-size: 110%; background: #ffe9a8; border-color: #ffe9a8; border-bottom: #006771 2px solid; }
+.custom-element.current { font-size: 110%; background: #a5f3ff; border-color: #a5f3ff; border-bottom: #006771 2px solid; }
 
 mark.groups { background: #ffe9a8; }
 mark.groups.current { border-width: 1px; }

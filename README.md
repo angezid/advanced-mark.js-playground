@@ -16,8 +16,7 @@ The package of a code editor `codejar` don't contain `umd` format, currently the
 ### Install Mark.js-playground
 Clone or download this repository and run:
 ```
-npm install
-npm run build
+npm install && npm run build
 ```
 
 ### Export/Import
@@ -46,25 +45,35 @@ In the Html mode and in the 'Ranges' tab for both libraries expected behavior - 
 - switching to the Html mode with big Html content is slowly due to using not efficient RegExp
 - if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
-Warning: currently there is no protection on unsaved state on the browser reload or on load from local storage.  
-You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
+Warning:
+- currently there is no protection on unsaved state on the browser reload or on load from local storage. You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
+- the direct use of the `cacheTextNodes` option without building ranges (see 'Custom code example') will resulted in a smaller number of matches. It actuality was 'invented' for this workaround.
+
+### Custom code
+When `Custom code editor` is activated, a minimal code with all callbacks is generated.
+For normal workflow, the two internal function are necessary:
+- `highlighter.flagStartElement()` in the `each` callback for next/previous buttons functionality
+- `highlighter.finish()` in the `done` callback for highlighting matches and logging results
+They're automatically added to the internal code, if their parameters and functions parameters are the same.
 
 ### Custom code example
-It's a simplify hack to improve performance in the `mark()` method with the large array.  
-Switch to the `advanced library` first, then copy below code, paste to the JSON form and press 'Import JSON' button.
+It's a simplified hack to improve performance in the `mark()` method with the large array.  
+Copy below code, paste to the JSON form and press 'Import JSON' button.
 
 ``` json
 {
     "version": "1.0.0",
+    "library": "advanced",
     "section": {
         "type": "array",
+        "accuracy": "exactly",
         "diacritics": false,
-        "acrossElements": true,
-        "customCode": "const ranges=[];\n<<markjsCode>>\n\nfunction filter(node, term, marks, count, info) {\n  const range = {\n    start : info.offset + info.match.index + info.match[1].length,\n    length : info.match[2].length,\n  };\n  range.startElement = true;  \n  ranges.push(range);\n  return  false;\n}\n\nfunction each(element, info) {}\n\nfunction done() {\n  $('section.array .testString .editor').markRanges(ranges, {\n    // 'wrapAllRanges' : true,\n    'each' : function(elem, range) {\n      if(range.startElement) {\n        elem.setAttribute('data-markjs', 'start-1');\n      }\n    },\n    done : (totalMarks, totalMatches) => highlighter.finish(totalMarks, totalMatches)\n  });\n}",
+        "cacheTextNodes": true,
+        "customCode": "const ranges=[];\n<<markjsCode>> // don't remove it\n\nfunction filter(node, term, marks, count, info) {\n  const range = {\n    start : info.offset + info.match.index + info.match[1].length,\n    length : info.match[2].length,\n  };\n  if (options.acrossElements) {\n    if (info.matchStart) {\n      range.startElement = true;\n    }\n  } else range.startElement = true;\n  ranges.push(range);\n  \n  return  false;\n}\n\nfunction done() {\n  $('section.array .testString .editor').markRanges(ranges, {\n    'each' : function(elem, range) {\n      if(range.startElement) {\n        elem.setAttribute('data-markjs', 'start-1');\n      }\n    },\n    done : highlighter.finish\n  });\n}",
         "queryArray": "wordsArray_50",
         "testString": {
             "mode": "html",
-            "content" : "<p>Load default Html and press Run button</p>"
+            "content": "<head></head><body><p>Load default Html and press Run button</p></body>"
         }
     }
 }
