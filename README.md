@@ -7,11 +7,12 @@ It works both with new [https://github.com/angezid/mark.js](https://github.com/a
 Currently, the two mark libraries are installed by default:
 * the mark.js package v8.11.1
 * the jquery.mark.js from 'https://raw.githubusercontent.com/angezid/mark.js/master/dist/jquery.mark.js'
+
 They are not conflicting with each other and can be switch by checkbox.  
 
 #### The Codejar editor issue
 On local machine, using modules will only complicate things - it will be required of using server.  
-The package of a code editor `codejar` don't contain `umd` format, currently the `codejar.js` is converted to this format by `replace-in-file` plugin (`rollup` failed to do this).
+The package of a code editor `codejar` don't contain `umd` format, currently the `codejar.js` is converted to pseudo `umd` format by `replace-in-file` plugin (`rollup` failed to do this).
 
 ### Install Mark.js-playground
 Clone or download this repository and run:
@@ -40,20 +41,21 @@ Otherwise, only the option that accept Objects, Arrays or RegExp are evaluated.
 The generated code for all other than default option is in the 'Generated code'.
 
 Note:
-- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.
+- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.  
 In the Html mode and in the 'Ranges' tab for both libraries expected behavior - next/previous mark element.
 - switching to the Html mode with big Html content is slowly due to using not efficient RegExp
 - if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
 Warning:
-- currently there is no protection on unsaved state on the browser reload or on load from local storage. You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
+- currently there is no protection on unsaved state on the browser reload or on load from local storage.  
+You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
 - the direct use of the `cacheTextNodes` option without building ranges (see 'Custom code example') will resulted in a smaller number of matches. It actuality was 'invented' for this workaround.
 
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
 For normal workflow, the two internal function are necessary:
 - `highlighter.flagStartElement()` in the `each` callback for next/previous buttons functionality
-- `highlighter.finish()` in the `done` callback for highlighting matches and logging results
+- `highlighter.finish()` in the `done` callback for highlighting matches and logging results  
 They're automatically added to the internal code, if their parameters and functions parameters are the same.
 
 ### Custom code example
