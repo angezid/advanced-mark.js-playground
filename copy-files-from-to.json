@@ -17,7 +17,7 @@
       "to": "static/js/jquery.js"
     },
     {
-      "from": "node_modules/codejar/codejar.js",
+      "from": "codejar/codejar.js",
       "to": "static/js/codejar.js"
     },
     {

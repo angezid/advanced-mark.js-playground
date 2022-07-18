@@ -10,9 +10,8 @@ Currently, the two mark libraries are installed by default:
 
 They are not conflicting with each other and can be switch by checkbox.  
 
-#### The Codejar editor issue
-On local machine, using modules will only complicate things - it will be required of using server.  
-The package of a code editor `codejar` don't contain `umd` format, currently the `codejar.js` is converted to pseudo `umd` format by `replace-in-file` plugin (`rollup` failed to do this).
+#### Codejar editor issue
+The `codejar.js` is an embeddable editor, but it lacks some necessary functionality. Currently, it's adapted for use with this project.
 
 ### Install Mark.js-playground
 Clone or download this repository and run:
@@ -25,6 +24,9 @@ The idea to export/import 'Playground tab' in JSON format:
 * save/load the current state
 * bug report
 * ask for help, if there's problem highlighting something
+
+When you paste or drag&drop a Html content into Html editor, the content run through Html sanitizer, which removes head, script, style, link and meta elements and comments.
+It's also removes attributes containing `javascript:` or name start with `on`. The values of `href, src` attributes are replace by '#'.
 
 Note: be reasonable, do not export big HTML test content, due to security reason, nobody will dare to import your export (only who trust you).  
 Locate and leave only problematic place(s) which can be easily visually examine.  

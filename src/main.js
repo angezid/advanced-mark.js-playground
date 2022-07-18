@@ -235,7 +235,7 @@ const tab = {
 
 			const parent = editor.parent();
 			editor.remove();
-			parent.append('<div class="editor lang-html" ondragover="onDragover(event)" ondrop="onDrop(event)"></div>');
+			parent.append('<div class="editor lang-html"></div>');
 
 			this.setHtmlContent(html, info, highlight);
 			this.initializeEditors();
@@ -278,7 +278,7 @@ const tab = {
 
 			const parent = editor.parent();
 			editor.remove();
-			parent.append('<div class="editor" ondragover="onDragover(event)" ondrop="onDrop(event)"></div>');
+			parent.append('<div class="editor"></div>');
 
 			$(info.selector).html(text);
 
@@ -316,7 +316,7 @@ const tab = {
 		editor = CodeJar(document.querySelector(selector), () => {}, { tab : '  ' });
 
 		if(testEditor) {
-			editor.onUpdate(code => this.updateTestEditor(code));
+			editor.onUpdate((code, event) => this.updateTestEditor(code, event));
 
 		} else {
 			editor.onUpdate(code => this.onUpdateEditor(code, selector));
@@ -331,9 +331,11 @@ const tab = {
 		obj.editors.testString = null;
 	},
 
-	updateTestEditor : function(code) {
-		if(types[currentType].testEditorMode === 'html') {
-			this.setHtmlMode(importer.sanitizeHtml(code));
+	updateTestEditor : function(code, event) {
+		if(event.type === 'paste' || event.type === 'drop') {
+			if(types[currentType].testEditorMode === 'html') {
+				this.setHtmlMode(importer.sanitizeHtml(code));
+			}
 		}
 	},
 
@@ -409,7 +411,10 @@ const tab = {
 	},
 
 	setLoadButton : function() {
-		$('.toolbar button.load').css('opacity', loadValue('section_' + currentType) ? 1 : 0.5);
+		const button = $('.toolbar button.load');
+
+		if(loadValue('section_' + currentType)) button.removeClass('inactive');
+		else button.addClass('inactive');
 	}
 };
 
@@ -435,27 +440,6 @@ function checkAccuracy(elem) {
 
 	if(elem.value === 'object') div.removeClass('hide');
 	else div.addClass('hide');
-}
-
-// DOM 'ondragover' event
-function onDragover(e) {
-	if(types[currentType].testEditorMode === 'html') {
-		e.preventDefault();
-	}
-}
-
-// DOM 'ondrop' event
-function onDrop(e) {
-	let text = e.dataTransfer.getData("text/plain");
-	if(text) {
-		const info = tab.getTestEditorInfo();
-
-		if(types[currentType].testEditorMode === 'html') {
-			text = importer.sanitizeHtml(text);
-			tab.setHtmlContent(text, info, true);
-			e.preventDefault();
-		}
-	}
 }
 
 // DOM 'onclick' event
@@ -680,19 +664,20 @@ const importer = {
 
 	sanitizeHtml : function(str) {
 		const doc = new DOMParser().parseFromString(str, "text/html"),
-			elements = doc.querySelectorAll("*"),
+			iterator = document.createNodeIterator(doc.documentElement, NodeFilter.SHOW_ALL),
 			report = {};
 
-		for(let i = 0; i < elements.length; i++) {
-			let elem = elements[i];
-
-			if(/^(?:script|style|link|meta)$/i.test(elem.nodeName)) {
-				elem.parentNode.removeChild(elem);
-				add(`removed element '${elem.nodeName.toLowerCase()}'`);
+		let node;
+		while(node = iterator.nextNode()) {
+			if(/^(?:head|script|style|link|meta|#comment)$/i.test(node.nodeName)) {
+				node.parentNode.removeChild(node);
+				add(`removed ${node.nodeType === 1 ? 'element' : ''} '${node.nodeName.toLowerCase()}'`);
 				continue;
 			}
 
-			checkAttributes(elem);
+			if(node.nodeType === 1) {
+				checkAttributes(node);
+			}
 		}
 
 		function checkAttributes(elem) {
@@ -703,20 +688,20 @@ const importer = {
 				if(name === 'href' || name === 'src') {
 					const val = decodeURIComponent(attr.value);
 
-					if(/^(?:https?:)\//i.test(val)) {
+					if(/^(?!#).+/i.test(val)) {
 						attr.value = '#';
 						add(`replaced '${name}' attribute value by '#'`);
-
-					} else if(/\bjavascript(?::|&colon;)/.test(val)) {
-						elem.removeAttribute(attr.name);
-						add(`removed ${name} attribute containing 'javascript:'`);
 					}
 
-				} else if(/^xlink:href/.test(name)) {
+				} else if(/\bjavascript(?::|&colon;)/i.test(attr.value)) {
+					elem.removeAttribute(attr.name);
+					add(`removed ${name} attribute containing 'javascript:'`);
+
+				} else if(/^xlink:href/i.test(name)) {
 					attr.value = '#';
 					add(`replaced '${name}' attribute value by '#'`);
 
-				} else if(/^on[a-z]+/.test(name)) {    // on event attribute
+				} else if(/^on[a-z]+/i.test(name)) {    // on event attribute
 					elem.removeAttribute(attr.name);
 					add(`removed '${name}' attribute`);
 				}
@@ -728,7 +713,6 @@ const importer = {
 		}
 
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
-		//log(toText(report, 'Html sanitizer report:', ' Ok'));
 
 		return  doc.documentElement.innerHTML;
 	}
@@ -921,7 +905,7 @@ const codeBuilder = {
 					doneParam = this.getDoneParameters();
 
 				text = addCode(text, fn, eachParam, /\bfunction\s+each(\([^)]+\))\s*\{/);
-				text = addCode(text,`highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
+				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
 			text = text.replace(comment, '');
 			code = text.replace(/<<markjsCode>>(?:[ \t]\/\/.*)?/, code);
@@ -1310,7 +1294,7 @@ const highlighter = {
 			},
 			done : () => {
 				if(totalMatches > max) {
-					log(`Total highlighted matches are limited to ${max}\n`);
+					log(`Total highlighted matches are limited to ${max}\n`, false, true);
 				}
 				this.finish(totalMarks, totalMatches, null);
 			}
@@ -1779,11 +1763,14 @@ function isChecked(option) {
 	return  $(`section.${currentType} .${option} input`).prop('checked');
 }
 
-function log(message, warning) {
-	if(warning) {
+function log(message, error, warning) {
+	if(error) {
 		//$('.toolbar button.run').addClass('warning');
 		$('.toolbar .mark-type li.selected').addClass('warning');
 		message = `<span style="color:red">${message}</span><br>`;
+
+	} else if(warning) {
+		message = `<span style="color:#ca5500">${message}</span><br>`;
 	}
 
 	$('.results code').append(message);
