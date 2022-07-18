@@ -697,6 +697,12 @@ const importer = {
 					elem.removeAttribute(attr.name);
 					add(`removed ${name} attribute containing 'javascript:'`);
 
+				} else if(name === 'style') {
+					if(/\burl\s*\(/i.test(attr.value)) {
+						elem.removeAttribute(attr.name);
+						add(`removed ${name} attribute containing 'url'`);
+					}
+
 				} else if(/^xlink:href/i.test(name)) {
 					attr.value = '#';
 					add(`replaced '${name}' attribute value by '#'`);
@@ -714,7 +720,7 @@ const importer = {
 
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
 
-		return  doc.documentElement.innerHTML;
+		return  doc.body.innerHTML;
 	}
 };
 

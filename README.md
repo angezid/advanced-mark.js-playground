@@ -25,8 +25,10 @@ The idea to export/import 'Playground tab' in JSON format:
 * bug report
 * ask for help, if there's problem highlighting something
 
-When you paste or drag&drop a Html content into Html editor, the content run through Html sanitizer, which removes head, script, style, link and meta elements and comments.
-It's also removes attributes containing `javascript:` or name start with `on`. The values of `href, src` attributes are replace by '#'.
+When you paste or drag & drop a Html content into the Html editor or load/import, the content runs through the Html sanitizer, which removes head, script, style, link, and meta elements and comments.
+It also removes attributes containing `javascript:` or name start with `on`. The values of `href, src` attributes are replaced by '#'.  
+
+Warning: 100% security is currently under the question.
 
 Note: be reasonable, do not export big HTML test content, due to security reason, nobody will dare to import your export (only who trust you).  
 Locate and leave only problematic place(s) which can be easily visually examine.  
@@ -45,7 +47,7 @@ The generated code for all other than default option is in the 'Generated code'.
 Note:
 - due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.  
 In the Html mode and in the 'Ranges' tab for both libraries expected behavior - next/previous mark element.
-- switching to the Html mode with big Html content is slowly due to using not efficient RegExp
+- dealing with big Html content is slow, especially in Html mode, so I added some limits on syntax/matches highlighting
 - if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
 Warning:
