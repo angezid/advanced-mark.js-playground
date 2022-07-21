@@ -20,9 +20,9 @@
 <script src="static/js/data.js"></script>
 <script src="static/js/main.js"></script>
 </head>
-<body>
+<body class="playground-body">
 
-<div class="toolbar">
+<header class="playground-header">
 <div class="mark-type left">
 <ul>
 <li class="selected" data-type="string_">String</li>
@@ -42,7 +42,7 @@
 <button class="open-file-form" title="Open file form" type="button">File</button>
 <button class="open-json-form" title="Open JSON form" type="button">JSON</button>
 </div>
-</div><!-- toolbar -->
+</header>
 
 <div class="json-form">
 <div class="close"></div>
@@ -72,12 +72,11 @@
 </div>
 </div>
 
-<main>
-<article id="article">
+<main class="playground-main">
+<article id="playground-article">
 <h1 class="title">Mark.js playground</h1>
 
-<section class="string_">
-<div class="row">
+<section class="string_ row">
 <div class="left-column">
 
 <div class="queryString">
@@ -228,18 +227,21 @@
 </div> <!-- edit-options -->
 </div><!-- row -->
 </div><!-- right-column -->
-</div><!-- row -->
 </section><!-- string_ -->
 
-<section class="array hide">
-<div class="row">
+<section class="array row hide">
 <div class="left-column">
 
 <div class="queryArray">
 <div class="actions right">
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Array of strings</p>
+<!-- <p>Array of strings</p> -->
+<label for="arrays">Array of strings</label>
+<select name="arrays" id="arrays" onchange="selectArray(this)">
+<!-- <option value="" selected>Array of strings</option> -->
+</select>
+
 <div class="editor">
 </div>
 </div>
@@ -391,11 +393,9 @@
 </div> <!-- edit-options -->
 </div><!-- row -->
 </div><!-- right-column -->
-</div><!-- row -->
 </section><!-- array -->
 
-<section class="regexp hide">
-<div class="row">
+<section class="regexp row hide">
 <div class="left-column">
 
 <div class="queryRegExp">
@@ -510,11 +510,9 @@
 </div> <!-- edit-options -->
 </div><!-- row -->
 </div><!-- right-column -->
-</div><!-- row -->
 </section><!-- regexp -->
 
-<section class="ranges hide">
-<div class="row">
+<section class="ranges row hide">
 <div class="left-column">
 
 <div class="queryRanges">
@@ -604,7 +602,6 @@
 </div> <!-- edit-options -->
 </div><!-- row -->
 </div><!-- right-column -->
-</div><!-- row -->
 </section><!-- ranges -->
 
 <div class="row">
@@ -634,7 +631,7 @@
 </div>
 
 <div class="callbacks right">
-<input id="callbacks" type="checkbox"">
+<input id="callbacks" type="checkbox">
 <label for="callbacks">callbacks</label>
 </div>
 
@@ -652,7 +649,7 @@
 
 </article>
 
-<article class="option-info">
+<article class="options-info">
 <div id="stringArrayFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
 <!-- A callback to filter or limit matches. It will be called for each <span class="acrossElements">text node</span><span class="not-acrossElements">match</span> with the following parameters: -->

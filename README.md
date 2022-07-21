@@ -10,9 +10,6 @@ Currently, the two mark libraries are installed by default:
 
 They are not conflicting with each other and can be switch by checkbox.  
 
-#### Codejar editor issue
-The `codejar.js` is an embeddable editor, but it lacks some necessary functionality. Currently, it's adapted for use with this project.
-
 ### Install Mark.js-playground
 Clone or download this repository and run:
 ```

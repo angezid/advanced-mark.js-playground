@@ -2,7 +2,8 @@
 'use strict';
 
 let version = '1.0.0',
-	library = '',
+	library = 'standard',
+	currentTabId = '',
 	maxLength = 100000,
 	time = 0,
 	oldLibrary = false,
@@ -15,15 +16,17 @@ let version = '1.0.0',
 	testContainerSelector = '',
 	markElementSelector = '',
 	markElement = '',
-	comment = '// declare your variables here',
-	defaultSnippet = `\n<<markjsCode>> // don't remove it\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
-	snippet = '',
 	jsonEditor = null,
 	marks = $(),
 	startElements = $(),
-	settings = {},
 	previousButton = $(`.previous`),
 	nextButton = $(`.next`);
+
+const settings = {
+	//loadDefault : true,
+	loadDefault : false,
+
+};
 
 const types = {
 	string_ : {
@@ -102,15 +105,27 @@ $(document).ready(function() {
 });
 
 const tab = {
+
 	initTab : function() {
-		this.initializeEditors();
-		this.loadDefaultHtml();
-		this.loadDefaultSearchParameter();
+		const saved = this.setLoadButton();
 
-		this.setLoadButton();
+		if( !this.isInitialize()) {
+			this.initializeEditors();
 
-		this.clear();
-		highlighter.highlight();
+			if(settings.loadDefault || !saved) {
+				const str = defaultJsons[currentType];
+
+				importer.setOptions(Json.parseJson(str));
+
+				this.loadDefaultSearchParameter();
+				this.loadDefaultHtml();
+
+			} else {
+				importer.loadOptions();
+			}
+		}
+
+		//highlighter.highlight();
 	},
 
 	selectTab : function(type) {
@@ -125,11 +140,15 @@ const tab = {
 		saveValue('tabType', type);
 		currentType = type;
 
+		const querySelect = `section.${type} .${types[type].queryEditor} select`;
+		const testSelect = `section.${type} .testString select`;
+
 		if(type === 'string_') {
 			this.setVisibleString();
 
 		} else if(type === 'array') {
 			this.setVisibleArray();
+			this.buildSelector(querySelect, wordArrays, 'Array of strings');
 
 		} else if(type === 'regexp') {
 			this.setVisibleRegExp();
@@ -140,12 +159,24 @@ const tab = {
 
 		checkIframes($(`section.${type} .iframes input`)[0]);
 
-		codeBuilder.initCustomCode();
-
-		this.initializeEditors();
+		codeBuilder.initCodeSnippet();
 		this.clear();
 
-		testContainerSelector = `section.${type} .testString .editor`;
+		testContainerSelector = `section.${currentType} .testString .editor`;
+		currentTabId = `${library}_section_${currentType}`;
+	},
+
+	buildSelector : function(selector, obj, selected) {
+		let options = `<option value="" selected>${selected}</option>`;
+		//let options = '';
+
+		for(const key in obj) {
+			if(key !== 'name') {
+				const value = key.startsWith('default') ? `['${obj[key].toString().split(',').join("', '")}']` : `${obj.name}['${key}']`;
+				options += `<option value="${value}">${key}</option>`;
+			}
+		}
+		$(selector).html(options);
 	},
 
 	setVisibleString : function() {
@@ -192,8 +223,8 @@ const tab = {
 		const info = this.getTestEditorInfo();
 
 		if(info.editor.toString().trim() === '') {
-			//$(info.selector).html(minHtml);
-			$(info.selector).html(defaultHtml);
+			//$(testContainerSelector).html(minHtml);
+			$(testContainerSelector).html(defaultHtml);
 
 			types[currentType].testEditorMode = 'text';
 			this.highlightButton('.text');
@@ -219,13 +250,11 @@ const tab = {
 	},
 
 	setHtmlMode : function(content, highlight = true) {
-		const info = this.getTestEditorInfo();
-
 		if(types[currentType].testEditorMode === 'html' && !content) return;
 
 		types[currentType].testEditorMode = 'html';
 
-		const editor = $(info.selector),
+		const editor = $(testContainerSelector),
 			html = content ? content : editor.html();
 
 		if(html !== '') {
@@ -233,42 +262,40 @@ const tab = {
 			// nevertheless, it's better to replace the editor node by the new one
 			this.destroyTestEditor();
 
-			const parent = editor.parent();
-			editor.remove();
-			parent.append('<div class="editor lang-html"></div>');
+			const node = document.querySelector(testContainerSelector);
+			if(node) {
+				const div = document.createElement('div');
+				div.className = 'editor lang-html';
+				node.parentNode.replaceChild(div, node);
+				div.innerText = html;
+			}
 
-			this.setHtmlContent(html, info, highlight);
+			if(highlight) {
+				// it's still better to avoid syntax highlighting in some cases - the performance is more important
+				let forbid = html.length > maxLength || oldLibrary && (isChecked('acrossElements') || currentType === 'ranges') && html.length > maxLength / 2;
+				if( !forbid) {
+					hljs.highlightElement($(testContainerSelector)[0]);
+				}
+
+				highlighter.highlightRawHtml(testContainerSelector, html.length, forbid);
+			}
+
 			this.initializeEditors();
 
 		} else {
+			const info = this.getTestEditorInfo();
 			info.editor.updateCode('');
 		}
 
 		this.highlightButton('.html');
 	},
 
-	setHtmlContent : function(html, info, highlight) {
-		$(info.selector).text(html);
-
-		if(highlight) {
-			// it's still better to avoid syntax highlighting in some cases - the performance is more important
-			let forbid = html.length > maxLength || oldLibrary && (isChecked('acrossElements') || currentType === 'ranges') && html.length > maxLength / 2;
-			if( !forbid) {
-				hljs.highlightElement($(info.selector)[0]);
-			}
-
-			highlighter.highlightRawHtml(info.selector, html.length, forbid);
-		}
-	},
-
 	setTextMode : function(content = null) {
-		const info = this.getTestEditorInfo();
-
 		if(types[currentType].testEditorMode === 'text') return;
 
 		types[currentType].testEditorMode = 'text';
 
-		const editor = $(info.selector),
+		const editor = $(testContainerSelector),
 			text = content !== null ? content : editor.text();
 
 		if(text !== '') {
@@ -278,14 +305,13 @@ const tab = {
 
 			const parent = editor.parent();
 			editor.remove();
-			parent.append('<div class="editor"></div>');
-
-			$(info.selector).html(text);
+			parent.append(`<div class="editor">${text}</div>`);
 
 			runCode();
 			this.initializeEditors();
 
 		} else {
+			const info = this.getTestEditorInfo();
 			info.editor.updateCode('');
 		}
 
@@ -293,8 +319,7 @@ const tab = {
 	},
 
 	highlightButton : function(selector) {
-		const info = this.getTestEditorInfo(),
-			parent = $(info.selector).parent();
+		const parent = $(testContainerSelector).parent();
 
 		parent.find(selector).addClass('pressed');
 		parent.find(selector === '.text' ? '.html' : '.text').removeClass('pressed');
@@ -324,7 +349,17 @@ const tab = {
 		return  editor;
 	},
 
+	isInitialize : function() {
+		const obj = types[currentType];
+		for(const key in obj.editors) {
+			if(obj.editors[key] !== null) return  true;
+		}
+		return false;
+	},
+
 	destroyTestEditor : function() {
+		tab.setEditableAttribute(false);
+
 		const obj = types[currentType];
 
 		obj.editors.testString.destroy();
@@ -362,7 +397,7 @@ const tab = {
 
 		if( !editor) return  null;
 
-		return  { currentType, selector, editor };
+		return  { selector, editor };
 	},
 
 	getCodeEditorInfo : function() {
@@ -406,15 +441,17 @@ const tab = {
 	},
 
 	setEditableAttribute : function(on) {
-		const info = this.getTestEditorInfo();
-		$(info.selector).attr('contenteditable', on);
+		$(testContainerSelector).attr('contenteditable', on);
 	},
 
 	setLoadButton : function() {
-		const button = $('.toolbar button.load');
+		const value = loadValue(currentTabId),
+			button = $('header button.load');
 
-		if(loadValue('section_' + currentType)) button.removeClass('inactive');
+		if(value) button.removeClass('inactive');
 		else button.addClass('inactive');
+
+		return value;
 	}
 };
 
@@ -443,6 +480,16 @@ function checkAccuracy(elem) {
 }
 
 // DOM 'onclick' event
+function selectArray(elem) {
+	const info = tab.getSearchEditorInfo();
+	if( !info) return;
+
+	const array = $(elem).val();
+
+	info.editor.updateCode(array);
+}
+
+// DOM 'onclick' event
 function setTextMode() {
 	tab.setTextMode();
 }
@@ -462,7 +509,7 @@ function save() {
 	const str = Json.buildJson();
 
 	if(str) {
-		saveValue('section_' + currentType, str);
+		saveValue(currentTabId, str);
 		tab.setLoadButton();
 	}
 }
@@ -484,7 +531,8 @@ function exportJson() {
 
 // DOM 'onclick' event
 function importJson() {
-	importer.loadJson();
+	let str = jsonEditor.toString().trim();
+	importer.loadJson(str);
 }
 
 // DOM 'onclick' event
@@ -523,62 +571,39 @@ function clearEditor(elem) {
 }
 
 const importer = {
+
 	loadOptions : function() {
-		const str = loadValue('section_' + currentType);
+		const str = loadValue(currentTabId);
 
 		if(str) {
-			const json = Json.parseJson(str);
-			if( !json) return;
-
-			this.setOptions(json);
+			this.loadJson(str);
 
 		} else {
-			log('Something is wrong with the local storage', true);
+			log('\nSomething is wrong with the local storage', true);
 		}
 	},
 
-	loadOptionsFromFile : function(str) {
-		if( !str) return;
-
-		const json = Json.parseJson(str);
-		if( !json) return;
-
-		const type = json.section['type'];
-
-		if(type && types[type]) {
-			tab.selectTab(type);
-			this.setOptions(json);
-
-		} else {
-			log('Something is wrong with the json file', true);
-		}
-	},
-
-	loadJson : function() {
-		let str = jsonEditor.toString().trim();
-
+	loadJson : function(str) {
 		if(str) {
 			const json = Json.parseJson(str);
-			if( !json) return;
+			if( !json) {
+				log('\nFailed to parse the JSON', true);
+				return;
+			}
 
 			const type = json.section['type'];
 
 			if(type && types[type]) {
 				tab.selectTab(type);
+				tab.initializeEditors();
 				this.setOptions(json);
-
-				const info = tab.getTestEditorInfo();
-
-				if($(info.selector).parent().find('button.pressed.html').length) {
-					hljs.highlightElement($(info.selector)[0]);
-				}
 
 				if(types[currentType].testEditorMode === 'text') {
 					runCode();
 				}
 
 			} else {
-				log('Something is wrong with the json', true);
+				log('\nSomething is wrong with the json', true);
 			}
 		}
 	},
@@ -590,7 +615,7 @@ const importer = {
 		let opt, editor, value,
 			saved = json.library;
 
-		if(typeof saved !== 'undefined') {
+		if( !isNullOrUndefined(saved)) {
 			$('#library').prop('checked', saved === 'advanced');
 			switchLibrary($('#library')[0]);
 		}
@@ -603,7 +628,7 @@ const importer = {
 			value = defaultOptions[option];
 			saved = json.section[option];
 
-			if(typeof saved === 'undefined' || saved === 'null') {
+			if(isNullOrUndefined(saved)) {
 				saved = value[0];
 			}
 
@@ -632,18 +657,18 @@ const importer = {
 			editor = obj.editors[key];
 			saved = json.section[key];
 
-			if(typeof saved === 'undefined' || saved === 'null') {
+			if(isNullOrUndefined(saved)) {
 				editor.updateCode('');
 
 			} else if(key === 'testString') {
-				const mode = typeof saved.mode === 'undefined' || saved.mode !== 'text' ? 'html' : saved.mode;
-				const content = typeof saved.content === 'undefined' ? '' : this.sanitizeHtml(saved.content);
+				const mode = isNullOrUndefined(saved.mode) || saved.mode !== 'text' ? 'html' : saved.mode;
+				const content = isNullOrUndefined(saved.content) ? '' : this.sanitizeHtml(saved.content);
 
 				if(mode === 'text') {
 					tab.setTextMode(content);
 
 				} else {
-					tab.setHtmlMode(content);
+					tab.setHtmlMode(content, false);
 				}
 
 			} else {
@@ -653,7 +678,7 @@ const importer = {
 
 		saved = json.section['customCode'];
 
-		if(typeof saved !== 'undefined' && saved !== 'null') {
+		if( !isNullOrUndefined(saved)) {
 			tab.updateCustomCode(saved);
 		}
 
@@ -739,16 +764,19 @@ function switchLibrary(elem) {
 
 	if($(elem).prop('checked')) {
 		oldLibrary = false;
-		jqueryMark = info.jquery === 'new';
+		jqueryMark = info.jquery === 'advanced';
 
 	} else {
 		oldLibrary = true;
-		jqueryMark = info.jquery === 'old';
+		jqueryMark = info.jquery === 'standard';
 	}
 
-	saveValue('library', oldLibrary ? 'old' : 'new');
+	saveValue('library', oldLibrary ? 'standard' : 'advanced');
 	setVisibility();
-	codeBuilder.initCustomCode();
+	codeBuilder.initCodeSnippet();
+
+	currentTabId = `${library}_section_${currentType}`;
+	tab.setLoadButton();
 
 	scroll = false;
 
@@ -778,27 +806,26 @@ function runCode() {
 	const editor = types[currentType].customCodeEditor;
 
 	if(editor && editor.toString().trim()) {
-		let code = codeBuilder.build('internal');
+		const code = codeBuilder.build('internal');
 
 		if(code) {
 			// disable contenteditable attribute for performance reason
 			tab.setEditableAttribute(false);
 
 			log('Evaluating the whole code\n');
-			time = performance.now();
 
 			try { eval(`'use strict'; ${code}`); } catch(e) {
-				log('\nFailed to evaluate the code\n' + e.message, true);
+				log('Failed to evaluate the code\n' + e.message, true);
 				tab.setEditableAttribute(true);
 			}
 
 			$('.internal-code').removeClass('hide');
-			$('.internal-code pre>code').text(code);
+			$('.internal-code code').text(code);
 
 			hljs.highlightElement($(`section.${currentType} .customCode .editor`)[0]);
-			hljs.highlightElement($('.internal-code pre>code')[0]);
+			hljs.highlightElement($('.internal-code code')[0]);
 
-			const val = loadValue('details-internal-code');
+			const val = loadValue('internal_code');
 			if(val && val === 'opened') {
 				$("#internal-code").attr('open', true);
 			}
@@ -810,6 +837,10 @@ function runCode() {
 }
 
 const codeBuilder = {
+	comment : '// declare your variables here',
+	defaultSnippet : `\n<<markjsCode>> // don't remove it\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
+	snippet : '',
+
 	build : function(kind) {
 		const jsCode = this.buildCode('js');
 		if( !jsCode) return  '';
@@ -848,13 +879,14 @@ const codeBuilder = {
 			code = `const instance = new Mark(document.querySelector('selector'));\ninstance` + (unmark ? `.unmark({\n  'done' : () => {\n    instance` : '');
 
 		} else {
-			const selector = tab.getTestEditorInfo().selector;
+			const time = `\n    time = performance.now();`,
+				selector = tab.getTestEditorInfo().selector;
 			if(jqueryMark) {
 				code = `let options;\nconst context = $('${selector}');\n`;
-				code += `context.unmark({\n  done : () => {\n    context`;
+				code += `context.unmark({\n  done : () => {${time}\n    context`;
 
 			} else {
-				code = `let options;\nconst instance = new Mark(document.querySelector('${selector}'));\ninstance.unmark({\n  done : () => {\n    instance`;
+				code = `let options;\nconst instance = new Mark(document.querySelector('${selector}'));\ninstance.unmark({\n  done : () => {${time}\n    instance`;
 			}
 		}
 
@@ -882,7 +914,7 @@ const codeBuilder = {
 
 		if( !str) {
 			$('.generated-code code').text('');
-			log(`Missing ${ currentType } search parameter`, true);
+			log(`Missing search parameter\n`, true);
 			return  '';
 		}
 
@@ -904,16 +936,17 @@ const codeBuilder = {
 
 		if(editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
 			if(kind === 'internal') {
-				const every = currentType === 'ranges' || !isChecked('acrossElements'),
+				const ranges = currentType === 'ranges',
+					every = ranges || !isChecked('acrossElements'),
 					// necessary for the next/previous buttons functionality
-					fn = `highlighter.flagStartElement(element, ${oldLibrary ? null : 'info'}, ${every})`,
+					fn = `highlighter.flagStartElement(element, ${oldLibrary || ranges ? null : 'info'}, ${every})`,
 					eachParam = this.getEachParameters(),
 					doneParam = this.getDoneParameters();
 
 				text = addCode(text, fn, eachParam, /\bfunction\s+each(\([^)]+\))\s*\{/);
 				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
-			text = text.replace(comment, '');
+			text = text.replace(this.comment, '');
 			code = text.replace(/<<markjsCode>>(?:[ \t]\/\/.*)?/, code);
 		}
 
@@ -1078,10 +1111,8 @@ const codeBuilder = {
 		}
 	},
 
-	initCustomCode : function() {
-		snippet = defaultSnippet;
-
-		snippet = snippet.replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters())
+	initCodeSnippet : function() {
+		this.snippet = (this.comment + this.defaultSnippet).replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters())
 			.replace(/\beach\(\)/g, 'each' + codeBuilder.getEachParameters())
 			.replace(/\bdone\(\)/g, 'done' + codeBuilder.getDoneParameters());
 	}
@@ -1225,7 +1256,7 @@ const Json = {
 	parseJson : function(str) {
 		let json;
 		try { json = JSON.parse(str); } catch(e) {
-			log('Failed to parse this json\n' + e.message, true);
+			log('\nFailed to parse this json\n' + e.message, true);
 		}
 		return  json;
 	}
@@ -1235,7 +1266,6 @@ const highlighter = {
 
 	highlight : function() {
 		currentIndex = 0;
-
 		tab.clear();
 		codeBuilder.build('js-jq');
 
@@ -1248,8 +1278,6 @@ const highlighter = {
 		} else if(currentType === 'ranges') {
 			this.markRanges();
 		}
-
-		hljs.highlightElement($('.results pre>code')[0]);
 	},
 
 	highlightRawHtml : function(selector, length, forbid) {
@@ -1365,10 +1393,9 @@ const highlighter = {
 			log(`Search parameter 'String' : '${searchParameter}'\n`);
 		}
 
-		time = performance.now();
-
 		settings.context.unmark({
 			'done' : () => {
+				time = performance.now();
 				settings.context.mark(parameter, options);
 			}
 		});
@@ -1411,10 +1438,10 @@ const highlighter = {
 		if( !regex) return;
 
 		log(`Search parameter 'RegExp' : ${searchParameter}\n`);
-		time = performance.now();
 
 		settings.context.unmark({
 			'done' : () => {
+				time = performance.now();
 				settings.context.markRegExp(regex, options);
 			}
 		});
@@ -1452,10 +1479,10 @@ const highlighter = {
 		if( !ranges) return;
 
 		log(`Search parameter 'Ranges' : ${searchParameter}\n`);
-		time = performance.now();
 
 		settings.context.unmark({
 			'done' : () => {
+				time = performance.now();
 				settings.context.markRanges(ranges, options);
 			}
 		});
@@ -1582,7 +1609,7 @@ function registerEvents() {
 
 	$("#internal-code").on('toggle', function(e) {
 		const attr = $(this).attr('open');
-		saveValue('details-internal-code', attr ? 'opened' : 'closed');
+		saveValue('internal_code', attr ? 'opened' : 'closed');
 	});
 
 	$(".customCode details, .customCode details>summary").on('toggle', function(e) {
@@ -1592,7 +1619,7 @@ function registerEvents() {
 			const editor = types[currentType].customCodeEditor;
 
 			if( !editor || !editor.toString().trim()) {
-				tab.updateCustomCode(comment + snippet);
+				tab.updateCustomCode(codeBuilder.snippet);
 				scroll = false;
 				runCode();
 				scroll = true;
@@ -1618,7 +1645,7 @@ function registerEvents() {
 		codeBuilder.build('js-jq');
 	});
 
-	$("input[name], select[name], div.editor[name]").on('mouseenter', function(e) {
+	$("input[name], select[name], option[name], div.editor[name]").on('mouseenter', function(e) {
 		if(showTooltips || e.ctrlKey || e.metaKey) {
 			showTooltip($(this), e);
 		}
@@ -1688,7 +1715,7 @@ function registerEvents() {
 		reader.file = file;
 
 		reader.onload = function() {
-			importer.loadOptionsFromFile(this.result);
+			importer.loadJson(this.result);
 
 			$('.file-form .loaded-file-name').text(file.name);
 			$('.file-form .file-name').val(file.name);
@@ -1742,7 +1769,7 @@ function showTooltip(elem, e) {
 function showHideInfo(id) {
 	const separateGroups = isChecked('separateGroups'),
 		acrossElements = isChecked('acrossElements'),
-		info = $('article.option-info #' + id),
+		info = $('article.options-info #' + id),
 		elemsAE = info.find('.acrossElements').addClass('hide'),
 		elemsSG = info.find('.separateGroups').addClass('hide');
 
@@ -1771,15 +1798,20 @@ function isChecked(option) {
 
 function log(message, error, warning) {
 	if(error) {
-		//$('.toolbar button.run').addClass('warning');
-		$('.toolbar .mark-type li.selected').addClass('warning');
+		$('header .mark-type li.selected').addClass('warning');
 		message = `<span style="color:red">${message}</span><br>`;
+		$('.results code').html(message);
+		return;
 
 	} else if(warning) {
 		message = `<span style="color:#ca5500">${message}</span><br>`;
 	}
 
 	$('.results code').append(message);
+}
+
+function isNullOrUndefined(prop) {
+	return  typeof prop === 'undefined' || prop === null;
 }
 
 function previousMatch(elem) {
@@ -1844,23 +1876,23 @@ function detectLibrary() {
 	if(both) {
 		const lib = loadValue('library');
 
-		if( !lib || lib === 'old') {
-			jqueryMark = info.jquery === 'old';
+		if( !lib || lib === 'standard') {
+			jqueryMark = info.jquery === 'standard';
 			oldLibrary = true;
 
-		} else if(lib && lib === 'new') {
-			jqueryMark = info.jquery === 'new';
+		} else if(lib && lib === 'advanced') {
+			jqueryMark = info.jquery === 'advanced';
 			oldLibrary = false;
 		}
 
 	} else {
 		if(info.javascript) {
 			jqueryMark = false;
-			oldLibrary = info.javascript === 'old';
+			oldLibrary = info.javascript === 'standard';
 
 		} else if(info.jquery) {
 			jqueryMark = true;
-			oldLibrary = info.jquery === 'old';
+			oldLibrary = info.jquery === 'standard';
 		}
 	}
 
@@ -1871,8 +1903,6 @@ function detectLibrary() {
 		$('.switch-library input').attr('disabled', true);
 		$('.switch-library label').css('opacity', .4);
 	}
-
-	library = oldLibrary ? 'standard' : 'advanced';
 
 	setVisibility();
 }
@@ -1888,17 +1918,17 @@ function getLibrariesInfo() {
 	});
 
 	if(jq) {
-		info.jquery = isOldLibrary(true) ? 'old' : 'new';
+		info.jquery = isOldLibrary(true) ? 'standard' : 'advanced';
 	}
 	if(js) {
-		info.javascript = isOldLibrary(false) ? 'old' : 'new';
+		info.javascript = isOldLibrary(false) ? 'standard' : 'advanced';
 	}
 	return  info;
 }
 
 function isOldLibrary(jquery) {
 	let old = false;
-	getContext('article h1', jquery).markRegExp(/^\s*\w/g, {
+	getContext('#playground-article h1', jquery).markRegExp(/^\s*\w/g, {
 		'filter' : (n, m, t, info) => {
 			if( !info) old = true;
 			return  false;
@@ -1921,6 +1951,8 @@ function setVisibility() {
 		$('.old-library').addClass('hide');
 	}
 	$('.switch-library label').text((oldLibrary ? 'standard' : 'advanced') + ' library');
+
+	library = oldLibrary ? 'standard' : 'advanced';
 }
 
 function loadValue(key) {
