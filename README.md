@@ -27,23 +27,19 @@ It also removes attributes containing `javascript:` or name start with `on`. The
 
 Warning: 100% security is currently under the question.
 
-Note: be reasonable, do not export big HTML test content, due to security reason, nobody will dare to import your export (only who trust you).  
-Locate and leave only problematic place(s) which can be easily visually examine.  
+Note: be reasonable, do not export big HTML test content. For security reasons, nobody will dare import your export (only those who trust you).  
+Locate and leave only problematic area(s) which can be easily visually examine.
 
 ### Things you need to know
 
-There are two test content modes - Text and Html . If you want to add a HTML content, you need to switch to the Html mode.
-
-An `object` option was added to the Accuracy selector, just to enable an `accuracy` object editor. This option is not part of the mark.js library.
-
-If you enable custom editor, the program evaluate the whole internal code (see 'Internal code' which appears below the 'Results').
-Otherwise, only the option that accept Objects, Arrays or RegExp are evaluated.
-
-The generated code for all other than default option is in the 'Generated code'.
+There are two test content modes - Text and Html . If you want to add HTML content, you need to switch to the Html mode.  
+An `object` option was added to the Accuracy selector, just to enable an `accuracy` object editor. This option is not part of the mark.js library.  
+If you enable the custom editor, the program evaluates the whole internal code (see 'Internal code' which appears below the 'Results').
+Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.  
+The generated code for all options other than the default option is in the 'Generated code'.
 
 Note:
-- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.  
-In the Html mode and in the 'Ranges' tab for both libraries expected behavior - next/previous mark element.
+- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.
 - dealing with big Html content is slow, especially in Html mode, so I added some limits on syntax/matches highlighting
 - if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
@@ -53,10 +49,10 @@ You may accidentally click the Load button and silently overwrite the current st
 
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
-For normal workflow, the two internal function are necessary:
+For normal workflow, two internal functions are necessary:
 - `highlighter.flagStartElement()` in the `each` callback for next/previous buttons functionality
-- `highlighter.finish()` in the `done` callback for highlighting matches and logging results  
-They're automatically added to the internal code, if their parameters and functions parameters are the same.
+- `highlighter.finish()` in the `done` callback for highlighting matches and logging results  
+They're automatically added to the internal code if their parameters and functions parameters are the same.
 
 ### Custom code example
 It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrates how to use the custom code editor.  
