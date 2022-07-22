@@ -23,7 +23,7 @@ The idea to export/import 'Playground tab' in JSON format:
 * ask for help, if there's problem highlighting something
 
 When you paste or drag & drop a Html content into the Html editor or load/import, the content runs through the Html sanitizer, which removes head, script, style, link, and meta elements and comments.
-It also removes attributes containing `javascript:` or name start with `on`. The values of `href, src` attributes are replaced by '#'.  
+It also removes attributes containing `javascript:` or name start with `on`. The values of `href, src, srcset` attributes are replaced by '#'.  
 
 Warning: 100% security is currently under the question.
 
@@ -50,7 +50,6 @@ In the Html mode and in the 'Ranges' tab for both libraries expected behavior - 
 Warning:
 - currently there is no protection on unsaved state on the browser reload or on load from local storage.  
 You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
-- the direct use of the `cacheTextNodes` option without building ranges (see 'Custom code example') will resulted in a smaller number of matches. It actuality was 'invented' for this workaround.
 
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
@@ -60,7 +59,8 @@ For normal workflow, the two internal function are necessary:
 They're automatically added to the internal code, if their parameters and functions parameters are the same.
 
 ### Custom code example
-It's a simplified hack to improve performance in the `mark()` method with the large array.  
+It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrate how to use the custom code editor.  
+Note: currently the option `cacheTextNodes` can be use without generating ranges.
 Copy below code, paste to the JSON form and press 'Import JSON' button.
 
 ``` json

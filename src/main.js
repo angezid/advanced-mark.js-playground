@@ -140,15 +140,13 @@ const tab = {
 		saveValue('tabType', type);
 		currentType = type;
 
-		const querySelect = `section.${type} .${types[type].queryEditor} select`;
-		const testSelect = `section.${type} .testString select`;
-
+		//const querySelect = `section.${type} .${types[type].queryEditor} select`;
 		if(type === 'string_') {
 			this.setVisibleString();
 
 		} else if(type === 'array') {
 			this.setVisibleArray();
-			this.buildSelector(querySelect, wordArrays, 'Array of strings');
+			this.buildSelector(`section.${currentType} .queryArray select`, wordArrays);
 
 		} else if(type === 'regexp') {
 			this.setVisibleRegExp();
@@ -164,16 +162,17 @@ const tab = {
 
 		testContainerSelector = `section.${currentType} .testString .editor`;
 		currentTabId = `${library}_section_${currentType}`;
+
+		$('.file-form .file-name').val(getFileName());
 	},
 
-	buildSelector : function(selector, obj, selected) {
-		let options = `<option value="" selected>${selected}</option>`;
-		//let options = '';
+	buildSelector : function(selector, obj) {
+		let options = '';
 
 		for(const key in obj) {
 			if(key !== 'name') {
-				const value = key.startsWith('default') ? `['${obj[key].toString().split(',').join("', '")}']` : `${obj.name}['${key}']`;
-				options += `<option value="${value}">${key}</option>`;
+				const value = key.startsWith('default') ? `['${obj[key].toString().split(',').join("', '")}']` : `${obj.name}.${key}`;
+				options += `<option value="${value}">${obj.name}.${key}</option>`;
 			}
 		}
 		$(selector).html(options);
@@ -195,6 +194,7 @@ const tab = {
 		$('section.ranges').addClass('hide');
 
 		checkAccuracy($('section.array .accuracy>select')[0]);
+		checkWrapAllRanges($('section.array #array-acrossElements')[0]);
 	},
 
 	setVisibleRegExp : function() {
@@ -354,7 +354,7 @@ const tab = {
 		for(const key in obj.editors) {
 			if(obj.editors[key] !== null) return  true;
 		}
-		return false;
+		return  false;
 	},
 
 	destroyTestEditor : function() {
@@ -451,7 +451,7 @@ const tab = {
 		if(value) button.removeClass('inactive');
 		else button.addClass('inactive');
 
-		return value;
+		return  value;
 	}
 };
 
@@ -469,6 +469,14 @@ function checkIframes(elem) {
 
 	if($(elem).prop('checked')) div.removeClass('hide');
 	else div.addClass('hide');
+}
+
+// also DOM 'onclick' event
+function checkWrapAllRanges(elem) {
+	const div = $(elem).parents('section').first().find('.wrapAllRanges');
+
+	if($(elem).prop('checked')) div.css('display', 'block');
+	else div.css('display', 'none');
 }
 
 // also DOM 'onclick' event
@@ -672,6 +680,10 @@ const importer = {
 				}
 
 			} else {
+				if(key === 'queryArray') {
+					const querySelect = `section.${currentType} .queryArray select`;
+					$(querySelect).val(saved);
+				}
 				editor.updateCode(saved);
 			}
 		}
@@ -710,7 +722,7 @@ const importer = {
 				const attr = elem.attributes[i],
 					name = attr.name.toLowerCase();
 
-				if(name === 'href' || name === 'src') {
+				if(name === 'href' || name === 'src' || name === 'srcset') {
 					const val = decodeURIComponent(attr.value);
 
 					if(/^(?!#).+/i.test(val)) {
@@ -777,6 +789,7 @@ function switchLibrary(elem) {
 
 	currentTabId = `${library}_section_${currentType}`;
 	tab.setLoadButton();
+	$('.file-form .file-name').val(getFileName());
 
 	scroll = false;
 
@@ -1038,7 +1051,7 @@ const codeBuilder = {
 		});
 
 		code += this.buildCallbacks(kind, unmark);
-		code = kind === 'internal' ? `options = {\n${code}}` : `{\n${code}}`;
+		code = !code ? '{}' : (kind === 'internal' ? 'options = ' : '') + `{\n${code}}`;
 
 		updateVariables(element, className);
 
@@ -1702,7 +1715,7 @@ function registerEvents() {
 
 			this.download = name;
 			this.href = URL.createObjectURL(new Blob([json], { type : 'text/json' }));
-			URL.revokeObjectURL(this.href);
+			//URL.revokeObjectURL(this.href);
 
 			$('.file-form .file-name').val(name);
 			saveValue(currentType + '-fileName', name);
@@ -1745,7 +1758,7 @@ function toText(obj, title, msg) {
 function getFileName() {
 	let name = loadValue(currentType + '-fileName');
 
-	return  name || (currentType === 'string_' ? 'string' : currentType) + '-tab-session.json';
+	return name || `${(currentType === 'string_' ? 'string' : currentType)}-${library}-lib.json`;
 }
 
 function showTooltip(elem, e) {
@@ -1943,12 +1956,12 @@ function getContext(selector, jquery) {
 
 function setVisibility() {
 	if(oldLibrary) {
-		$('.new').addClass('hide');
-		$('.old-library').removeClass('hide');
+		$('.advanced').addClass('hide');
+		$('.standard').removeClass('hide');
 
 	} else {
-		$('.new').removeClass('hide');
-		$('.old-library').addClass('hide');
+		$('.advanced').removeClass('hide');
+		$('.standard').addClass('hide');
 	}
 	$('.switch-library label').text((oldLibrary ? 'standard' : 'advanced') + ' library');
 
