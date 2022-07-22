@@ -59,10 +59,9 @@ For normal workflow, the two internal function are necessary:
 They're automatically added to the internal code, if their parameters and functions parameters are the same.
 
 ### Custom code example
-It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrate how to use the custom code editor.  
-Note: currently the option `cacheTextNodes` can be use without generating ranges.
-Copy below code, paste to the JSON form and press 'Import JSON' button.
-
+It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrates how to use the custom code editor.  
+Note: currently, the option `cacheTextNodes` can be used without generating ranges.  
+Copy the below code, paste it into the JSON form, and press 'Import JSON' button.
 ``` json
 {
     "version": "1.0.0",
@@ -81,6 +80,3 @@ Copy below code, paste to the JSON form and press 'Import JSON' button.
     }
 }
 ```
-
-### TODO
-A lot ...
