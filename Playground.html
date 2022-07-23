@@ -290,7 +290,7 @@
 <input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
 <label for="array-cacheTextNodes">Cache text nodes</label>
 </div>
-<div class="wrapAllRanges advanced">
+<div class="wrapAllRanges hide advanced auxiliary">
 <input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
 <label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
@@ -435,7 +435,7 @@
 <label for="regexp-separateGroups">Separate groups</label>
 </div>
 <div class="blockElementsBoundary advanced">
-<input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox">
+<input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox" onchange="checkBlockElements(this)">
 <label for="regexp-blockElementsBoundary">Block elements boundary</label>
 </div>
 <div class="wrapAllRanges advanced">
@@ -488,12 +488,12 @@
 </div>
 </div>
 
-<div class="blockElements advanced hide">
+<div class="blockElements hide advanced auxiliary">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements (e.g. [ 'div', 'p' ])</p>
-<div class="editor">
+<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<div class="editor" name="blockElements">
 </div>
 </div>
 

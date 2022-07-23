@@ -62,7 +62,7 @@ const types = {
 	}
 };
 
-const newOptions = [ 'blockElementsBoundary', 'cacheTextNodes', 'wrapAllRanges' ];
+const newOptions = [ 'blockElementsBoundary', 'blockElements', 'cacheTextNodes', 'wrapAllRanges' ];
 
 const defaultOptions = {
 	element : [ 'mark', 'text' ],
@@ -124,7 +124,7 @@ const tab = {
 				importer.loadOptions();
 			}
 		}
-
+		setVisibility();
 		//highlighter.highlight();
 	},
 
@@ -140,22 +140,11 @@ const tab = {
 		saveValue('tabType', type);
 		currentType = type;
 
-		//const querySelect = `section.${type} .${types[type].queryEditor} select`;
-		if(type === 'string_') {
-			this.setVisibleString();
-
-		} else if(type === 'array') {
-			this.setVisibleArray();
+		if(currentType === 'array') {
 			this.buildSelector(`section.${currentType} .queryArray select`, wordArrays);
-
-		} else if(type === 'regexp') {
-			this.setVisibleRegExp();
-
-		} else if(type === 'ranges') {
-			this.setVisibleRanges();
 		}
 
-		checkIframes($(`section.${type} .iframes input`)[0]);
+		checkIframes($(`section.${currentType} .iframes input`)[0]);
 
 		codeBuilder.initCodeSnippet();
 		this.clear();
@@ -202,7 +191,7 @@ const tab = {
 		$('section.array').addClass('hide');
 		$('section.regexp').removeClass('hide');
 		$('section.ranges').addClass('hide');
-		this.switchElements($('.blockElementsBoundary input'), '.blockElements');
+		checkBlockElements($('.blockElementsBoundary input')[0]);
 	},
 
 	setVisibleRanges : function() {
@@ -212,18 +201,24 @@ const tab = {
 		$('section.ranges').removeClass('hide');
 	},
 
-	switchElements : function(elem, selector) {
-		let checked = elem.prop('checked');
+	switchElements : function(elem, selector, not) {
+		const div = $(`section.${currentType} ${selector}`),
+			checked = $(elem).prop('checked');
 
-		if(checked) $(selector).removeClass('hide');
-		else $(selector).addClass('hide');
+		if(not) {
+			if(checked) div.addClass('hide');
+			else div.removeClass('hide');
+
+		} else {
+			if(checked) div.removeClass('hide');
+			else div.addClass('hide');
+		}
 	},
 
 	loadDefaultHtml : function() {
 		const info = this.getTestEditorInfo();
 
 		if(info.editor.toString().trim() === '') {
-			//$(testContainerSelector).html(minHtml);
 			$(testContainerSelector).html(defaultHtml);
 
 			types[currentType].testEditorMode = 'text';
@@ -457,34 +452,27 @@ const tab = {
 
 // DOM 'onclick' event
 function checkSeparateGroups(elem) {
-	const div = $(elem).parents('section').first().find('.ignoreGroups');
-
-	if($(elem).prop('checked')) div.addClass('hide');
-	else div.removeClass('hide');
-}
-
-// also DOM 'onclick' event
-function checkIframes(elem) {
-	const div = $(elem).parents('section').first().find('.iframesTimeout');
-
-	if($(elem).prop('checked')) div.removeClass('hide');
-	else div.addClass('hide');
+	tab.switchElements(elem, '.ignoreGroups', true);
 }
 
 // also DOM 'onclick' event
 function checkWrapAllRanges(elem) {
-	const div = $(elem).parents('section').first().find('.wrapAllRanges');
+	tab.switchElements(elem, '.wrapAllRanges');
+}
 
-	if($(elem).prop('checked')) div.css('display', 'block');
-	else div.css('display', 'none');
+// also DOM 'onclick' event
+function checkIframes(elem) {
+	tab.switchElements(elem, '.iframesTimeout');
 }
 
 // also DOM 'onclick' event
 function checkAccuracy(elem) {
-	const div = $(elem).parents('section').first().find('.accuracyObject');
+	tab.switchElements(elem, '.accuracyObject');
+}
 
-	if(elem.value === 'object') div.removeClass('hide');
-	else div.addClass('hide');
+// DOM 'onclick' event
+function checkBlockElements(elem) {
+	tab.switchElements(elem, '.blockElements');
 }
 
 // DOM 'onclick' event
@@ -550,10 +538,6 @@ function clearCodeEditor(elem) {
 		editor.updateCode('');
 	}
 	$(elem).addClass('hide');
-
-	scroll = false;
-	runCode();
-	scroll = true;
 }
 
 // DOM 'onclick' event
@@ -604,6 +588,7 @@ const importer = {
 			if(type && types[type]) {
 				tab.selectTab(type);
 				tab.initializeEditors();
+				setVisibility();
 				this.setOptions(json);
 
 				if(types[currentType].testEditorMode === 'text') {
@@ -664,7 +649,7 @@ const importer = {
 		for(const key in obj.editors) {
 			editor = obj.editors[key];
 			saved = json.section[key];
-
+			
 			if(isNullOrUndefined(saved)) {
 				editor.updateCode('');
 
@@ -688,9 +673,7 @@ const importer = {
 			}
 		}
 
-		saved = json.section['customCode'];
-
-		if( !isNullOrUndefined(saved)) {
+		if( !isNullOrUndefined(saved = json.section['customCode'])) {
 			tab.updateCustomCode(saved);
 		}
 
@@ -791,12 +774,10 @@ function switchLibrary(elem) {
 	tab.setLoadButton();
 	$('.file-form .file-name').val(getFileName());
 
-	scroll = false;
-
-	if(types[currentType].testEditorMode === 'text') runCode();
-	else tab.setTextMode();
-
-	scroll = true;
+	if( !oldLibrary) {
+		checkBlockElements($('.blockElementsBoundary input')[0]);
+		checkWrapAllRanges($('section.array #array-acrossElements')[0]);
+	}
 }
 
 // DOM 'onclick' event
@@ -980,6 +961,8 @@ const codeBuilder = {
 		let opt, text, element, className, code = '';
 
 		obj.options.forEach(option => {
+			if(oldLibrary && newOptions.indexOf(option) !== -1) return  false;
+
 			const selector = `section.${currentType} .${option}`,
 				value = defaultOptions[option];
 
@@ -1013,7 +996,13 @@ const codeBuilder = {
 							const editor = tab.getOptionEditor(option);
 
 							if(editor && (text = editor.toString().trim()).length) {
-								code += `${indent}${option} : ${text},\n`;
+								if(option === 'blockElements') {
+									code = code.replace(/\bblockElementsBoundary *: *true/, `blockElementsBoundary : ${text}`);
+
+								} else {
+									code += `${indent}${option} : ${text},\n`;
+								}
+								//code += `${indent}${option} : ${text},\n`;
 							}
 						}
 						break;
@@ -1191,6 +1180,8 @@ const Json = {
 		json += `"type":"${currentType}"`;
 
 		obj.options.forEach(option => {
+			if(oldLibrary && newOptions.indexOf(option) !== -1) return  false;
+
 			const selector = `section.${currentType} .${option}`,
 				value = defaultOptions[option];
 
@@ -1544,15 +1535,29 @@ const highlighter = {
 
 		} else if(currentType === 'regexp') {
 			obj.separateGroups = $(`${section} .separateGroups input`).prop('checked');
-			obj.blockElementsBoundary = $(`${section} .blockElementsBoundary input`).prop('checked');
 		}
 
-		if(currentType === 'array') {
-			obj.cacheTextNodes = $(`${section} .cacheTextNodes input`).prop('checked');
-		}
+		if( !oldLibrary) {
+			if(currentType === 'regexp') {
+				const boundary = $(`${section} .blockElementsBoundary input`).prop('checked');
+				if(boundary) {
+					const blockElements = this.tryToEvaluate('blockElements', 5);
+					if(blockElements) {
+						obj.blockElementsBoundary = blockElements;
 
-		if(currentType === 'array' || currentType === 'regexp' || currentType === 'ranges') {
-			obj.wrapAllRanges = $(`${section} .wrapAllRanges input`).prop('checked');
+					} else {
+						obj.blockElementsBoundary = true;
+					}
+				}
+			}
+
+			if(currentType === 'array') {
+				obj.cacheTextNodes = $(`${section} .cacheTextNodes input`).prop('checked');
+			}
+
+			if(currentType === 'array' || currentType === 'regexp' || currentType === 'ranges') {
+				obj.wrapAllRanges = $(`${section} .wrapAllRanges input`).prop('checked');
+			}
 		}
 
 		return  obj;
@@ -1611,7 +1616,7 @@ const highlighter = {
 
 function registerEvents() {
 
-	$("body").on('mouseup', function() {
+	$(document).on('mouseup', function() {
 		$('body *').removeClass('warning');
 	});
 
@@ -1642,10 +1647,6 @@ function registerEvents() {
 		} else {
 			button.addClass('hide');
 		}
-	});
-
-	$(".blockElementsBoundary input").on('change', function(e) {
-		tab.switchElements($(this), '.blockElements');
 	});
 
 	$("div.actions>input.copy").on('mouseup', function(e) {
@@ -1700,6 +1701,19 @@ function registerEvents() {
 
 	$('.file-form>.close').on('click', function() {
 		$(this).parent().css('display', 'none');
+	});
+
+	$(document).on('keydown', function(e) {
+		if(e.ctrlKey || e.metaKey) {
+			if(e.keyCode === 83) {    // s
+				$('.file-form a.save-file')[0].click();
+				e.preventDefault();
+
+			} else if(e.keyCode === 79) {    // o
+				$('.file-form #file-dialog')[0].click();
+				e.preventDefault();
+			}
+		}
 	});
 
 	$('.file-form a.save-file').on('click', function(e) {
@@ -1758,7 +1772,7 @@ function toText(obj, title, msg) {
 function getFileName() {
 	let name = loadValue(currentType + '-fileName');
 
-	return name || `${(currentType === 'string_' ? 'string' : currentType)}-${library}-lib.json`;
+	return  name || `${(currentType === 'string_' ? 'string' : currentType)}-${library}-lib.json`;
 }
 
 function showTooltip(elem, e) {
@@ -1960,12 +1974,26 @@ function setVisibility() {
 		$('.standard').removeClass('hide');
 
 	} else {
-		$('.advanced').removeClass('hide');
+		//$('.advanced').removeClass('hide');
+		$('.advanced:not(.auxiliary)').removeClass('hide');
 		$('.standard').addClass('hide');
 	}
 	$('.switch-library label').text((oldLibrary ? 'standard' : 'advanced') + ' library');
 
 	library = oldLibrary ? 'standard' : 'advanced';
+
+	if(currentType === 'string_') {
+		tab.setVisibleString();
+
+	} else if(currentType === 'array') {
+		tab.setVisibleArray();
+
+	} else if(currentType === 'regexp') {
+		tab.setVisibleRegExp();
+
+	} else if(currentType === 'ranges') {
+		tab.setVisibleRanges();
+	}
 }
 
 function loadValue(key) {
