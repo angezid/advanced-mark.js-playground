@@ -68,7 +68,7 @@ Copy the below code, paste it into the JSON form, and press 'Import JSON' button
         "diacritics": false,
         "cacheTextNodes": true,
         "customCode": "const ranges=[];\n<<markjsCode>> // don't remove it\n\nfunction filter(node, term, marks, count, info) {\n  const range = {\n    start : info.offset + info.match.index + info.match[1].length,\n    length : info.match[2].length,\n  };\n  if (options.acrossElements) {\n    if (info.matchStart) {\n      range.startElement = true;\n    }\n  } else range.startElement = true;\n  ranges.push(range);\n  \n  return  false;\n}\n\nfunction done() {\n  $('section.array .testString .editor').markRanges(ranges, {\n    'each' : function(elem, range) {\n      if(range.startElement) {\n        elem.setAttribute('data-markjs', 'start-1');\n      }\n    },\n    done : highlighter.finish\n  });\n}",
-        "queryArray": "wordsArray_50",
+        "queryArray": "wordArrays.words_50",
         "testString": {
             "mode": "html",
             "content": "<head></head><body><p>Load default Html and press Run button</p></body>"

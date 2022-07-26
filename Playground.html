@@ -110,7 +110,7 @@
 
 <div class="checkboxes">
 <div class="separateWordSearch">
-<input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked>
+<input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked onchange="setCacheAndCombine(this)">
 <label for="string_-separateWordSearch">Separate word search</label>
 </div>
 <div class="diacritics">
@@ -126,11 +126,23 @@
 <label for="string_-ignoreJoiners">Ignore joiners</label>
 </div>
 <div class="acrossElements">
-<input name="acrossElements" id="string_-acrossElements" type="checkbox">
+<input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setWrapAllRanges(this)">
 <label for="string_-acrossElements">Across elements</label>
 </div>
+<div class="combinePatterns advanced dependable">
+<input name="combinePatterns" id="string_-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
+<label for="string_-combinePatterns">Combine term patterns</label>
+</div>
+<div class="cacheTextNodes advanced dependable">
+<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
+<label for="string_-cacheTextNodes">Cache text nodes</label>
+</div>
+<div class="wrapAllRanges advanced dependable">
+<input name="wrapAllRanges" id="string_-wrapAllRanges" type="checkbox">
+<label for="string_-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
 <div class="iframes">
-<input name="iframes" id="string_-iframes" type="checkbox" onchange="checkIframes(this)">
+<input name="iframes" id="string_-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="string_-iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -153,8 +165,8 @@
 
 <div class="accuracy">
 <label for="string_-accuracy">Accuracy:</label>
-<select name="accuracy" id="string_-accuracy" onchange="checkAccuracy(this)">
-<option value="object" title="The 'object' is an auxiliary option to enable the accuracy object editor">object</option>
+<select name="accuracy" id="string_-accuracy" onchange="setAccuracy(this)">
+<option value="object" title="The 'object' is an auxiliary option to enable an accuracy object editor">object</option>
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
 <option value="complementary">complementary</option>
@@ -169,7 +181,11 @@
 <option value="withSpaces">withSpaces</option>
 </select>
 </div>
-<div class="iframesTimeout">
+<div class="combineNumber advanced dependable">
+<label for="string_-combineNumber">Combine by:</label>
+<input name="combineNumber" id="string_-combineNumber" type="number" min="1" max="10000" value="10">
+</div>
+<div class="iframesTimeout dependable">
 <label for="string_-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="string_-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -283,19 +299,23 @@
 <label for="array-ignoreJoiners">Ignore joiners</label>
 </div>
 <div class="acrossElements">
-<input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="checkWrapAllRanges(this)">
+<input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="setWrapAllRanges(this)">
 <label for="array-acrossElements">Across elements</label>
+</div>
+<div class="combinePatterns advanced">
+<input name="combinePatterns" id="array-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
+<label for="array-combinePatterns">Combine term patterns</label>
 </div>
 <div class="cacheTextNodes advanced">
 <input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
 <label for="array-cacheTextNodes">Cache text nodes</label>
 </div>
-<div class="wrapAllRanges hide advanced auxiliary">
+<div class="wrapAllRanges hide advanced dependable">
 <input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
 <label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="array-iframes" type="checkbox" onchange="checkIframes(this)">
+<input name="iframes" id="array-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="array-iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -318,8 +338,8 @@
 
 <div class="accuracy">
 <label for="array-accuracy">Accuracy:</label>
-<select name="accuracy" id="array-accuracy" onchange="checkAccuracy(this)">
-<option value="object" title="The 'object' is an auxiliary option to enable the accuracy object editor">object</option>
+<select name="accuracy" id="array-accuracy" onchange="setAccuracy(this)">
+<option value="object" title="The 'object' is an auxiliary option to enable an accuracy object editor">object</option>
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
 <option value="complementary">complementary</option>
@@ -334,7 +354,11 @@
 <option value="withSpaces">withSpaces</option>
 </select>
 </div>
-<div class="iframesTimeout">
+<div class="combineNumber advanced dependable">
+<label for="array-combineNumber">Combine by:</label>
+<input name="combineNumber" id="array-combineNumber" type="number" min="1" max="10000" value="10">
+</div>
+<div class="iframesTimeout dependable">
 <label for="array-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="array-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -371,7 +395,7 @@
 </div>
 </div>
 
-<div class="accuracyObject hide">
+<div class="accuracyObject hide advanced dependable">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -427,23 +451,23 @@
 
 <div class="checkboxes">
 <div class="acrossElements">
-<input name="acrossElements" id="regexp-acrossElements" type="checkbox">
+<input name="acrossElements" id="regexp-acrossElements" type="checkbox" onchange="setBlockElementsBoundary(this)">
 <label for="regexp-acrossElements">Across elements</label>
 </div>
 <div class="separateGroups advanced">
-<input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="checkSeparateGroups(this)">
+<input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="setIgnoreGroups(this)">
 <label for="regexp-separateGroups">Separate groups</label>
 </div>
-<div class="blockElementsBoundary advanced">
-<input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox" onchange="checkBlockElements(this)">
+<div class="blockElementsBoundary advanced dependable">
+<input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
 <label for="regexp-blockElementsBoundary">Block elements boundary</label>
 </div>
-<div class="wrapAllRanges advanced">
+<div class="wrapAllRanges advanced dependable">
 <input name="wrapAllRanges" id="regexp-wrapAllRanges" type="checkbox">
 <label for="regexp-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="regexp-iframes" type="checkbox" onchange="checkIframes(this)">
+<input name="iframes" id="regexp-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="regexp-iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -469,7 +493,7 @@
 <input name="ignoreGroups" id="regexp-ignoreGroups" type="number" min="0" max="5" value="0">
 </div>
 
-<div class="iframesTimeout">
+<div class="iframesTimeout dependable">
 <label for="regexp-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="regexp-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -488,7 +512,7 @@
 </div>
 </div>
 
-<div class="blockElements hide advanced auxiliary">
+<div class="blockElements hide advanced dependable">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -549,7 +573,7 @@
 <label for="ranges-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="ranges-iframes" type="checkbox" onchange="checkIframes(this)">
+<input name="iframes" id="ranges-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="ranges-iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -570,7 +594,7 @@
 <input name="className" id="ranges-className" type="text" placeholder="(e.g. word)">
 </div>
 
-<div class="iframesTimeout">
+<div class="iframesTimeout dependable">
 <label for="ranges-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="ranges-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -650,6 +674,10 @@
 </article>
 
 <article class="options-info">
+<div id="blockElementsBoundary">
+This option prevent the matches from crossing the boundary of block elements. 
+</div>
+
 <div id="stringArrayFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
 <!-- A callback to filter or limit matches. It will be called for each <span class="acrossElements">text node</span><span class="not-acrossElements">match</span> with the following parameters: -->
