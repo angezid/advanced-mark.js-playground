@@ -121,13 +121,14 @@ const tab = {
 
 				this.loadDefaultSearchParameter();
 				this.loadDefaultHtml();
+				runCode();
 
 			} else {
 				importer.loadOptions();
 			}
 		}
+
 		this.setVisibility();
-		//highlighter.highlight();
 	},
 
 	selectTab : function(type) {
@@ -177,7 +178,7 @@ const tab = {
 		$('.playground-body>main>article>section').addClass('hide');
 		$(currentSection).removeClass('hide');
 
-		switch(currentType)  {
+		switch(currentType) {
 			case 'string_' :
 				setAccuracy($(`${currentSection} .accuracy>select`)[0]);
 
@@ -202,10 +203,10 @@ const tab = {
 				}
 				break;
 
-			case 'ranges':
-			default:
-				break;
-		}
+			case 'ranges' :
+				default :
+					break;
+			}
 	},
 
 	buildSelector : function(selector, obj) {
@@ -321,7 +322,6 @@ const tab = {
 			editor.remove();
 			parent.append(`<div class="editor">${text}</div>`);
 
-			runCode();
 			this.initializeEditors();
 
 		} else {
@@ -653,10 +653,6 @@ const importer = {
 				tab.initializeEditors();
 				this.setOptions(json);
 				tab.setVisibility();
-
-				if(types[currentType].testEditorMode === 'text') {
-					runCode();
-				}
 
 			} else {
 				log('\nSomething is wrong with the json', true);
@@ -1094,7 +1090,13 @@ const codeBuilder = {
 						opt = $(input).val();
 
 						if(option === 'combineNumber') {
-							if(isChecked('combinePatterns')) code += `${indent}${option} : ${opt},\n`;
+							let add = false;
+							if(currentType === 'string_') {
+								if(isChecked('separateWordSearch') && isChecked('combinePatterns')) add = true;
+
+							} else if(isChecked('combinePatterns')) add = true;
+
+							if(add) code += `${indent}combinePatterns : ${opt},\n`;
 
 						} else if(opt !== value[0]) {
 							code += `${indent}${option} : ${opt},\n`;
@@ -1147,7 +1149,7 @@ const codeBuilder = {
 			}
 		}
 
-		code = `${code}${end}`;
+		code = code ? `${code}${end}`: '';
 
 		return  code;
 	},
@@ -1303,7 +1305,13 @@ const Json = {
 						opt = $(input).val();
 
 						if(option === 'combineNumber') {
-							if(isChecked('combinePatterns')) json += `,"${option}":${opt}`;
+							let add = false;
+							if(currentType === 'string_') {
+								if(isChecked('separateWordSearch') && isChecked('combinePatterns')) add = true;
+
+							} else if(isChecked('combinePatterns')) add = true;
+
+							if(add) code += `${indent}combinePatterns : ${opt},\n`;
 
 						} else if(opt !== value[0]) {
 							json += `,"${option}":${opt}`;
@@ -1362,7 +1370,7 @@ const highlighter = {
 		const limited = oldLibrary || !dFlagSupport,
 			open = '<mark data-markjs=[^>]+>',
 			pattern = `(?<=${open}\s*)[^<]+(?=</mark>|${open})|(?<=</mark>)\s*(?:(?!${open})[^])+?(?=</mark>)`,
-			groupPattern = `(?<=(${open})\s*)([^<]+)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
+			groupPattern = `(?<=(${open})\s*)([^<]*)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
 			regex = new RegExp(limited ? pattern : groupPattern, (limited ? '' : 'd') + 'g');
 
 		markElement = 'mark';
@@ -1604,11 +1612,6 @@ const highlighter = {
 				}
 			}
 
-			const combine = $(`${currentSection} .combinePatterns input`).prop('checked');
-			if(combine) {
-				obj.combinePatterns = $(`${currentSection} .combineNumber input`).val();
-			}
-
 		} else if(currentType === 'regexp') {
 			obj.separateGroups = $(`${currentSection} .separateGroups input`).prop('checked');
 		}
@@ -1633,6 +1636,13 @@ const highlighter = {
 
 			if(currentType === 'array' || currentType === 'regexp' || currentType === 'ranges') {
 				obj.wrapAllRanges = $(`${currentSection} .wrapAllRanges input`).prop('checked');
+			}
+
+			if(currentType === 'string_' && obj.separateWordSearch || currentType === 'array') {
+				const combine = $(`${currentSection} .combinePatterns input`).prop('checked');
+				if(combine) {
+					obj.combinePatterns = $(`${currentSection} .combineNumber input`).val();
+				}
 			}
 		}
 
@@ -1714,9 +1724,6 @@ function registerEvents() {
 
 			if( !editor || !editor.toString().trim()) {
 				tab.updateCustomCode(codeBuilder.snippet);
-				scroll = false;
-				runCode();
-				scroll = true;
 			}
 			button.removeClass('hide');
 
@@ -1968,7 +1975,6 @@ function scrollIntoView(elem) {
 	if(scroll && elem.length) {
 		elem[0].scrollIntoView(true);
 		window.scrollBy(0, -10000);
-		//window.scrollBy(0, -60);
 	}
 }
 

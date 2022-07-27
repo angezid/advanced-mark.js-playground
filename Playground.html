@@ -129,15 +129,15 @@
 <input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setWrapAllRanges(this)">
 <label for="string_-acrossElements">Across elements</label>
 </div>
-<div class="combinePatterns advanced dependable">
+<div class="combinePatterns advanced dependable hide">
 <input name="combinePatterns" id="string_-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
 <label for="string_-combinePatterns">Combine term patterns</label>
 </div>
-<div class="cacheTextNodes advanced dependable">
+<div class="cacheTextNodes advanced dependable hide">
 <input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
 <label for="string_-cacheTextNodes">Cache text nodes</label>
 </div>
-<div class="wrapAllRanges advanced dependable">
+<div class="wrapAllRanges advanced dependable hide">
 <input name="wrapAllRanges" id="string_-wrapAllRanges" type="checkbox">
 <label for="string_-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
@@ -181,11 +181,11 @@
 <option value="withSpaces">withSpaces</option>
 </select>
 </div>
-<div class="combineNumber advanced dependable">
+<div class="combineNumber advanced dependable hide">
 <label for="string_-combineNumber">Combine by:</label>
 <input name="combineNumber" id="string_-combineNumber" type="number" min="1" max="10000" value="10">
 </div>
-<div class="iframesTimeout dependable">
+<div class="iframesTimeout dependable hide">
 <label for="string_-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="string_-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -253,11 +253,9 @@
 <div class="actions right">
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<!-- <p>Array of strings</p> -->
 <label for="arrays">Array of strings</label>
 <select name="arrays" id="arrays" onchange="selectArray(this)">
 </select>
-
 <div class="editor">
 </div>
 </div>
@@ -310,7 +308,7 @@
 <input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
 <label for="array-cacheTextNodes">Cache text nodes</label>
 </div>
-<div class="wrapAllRanges hide advanced dependable">
+<div class="wrapAllRanges advanced dependable hide">
 <input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
 <label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
@@ -354,11 +352,11 @@
 <option value="withSpaces">withSpaces</option>
 </select>
 </div>
-<div class="combineNumber advanced dependable">
+<div class="combineNumber advanced dependable hide">
 <label for="array-combineNumber">Combine by:</label>
 <input name="combineNumber" id="array-combineNumber" type="number" min="1" max="10000" value="10">
 </div>
-<div class="iframesTimeout dependable">
+<div class="iframesTimeout dependable hide">
 <label for="array-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="array-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -395,7 +393,7 @@
 </div>
 </div>
 
-<div class="accuracyObject hide advanced dependable">
+<div class="accuracyObject advanced dependable hide">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -458,11 +456,11 @@
 <input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="setIgnoreGroups(this)">
 <label for="regexp-separateGroups">Separate groups</label>
 </div>
-<div class="blockElementsBoundary advanced dependable">
+<div class="blockElementsBoundary advanced dependable hide">
 <input name="blockElementsBoundary" id="regexp-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
 <label for="regexp-blockElementsBoundary">Block elements boundary</label>
 </div>
-<div class="wrapAllRanges advanced dependable">
+<div class="wrapAllRanges advanced dependable hide">
 <input name="wrapAllRanges" id="regexp-wrapAllRanges" type="checkbox">
 <label for="regexp-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
@@ -493,7 +491,7 @@
 <input name="ignoreGroups" id="regexp-ignoreGroups" type="number" min="0" max="5" value="0">
 </div>
 
-<div class="iframesTimeout dependable">
+<div class="iframesTimeout dependable hide">
 <label for="regexp-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="regexp-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>
@@ -512,7 +510,7 @@
 </div>
 </div>
 
-<div class="blockElements hide advanced dependable">
+<div class="blockElements advanced dependable hide">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -594,7 +592,7 @@
 <input name="className" id="ranges-className" type="text" placeholder="(e.g. word)">
 </div>
 
-<div class="iframesTimeout dependable">
+<div class="iframesTimeout dependable hide">
 <label for="ranges-iframesTimeout">Iframes timeout:</label>
 <input name="iframesTimeout" id="ranges-iframesTimeout" type="number" min="0" max="50000" value="5000">
 </div>

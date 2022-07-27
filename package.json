@@ -1,6 +1,14 @@
 {
   "name": "Markjs-playground",
   "version": "1.0.0",
+  "description": "Help to get familiar with Mark.js, generate code, write and test custom code, experiment with real HTML. ",
+  "keywords": [
+    "playground",
+    "mark.js",
+    "markjs",
+    "highlight",
+  ],
+  "license": "MIT",
   "dependencies": {
     "codejar": "^3.6.0",
     "jquery": "^3.6.0",
