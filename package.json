@@ -6,7 +6,7 @@
     "playground",
     "mark.js",
     "markjs",
-    "highlight",
+    "highlight"
   ],
   "license": "MIT",
   "dependencies": {

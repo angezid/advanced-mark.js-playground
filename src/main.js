@@ -305,7 +305,7 @@ const tab = {
 		this.highlightButton('.html');
 	},
 
-	setTextMode : function(content = null) {
+	setTextMode : function(content, highlight = false) {
 		if(types[currentType].testEditorMode === 'text') return;
 
 		types[currentType].testEditorMode = 'text';
@@ -323,6 +323,10 @@ const tab = {
 			parent.append(`<div class="editor">${text}</div>`);
 
 			this.initializeEditors();
+
+			if(highlight) {
+				runCode();
+			}
 
 		} else {
 			const info = this.getTestEditorInfo();
@@ -550,7 +554,7 @@ function selectArray(elem) {
 
 // DOM 'onclick' event
 function setTextMode() {
-	tab.setTextMode();
+	tab.setTextMode(null, true);
 }
 
 // DOM 'onclick' event
@@ -743,7 +747,7 @@ const importer = {
 		}
 
 		if(textMode) {
-			tab.setTextMode();
+			tab.setTextMode(null);
 		}
 	},
 
@@ -1236,7 +1240,7 @@ const Json = {
 		}
 
 		if(textMode) {
-			tab.setTextMode();
+			tab.setTextMode(null);
 		}
 
 		return  json;
@@ -1924,7 +1928,7 @@ function isNullOrUndefined(prop) {
 	return  typeof prop === 'undefined' || prop === null;
 }
 
-function previousMatch(elem) {
+function previousMatch() {
 	if( !startElements.length) return;
 
 	if(--currentIndex <= 0) {
@@ -1936,7 +1940,7 @@ function previousMatch(elem) {
 	nextButton.css('opacity', 1);
 }
 
-function nextMatch(elem) {
+function nextMatch() {
 	if( !startElements.length) return;
 
 	if(++currentIndex >= startElements.length - 1) {
