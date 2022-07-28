@@ -235,13 +235,14 @@ mark.current,
 .custom-element.current { font-size: 110%; background: #ffe408; border-color: #ffe408; border-bottom: #444 2px solid; }
 
 mark.groups { background: #ffe408; }
-mark.groups.current { border-width: 1px; }
+/*mark.groups.current { border-width: 1px; }*/
 mark.mark-element.current { background: #ddd; border-width: 0; }
 
 details>summary { width: 15em; cursor: pointer; }
 
-.warning { background-color: #f9d; }
-.playground-body>header .mark-type ul li.warning { background-color: #f9d; }
+.error { background-color: #f9d; }
+.warning { background-color: #ffb36f; }
+.playground-body>header .mark-type ul li.error { background-color: #f9d; }
 
 code { font-family: Consolas, monospace; font-size: 1em; padding: 0 3px; color: #b12; background: #f8f8f8; border: #d8d8d8 1px solid; }
 pre code { padding: 0; color: #000; background: #ececec; border: none; }

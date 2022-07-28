@@ -30,16 +30,16 @@ const settings = {
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'combineNumber', 'debug' ],
-		editors : { 'queryString' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'blockElementsBoundary', 'blockElements', 'wildcards', 'combineNumber', 'debug' ],
+		editors : { 'queryString' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
 		customCodeEditor : null
 	},
 
 	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'combineNumber', 'cacheTextNodes', 'wrapAllRanges', 'debug' ],
-		editors : { 'queryArray' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'blockElements', 'combineNumber', 'cacheTextNodes', 'wrapAllRanges', 'debug' ],
+		editors : { 'queryArray' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
 		customCodeEditor : null
@@ -47,7 +47,7 @@ const types = {
 
 	regexp : {
 		options : [ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'blockElements', 'wrapAllRanges', 'debug' ],
-		editors : { 'queryRegExp' : null, 'testString' : null, 'exclude' : null, 'blockElements' : null, },
+		editors : { 'queryRegExp' : null, 'testString' : null, 'exclude' : null, 'blockElements' : null },
 		queryEditor : 'queryRegExp',
 		testEditorMode : 'text',
 		customCodeEditor : null,
@@ -183,7 +183,7 @@ const tab = {
 				setAccuracy($(`${currentSection} .accuracy>select`)[0]);
 
 				if( !oldLibrary) {
-					setWrapAllRanges($(`${currentSection} .acrossElements input`)[0]);
+					setAcrossElementsDependable($(`${currentSection} .acrossElements input`)[0]);
 					setCacheAndCombine($(`${currentSection} .separateWordSearch input`)[0]);
 				}
 				break;
@@ -192,7 +192,7 @@ const tab = {
 				setAccuracy($(`${currentSection} .accuracy>select`)[0]);
 
 				if( !oldLibrary) {
-					setWrapAllRanges($(`${currentSection} .acrossElements input`)[0]);
+					setAcrossElementsDependable($(`${currentSection} .acrossElements input`)[0]);
 					setCombineNumber($(`${currentSection} .combinePatterns input`)[0]);
 				}
 				break;
@@ -203,10 +203,8 @@ const tab = {
 				}
 				break;
 
-			case 'ranges' :
-				default :
-					break;
-			}
+			default : break;
+		}
 	},
 
 	buildSelector : function(selector, obj) {
@@ -452,7 +450,7 @@ const tab = {
 		$('.results code').empty();
 		$('.internal-code code').empty();
 		if( !keep) $('.generated-code code').empty();
-		$('body *').removeClass('warning');
+		$('body *').removeClass('error warning');
 		marks = $();
 		startElements = $();
 	},
@@ -478,10 +476,11 @@ function setIgnoreGroups(elem) {
 }
 
 // also DOM 'onclick' event
-function setWrapAllRanges(elem) {
+function setAcrossElementsDependable(elem) {
 	if( !oldLibrary) {
 		tab.switchElements(elem, '.wrapAllRanges');
 	}
+	setBlockElementsBoundary(elem);
 }
 
 // also DOM 'onclick' event
@@ -519,7 +518,7 @@ function setBlockElementsBoundary(elem) {
 		tab.switchElements(elem, '.blockElementsBoundary');
 
 		if( !$(`${currentSection} .blockElementsBoundary`).hasClass('hide')) {
-			setBlockElements($('#regexp-blockElementsBoundary')[0]);
+			setBlockElements($(`${currentSection} .blockElementsBoundary input`)[0]);
 		}
 	}
 }
@@ -1078,7 +1077,7 @@ const codeBuilder = {
 							if(opt === 'object') {
 								const editor = tab.getOptionEditor('accuracyObject');
 
-								if(editor && (text = editor.toString().trim()).length > 30) {
+								if(editor && (text = editor.toString().trim())) {
 									code += `${indent}${option} : ${text},\n`;
 								}
 
@@ -1153,7 +1152,7 @@ const codeBuilder = {
 			}
 		}
 
-		code = code ? `${code}${end}`: '';
+		code = code ? `${code}${end}` : '';
 
 		return  code;
 	},
@@ -1281,7 +1280,7 @@ const Json = {
 						if(option !== 'accuracyObject') {
 							const editor = tab.getOptionEditor(option);
 
-							if(editor && (text = editor.toString().trim()).length > 2) {
+							if(editor && (text = editor.toString().trim())) {
 								json += `,"${option}":${JSON.stringify(text)}`;
 							}
 						}
@@ -1296,7 +1295,7 @@ const Json = {
 							if(opt === 'object') {
 								const editor = tab.getOptionEditor('accuracyObject');
 
-								if(editor && (text = editor.toString().trim()).length > 30) {
+								if(editor && (text = editor.toString().trim())) {
 									json += `,"accuracyObject":${JSON.stringify(text)}`;
 								}
 							}
@@ -1621,7 +1620,7 @@ const highlighter = {
 		}
 
 		if( !oldLibrary) {
-			if(currentType === 'regexp') {
+			if((currentType === 'string_' || currentType === 'array') && obj.acrossElements || currentType === 'regexp') {
 				const boundary = $(`${currentSection} .blockElementsBoundary input`).prop('checked');
 				if(boundary) {
 					const blockElements = this.tryToEvaluate('blockElements', 5);
@@ -1657,12 +1656,20 @@ const highlighter = {
 		const editor = tab.getOptionEditor(option);
 		let text;
 
-		if(editor && (text = editor.toString().trim()).length > minLength) {
-			try {
-				return  eval(`'use strict'; (${text})`);
+		if(editor) {
+			text = editor.toString().trim();
 
-			} catch(e) {
-				log(`Failed to evaluate ${option} object:\n${e.message}`, true);
+			if(text.length > minLength) {
+				try {
+					return  eval(`'use strict'; (${text})`);
+
+				} catch(e) {
+					log(`Failed to evaluate ${option} object:\n${e.message}`, true);
+					$(`${currentSection} .${option} .editor`).addClass('error');
+				}
+
+			} else if(text) {
+				log(`Skips evaluating ${option} object due to suspicious length.`, false, true);
 				$(`${currentSection} .${option} .editor`).addClass('warning');
 			}
 		}
@@ -1675,7 +1682,7 @@ const highlighter = {
 
 		} catch(e) {
 			log(`Failed to evaluate the ${name}:\n${e.message}`, true);
-			$(selector).addClass('warning');
+			$(selector).addClass('error');
 		}
 		return  null;
 	},
@@ -1683,7 +1690,7 @@ const highlighter = {
 	finish : function(totalMarks, totalMatches, termStats) {
 		let matchCount = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
 			totalTime = (performance.now() - time) | 0,
-			stats = termStats ? toText(termStats, '\n\nTerms statics:') : '';
+			stats = termStats ? toText(termStats, '\n\nTerms stats :') : '';
 
 		log(`${matchCount}totalMarks = ${totalMarks}\nmark time = ${totalTime} ms${stats}`);
 
@@ -1707,7 +1714,7 @@ const highlighter = {
 function registerEvents() {
 
 	$(document).on('mouseup', function() {
-		$('body *').removeClass('warning');
+		$('body.playground-body *').removeClass('error warning');
 	});
 
 	$(".mark-type li").on('click', function() {
@@ -1746,9 +1753,17 @@ function registerEvents() {
 		codeBuilder.build('js-jq');
 	});
 
-	$("input[name], select[name], option[name], div.editor[name]").on('mouseenter', function(e) {
+	$("label[for], input[name], select[name], option[name], div.editor[name]").on('mouseenter', function(e) {
 		if(settings.showTooltips || e.ctrlKey || e.metaKey) {
-			showTooltip($(this), e);
+			const attr = $(this).attr('for');
+			if(attr) {
+				if($(`input#${attr}[name]`).length) {
+					showTooltip($(this).attr('for').replace(/^[^-]+-/, ''), $(this), e);
+				}
+
+			} else {
+				showTooltip($(this).attr('name'), $(this), e);
+			}
 		}
 	}).on('mouseleave', function() {
 		$(this).powerTip('hide', true);
@@ -1862,9 +1877,7 @@ function getFileName() {
 	return  name || `${(currentType === 'string_' ? 'string' : currentType)}-${library}-lib.json`;
 }
 
-function showTooltip(elem, e) {
-	const id = elem.attr('name');
-
+function showTooltip(id, elem, e) {
 	showHideInfo(id);
 
 	if(elem.data('powertiptarget')) elem.powerTip('destroy');
@@ -1912,7 +1925,7 @@ function isChecked(option) {
 
 function log(message, error, warning) {
 	if(error) {
-		$('header .mark-type li.selected').addClass('warning');
+		$('header .mark-type li.selected').addClass('error');
 		message = `<span style="color:red">${message}</span><br>`;
 		$('.results code').html(message);
 		return;

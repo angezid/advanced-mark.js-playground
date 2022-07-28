@@ -126,8 +126,12 @@
 <label for="string_-ignoreJoiners">Ignore joiners</label>
 </div>
 <div class="acrossElements">
-<input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setWrapAllRanges(this)">
+<input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
 <label for="string_-acrossElements">Across elements</label>
+</div>
+<div class="blockElementsBoundary advanced dependable hide">
+<input name="blockElementsBoundary" id="string_-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
+<label for="string_-blockElementsBoundary">Block elements boundary</label>
 </div>
 <div class="combinePatterns advanced dependable hide">
 <input name="combinePatterns" id="string_-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
@@ -231,6 +235,15 @@
 </div>
 </div>
 
+<div class="blockElements advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<div class="editor" name="blockElements">
+</div>
+</div>
+
 <div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearCodeEditor(this);"></button>
@@ -297,8 +310,12 @@
 <label for="array-ignoreJoiners">Ignore joiners</label>
 </div>
 <div class="acrossElements">
-<input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="setWrapAllRanges(this)">
+<input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
 <label for="array-acrossElements">Across elements</label>
+</div>
+<div class="blockElementsBoundary advanced dependable hide">
+<input name="blockElementsBoundary" id="array-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
+<label for="array-blockElementsBoundary">Block elements boundary</label>
 </div>
 <div class="combinePatterns advanced">
 <input name="combinePatterns" id="array-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
@@ -399,6 +416,15 @@
 </div>
 <p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
+</div>
+</div>
+
+<div class="blockElements advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<div class="editor" name="blockElements">
 </div>
 </div>
 
@@ -672,8 +698,15 @@
 </article>
 
 <article class="options-info">
+<div id="blockElements">
+If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be worked like a boundary.<br>
+The default <code>char</code> property value is '\x01'. 
+</div>
+
 <div id="blockElementsBoundary">
-This option prevent the matches from crossing the boundary of block elements. 
+This option only make sense when highlighting phrases or RegExp separate groups.<br>
+It prevents matches from crossing the boundary of block elements.<br>
+It make <code>acrossElements</code> option act like 'across inline elements'.
 </div>
 
 <div id="stringArrayFilter">
