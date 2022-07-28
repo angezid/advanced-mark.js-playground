@@ -294,6 +294,7 @@ const tab = {
 			}
 
 			this.initializeEditors();
+			currentIndex = 0;
 
 		} else {
 			const info = this.getTestEditorInfo();
@@ -1113,7 +1114,7 @@ const codeBuilder = {
 		});
 
 		code += this.buildCallbacks(kind, unmark);
-		code = !code ? '{}' : (kind === 'internal' ? 'options = ' : '') + `{\n${code}}`;
+		code = !code.trim() ? '{}' : (kind === 'internal' ? 'options = ' : '') + `{\n${code}}`;
 
 		updateVariables(element, className);
 
@@ -1152,9 +1153,7 @@ const codeBuilder = {
 			}
 		}
 
-		code = code ? `${code}${end}` : '';
-
-		return  code;
+		return  code + end;
 	},
 
 	getFilterParameters : function() {
