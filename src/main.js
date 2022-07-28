@@ -604,6 +604,7 @@ function clearCodeEditor(elem) {
 		editor.updateCode('');
 	}
 	$(elem).addClass('hide');
+	buildCode();
 }
 
 // DOM 'onclick' event
@@ -845,7 +846,7 @@ function switchLibrary(elem) {
 
 // DOM 'onclick' event
 function unmarkMethod(elem) {
-	codeBuilder.build('js-jq', $(elem).prop('checked'));
+	codeBuilder.build('js-jq');
 }
 
 // DOM 'onclick' event
@@ -1120,15 +1121,14 @@ const codeBuilder = {
 	},
 
 	buildCallbacks : function(kind, unmark) {
-		let code = '',
+		let text,
+			code = '',
 			indent = ' '.repeat(unmark ? 6 : 2),
 			end = unmark ? ' '.repeat(4) : '';
 
 		const editor = types[currentType].customCodeEditor;
 
-		if(editor) {
-			const text = editor.toString();
-
+		if(editor && (text = editor.toString())) {
 			if(/\bfunction\s+filter\s*\(/.test(text)) {
 				code += `${indent}filter : filter,\n`;
 			}
@@ -1737,6 +1737,7 @@ function registerEvents() {
 				tab.updateCustomCode(codeBuilder.snippet);
 			}
 			button.removeClass('hide');
+			buildCode();
 
 		} else {
 			button.addClass('hide');

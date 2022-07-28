@@ -699,14 +699,23 @@
 
 <article class="options-info">
 <div id="blockElements">
-If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be worked like a boundary.<br>
+If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be working like a boundary.<br>
 The default <code>char</code> property value is '\x01'. 
 </div>
 
 <div id="blockElementsBoundary">
 This option only make sense when highlighting phrases or RegExp separate groups.<br>
 It prevents matches from crossing the boundary of block elements.<br>
-It make <code>acrossElements</code> option act like 'across inline elements'.
+It makes <code>acrossElements</code> option act like 'across inline elements'.
+</div>
+
+<div id="combinePatterns">
+
+</div>
+
+<div id="cacheTextNodes">
+This option will improve performance when marking a (especially)large array or string with <code>separateWordSearch</code> option.<br>
+With <code>acrossElements</code> option, it also requires <code>wrapAllRanges</code> option.
 </div>
 
 <div id="stringArrayFilter">
