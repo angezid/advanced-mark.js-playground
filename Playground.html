@@ -41,6 +41,7 @@
 <button class="load" type="button" title="Load from local storage" onclick="load();">Load</button>
 <button class="open-file-form" title="Open file form" type="button">File</button>
 <button class="open-json-form" title="Open JSON form" type="button">JSON</button>
+<button class="open-setting-form" title="Open setting form" type="button">&#x2600;</button>
 </div>
 </header>
 
@@ -71,6 +72,32 @@
 <label class="loaded-file-name">No file selected.</label>
 <input id="file-dialog" type="file" accept=".json">
 </div>
+</div>
+
+<div class="setting-form">
+<div class="close"></div>
+
+<div class="row">
+<div class="switch-library hide">
+<input id="library" type="checkbox" onchange="settings.changed(this);">
+<label for="library">Mark library</label>
+</div>
+</div>
+
+<div class="row">
+<div class="load-default">
+<input id="load-default" type="checkbox" onchange="settings.changed(this);">
+<label for="load-default">Load default</label>
+</div>
+</div>
+
+<div class="row">
+<div class="show-tooltips">
+<input id="show-tooltips" type="checkbox" onchange="settings.changed(this);">
+<label for="show-tooltips">Show tooltips</label>
+</div>
+</div>
+
 </div>
 
 <main class="playground-main">
@@ -683,11 +710,6 @@
 <label for="callbacks">callbacks</label>
 </div>
 
-<div class="switch-library right hide">
-<input id="library" type="checkbox" onchange="switchLibrary(this)">
-<label for="library">mark library</label>
-</div>
-
 <details><summary>Generated code</summary>
 <pre><code class="language-js"></code></pre>
 </details>
@@ -718,7 +740,8 @@ This option will improve performance when marking a (especially)large array or s
 With <code>acrossElements</code> option, it also requires <code>wrapAllRanges</code> option.
 </div>
 
-<div id="stringArrayFilter">
+<div id="stringArrayCustomCode">
+<div class="stringArrayFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
 <!-- A callback to filter or limit matches. It will be called for each <span class="acrossElements">text node</span><span class="not-acrossElements">match</span> with the following parameters: -->
 <ol>
@@ -735,11 +758,11 @@ A callback to filter or limit matches. It will be called for each match and rece
   </ol>
 </li>
 </ol>
-The function must return false if the mark should be stopped, otherwise true
+<p>The function must return false if the mark should be stopped, otherwise true.</p>
 </div>
-
-<div id="stringArrayEach">
-A callback for each marked element.<div class="standard hide"> Receives the marked DOM element as a parameter.</div>
+<hr>
+<div class="stringArrayEach">
+<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
 <div class="advanced">
 <ol>
   <li>The marked DOM element</li>
@@ -753,8 +776,22 @@ A callback for each marked element.<div class="standard hide"> Receives the mark
 </ol>
 </div>
 </div>
+<hr>
+<div class="stringArrayDone">
+<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
+<div class="advanced">
+Receives
+<ol>
+  <li>the total number of marks</li>
+  <li>the exact number of total matches</li>
+  <li>the object containing terms statistics</li>
+</ol>
+</div>
+</div>
+</div>
 
-<div id="regexpFilter">
+<div id="regexpCustomCode">
+<div class="regexpFilter">
 A callback to filter or limit matches. It will be called for each match and receives the following parameters:
 <ol>
 <li>The text node which includes the match</li>
@@ -771,11 +808,11 @@ A callback to filter or limit matches. It will be called for each match and rece
   </ol>
 </li>
 </ol>
-The function must return false if the mark should be stopped, otherwise true
+<p>The function must return false if the mark should be stopped, otherwise true.</p>
 </div>
-
-<div id="regexpEach">
-A callback for each marked element.<div class="standard hide"> Receives the marked DOM element as a parameter.</div>
+<hr>
+<div class="regexpEach">
+<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
 <div class="advanced">
 <ol>
   <li>The marked DOM element</li>
@@ -789,6 +826,32 @@ A callback for each marked element.<div class="standard hide"> Receives the mark
   </ol>
 </li>
 </ol>
+</div>
+</div>
+<hr>
+<div class="regexpDone">
+<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
+<div class="advanced">
+Receives
+<ol>
+  <li>the total number of marks</li>
+  <li>the exact number of total matches</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="rangesCustomCode">
+<hr>
+<div class="rangesDone">
+<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
+<div class="advanced">
+Receives
+<ol>
+  <li>the total number of marks</li>
+  <li>the exact number of total matches</li>
+</ol>
+</div>
 </div>
 </div>
 

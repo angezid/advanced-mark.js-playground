@@ -1,5 +1,7 @@
 # Mark.js-playground
 
+<img height="540" src="assets/images/playground.png">
+
 ### Description
 The program can handle `mark.js` or `jquery.mark.js` - it only requires adding according reference in `Playground.html` file.
 It works both with new [https://github.com/angezid/mark.js](https://github.com/angezid/mark.js) and standard library. The standard library has many limitations, so behavior of this program will depend on mark.js library.  
@@ -8,7 +10,7 @@ Currently, the two mark libraries are installed by default:
 * the mark.js package v8.11.1
 * the jquery.mark.js from 'https://raw.githubusercontent.com/angezid/mark.js/master/dist/jquery.mark.js'
 
-They are not conflicting with each other and can be switch by checkbox.  
+They are not conflicting with each other and can be switch by checkbox (in settings).  
 
 ### Install Mark.js-playground
 Clone or download this repository and run:
@@ -56,7 +58,7 @@ They're automatically added to the internal code if their parameters and functio
 
 ### Custom code example
 It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrates how to use the custom code editor.  
-Note: currently, the option `cacheTextNodes` can be used without generating ranges.  
+Note that currently, the option `cacheTextNodes` can be used without generating ranges.  
 Copy the below code, paste it into the JSON form, and press 'Import JSON' button.
 ``` json
 {
@@ -76,3 +78,7 @@ Copy the below code, paste it into the JSON form, and press 'Import JSON' button
     }
 }
 ```
+
+### License
+
+[MIT](LICENSE)
