@@ -118,7 +118,7 @@ h1.title { font-size: 1.4em; padding: 0; margin: 60px 0 0 0; }
 .playground-body>.json-form button.import-json { width: 90px; }
 .playground-body>.json-form button.import-json:disabled { opacity: 0.5; }
 
-#file-dialog, article.options-info {
+.playground-body>.file-form#file-dialog, .playground-body>main>article.options-info {
 	position: absolute !important;
 	height: 1px;
 	width: 1px;
@@ -128,18 +128,18 @@ h1.title { font-size: 1.4em; padding: 0; margin: 60px 0 0 0; }
 
 input[type=checkbox] { accent-color: #666; cursor: pointer; }
 
-.separateWordSearch label,
-.diacritics label,
-.iframes label,
-.acrossElements label,
-.combinePatterns label,
-.caseSensitive label,
-.ignoreJoiners label,
-.cacheTextNodes label,
-.wrapAllRanges label,
-.separateGroups label,
-.blockElementsBoundary label,
-.debug label { cursor: pointer; }
+.playground-body>main>article>section .checkboxes>.separateWordSearch label,
+.playground-body>main>article>section>.checkboxes>.diacritics label,
+.playground-body>main>article>section>.checkboxes>.iframes label,
+.playground-body>main>article>section>.checkboxes>.acrossElements label,
+.playground-body>main>article>section>.checkboxes>.combinePatterns label,
+.playground-body>main>article>section>.checkboxes>.caseSensitive label,
+.playground-body>main>article>section>.checkboxes>.ignoreJoiners label,
+.playground-body>main>article>section>.checkboxes>.cacheTextNodes label,
+.playground-body>main>article>section>.checkboxes>.wrapAllRanges label,
+.playground-body>main>article>section>.checkboxes>.separateGroups label,
+.playground-body>main>article>section>.checkboxes>.blockElementsBoundary label,
+.playground-body>main>article>section>.checkboxes>.debug label { cursor: pointer; }
 
 .actions button { width: 55px; height: 20px; font-size: 0.75em; color: #000; float: left; background: #ddd; padding: 0; margin: 0 20px 0 0; border: #888 1px solid; border-radius: 3px; cursor: pointer; }
 .actions button:hover { background: #c8c8c8; }
@@ -202,35 +202,35 @@ section.array select#arrays { float: right; width: 210px; margin-right: 20px; pa
 	tab-size: 4;
 }
 
-.element,
-.className,
-.accuracy,
-.ignoreGroups,
-.combineNumber,
-.iframesTimeout,
-.wildcards { padding-bottom: 30px; }
+.playground-body>main>article>section .mixed-options .element,
+.playground-body>main>article>section .mixed-options .className,
+.playground-body>main>article>section .mixed-options .accuracy,
+.playground-body>main>article>section .mixed-options .ignoreGroups,
+.playground-body>main>article>section .mixed-options .combineNumber,
+.playground-body>main>article>section .mixed-options .iframesTimeout,
+.playground-body>main>article>section .mixed-options .wildcards { padding-bottom: 30px; }
 
-.synonyms,
-.exclude,
-.ignorePunctuation,
-.blockElements,
-.accuracyObject,
-.customCode { margin: 15px 0 15px 0; }
+.playground-body>main>article>section .edit-options .synonyms,
+.playground-body>main>article>section .edit-options .exclude,
+.playground-body>main>article>section .edit-options .ignorePunctuation,
+.playground-body>main>article>section .edit-options .blockElements,
+.playground-body>main>article>section .edit-options .accuracyObject,
+.playground-body>main>article>section .edit-options .customCode { margin: 15px 0 15px 0; }
 
-.queryString,
-.queryArray,
-.queryRegExp,
-.queryRanges { margin: 25px 0 15px 0; }
+.playground-body>main>article>section .queryString,
+.playground-body>main>article>section .queryArray,
+.playground-body>main>article>section .queryRegExp,
+.playground-body>main>article>section .queryRanges { margin: 25px 0 15px 0; }
 
-.testString { margin: 25px 0 20px 0; }
+.playground-body>main>article>section .testString { margin: 25px 0 20px 0; }
 .playground-body>main>article>section .testString .editor { font-family: Arial, sans-serif; min-height: 50vh; }
 
-.queryString .editor,
-.queryArray .editor,
-.queryRegExp .editor,
-.queryRanges .editor { height: auto; min-height: 20px; max-height: 10em; padding: 10px; }
+.playground-body>main>article>section .queryString .editor,
+.playground-body>main>article>section .queryArray .editor,
+.playground-body>main>article>section .queryRegExp .editor,
+.playground-body>main>article>section .queryRanges .editor { height: auto; min-height: 20px; max-height: 10em; padding: 10px; }
 
-.customCode .editor { height: auto; max-height: 100vh; background: #f0f0f0; }
+.playground-body>main>article>section .customCode .editor { height: auto; max-height: 100vh; background: #f0f0f0; }
 .playground-body>main>article .results pre { max-height: 15em; }
 
 mark,
