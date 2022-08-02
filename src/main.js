@@ -78,7 +78,7 @@ const defaultOptions = {
 	wrapAllRanges : { value : false, type : 'checkbox' },
 	separateGroups : { value : false, type : 'checkbox' },
 	blockElementsBoundary : { value : false, type : 'checkbox' },
-	blockElements : { value : [], type : 'editor' },
+	blockElements : { value : {}, type : 'editor' },
 	debug : { value : false, type : 'checkbox' },
 	log : { value : false, type : 'checkbox' },
 };
@@ -418,8 +418,10 @@ const tab = {
 
 		const obj = types[currentType];
 
-		obj.editors.testString.destroy();
-		obj.editors.testString = null;
+		if(obj.editors.testString !== null) {
+			obj.editors.testString.destroy();
+			obj.editors.testString = null;
+		}
 	},
 
 	clearTestEditor : function(className) {
@@ -1668,8 +1670,9 @@ const highlighter = {
 		obj.elementName = elementName;
 		obj.className = className;
 		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
-		obj.acrossElements = $(`${currentSection} .acrossElements input`).prop('checked');
-
+		if(currentType !== 'ranges') {
+			obj.acrossElements = $(`${currentSection} .acrossElements input`).prop('checked');
+		}
 		if(currentType === 'string_' || currentType === 'array') {
 			obj.separateWordSearch = $(`${currentSection} .separateWordSearch input`).prop('checked');
 			obj.diacritics = $(`${currentSection} .diacritics input`).prop('checked');
@@ -1706,15 +1709,13 @@ const highlighter = {
 				}
 			}
 
-			if(currentType === 'array') {
-				obj.cacheTextNodes = $(`${currentSection} .cacheTextNodes input`).prop('checked');
-			}
-
 			if(currentType === 'array' || currentType === 'regexp' || currentType === 'ranges') {
 				obj.wrapAllRanges = $(`${currentSection} .wrapAllRanges input`).prop('checked');
 			}
 
 			if(currentType === 'string_' && obj.separateWordSearch || currentType === 'array') {
+				obj.cacheTextNodes = $(`${currentSection} .cacheTextNodes input`).prop('checked');
+
 				const combine = $(`${currentSection} .combinePatterns input`).prop('checked');
 				if(combine) {
 					obj.combinePatterns = $(`${currentSection} .combineNumber input`).val();
