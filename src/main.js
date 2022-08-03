@@ -23,7 +23,7 @@ let version = '1.0.0',
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'blockElementsBoundary', 'blockElements', 'wildcards', 'combinePatterns', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'blockElementsBoundary', 'blockElements', 'wildcards', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'debug' ],
 		editors : { 'queryString' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
@@ -83,52 +83,6 @@ const defaultOptions = {
 	log : { value : false, type : 'checkbox' },
 };
 
-const settings = {
-	library : 'standard',
-	loadDefault : true,
-	showTooltips : false,
-
-	save : function() {
-		const str = JSON.stringify(settings);
-		saveValue('settings', str);
-	},
-
-	load : function() {
-		const str = loadValue('settings');
-		if(str) {
-			const json = Json.parseJson(str);
-			if(json) {
-				if(json.library) {
-					this.library = json.library;
-					$('#library').prop('checked', this.library === 'advanced')
-				}
-
-				if( !isNullOrUndefined(json.loadDefault)) {
-					this.loadDefault = json.loadDefault;
-					$('#load-default').prop('checked', this.loadDefault)
-				}
-
-				if( !isNullOrUndefined(json.showTooltips)) {
-					this.showTooltips = json.showTooltips;
-					$('#show-tooltips').prop('checked', this.showTooltips)
-				}
-			}
-		}
-		switchLibrary(this.library === 'advanced');
-	},
-
-	changed : function(elem) {
-		if(elem.id === 'library') {
-			const checked = $(elem).prop('checked');
-			this.library = checked ? 'advanced' : 'standard';
-			switchLibrary(checked);
-		}
-		this.loadDefault = $('#load-default').prop('checked');
-		this.showTooltips = $('#show-tooltips').prop('checked');
-		this.save();
-	}
-};
-
 $(document).ready(function() {
 	let t0 = performance.now();
 
@@ -171,14 +125,14 @@ const tab = {
 
 	selectTab : function(type) {
 		if( !type) {
-			type = loadValue('tabType');
+			type = settings.loadValue('tabType');
 			if( !type) type = 'string_';
 		}
 
 		$('.playground-body>header .mark-type li').removeClass('selected');
 		$('.playground-body>header .mark-type li[data-type=' + type + ']').addClass('selected');
 
-		saveValue('tabType', type);
+		settings.saveValue('tabType', type);
 		currentType = type;
 		// lengthy path prevents influence on test Html container
 		currentSection = `body.playground-body>main>article>section.${currentType}`;
@@ -326,12 +280,13 @@ const tab = {
 					div.innerHTML = hljs.highlight(html, { language : 'html' }).value;
 
 				} else {
-					div.innerText = html;
+					div.innerHTML = util.entitize(html);
 				}
 				highlighter.highlightRawHtml(testContainerSelector, html.length, forbid);
 
 			} else {
-				div.innerText = html;
+				// innerText removes white spaces
+				div.innerHTML = util.entitize(html);
 			}
 
 			this.initializeEditors();
@@ -517,7 +472,7 @@ const tab = {
 	},
 
 	setLoadButton : function() {
-		const value = loadValue(currentTabId),
+		const value = settings.loadValue(currentTabId),
 			button = $('header button.load');
 
 		if(value) button.removeClass('inactive');
@@ -543,7 +498,7 @@ function setAcrossElementsDependable(elem) {
 // also DOM 'onclick' event
 function setCacheAndCombine(elem) {
 	$(`${currentSection} .combineNumber`).addClass('hide');
-	$(`${currentSection} .wrapAllRanges`).addClass('hide');
+	//$(`${currentSection} .wrapAllRanges`).addClass('hide');
 
 	if(oldLibrary) {
 		$(`${currentSection} .combinePatterns`).addClass('hide');
@@ -628,7 +583,7 @@ function save() {
 	const str = Json.buildJson();
 
 	if(str) {
-		saveValue(currentTabId, str);
+		settings.saveValue(currentTabId, str);
 		tab.setLoadButton();
 	}
 }
@@ -695,7 +650,7 @@ function clearEditor(elem) {
 const importer = {
 
 	loadOptions : function() {
-		const str = loadValue(currentTabId);
+		const str = settings.loadValue(currentTabId);
 
 		if(str) {
 			this.loadJson(str);
@@ -948,7 +903,7 @@ function runCode() {
 			hljs.highlightElement($(`${currentSection} .customCode .editor`)[0]);
 			hljs.highlightElement($('.internal-code code')[0]);
 
-			const val = loadValue('internal_code');
+			const val = settings.loadValue('internal_code');
 			if(val && val === 'opened') {
 				$("#internal-code").attr('open', true);
 			}
@@ -1696,7 +1651,9 @@ const highlighter = {
 		}
 
 		if( !oldLibrary) {
-			if((currentType === 'string_' || currentType === 'array') && obj.acrossElements || currentType === 'regexp') {
+			const acrossElements = (currentType === 'string_' || currentType === 'array') && obj.acrossElements;
+
+			if(acrossElements || currentType === 'regexp') {
 				const boundary = $(`${currentSection} .blockElementsBoundary input`).prop('checked');
 				if(boundary) {
 					const blockElements = this.tryToEvaluate('blockElements', 5);
@@ -1709,7 +1666,7 @@ const highlighter = {
 				}
 			}
 
-			if(currentType === 'array' || currentType === 'regexp' || currentType === 'ranges') {
+			if(acrossElements || currentType === 'regexp' || currentType === 'ranges') {
 				obj.wrapAllRanges = $(`${currentSection} .wrapAllRanges input`).prop('checked');
 			}
 
@@ -1798,7 +1755,7 @@ function registerEvents() {
 
 	$("#internal-code").on('toggle', function(e) {
 		const attr = $(this).attr('open');
-		saveValue('internal_code', attr ? 'opened' : 'closed');
+		settings.saveValue('internal_code', attr ? 'opened' : 'closed');
 	});
 
 	$(".customCode details, .customCode details>summary").on('toggle', function(e) {
@@ -1918,7 +1875,7 @@ function registerEvents() {
 			//URL.revokeObjectURL(this.href);
 
 			$('.file-form .file-name').val(name);
-			saveValue(currentType + '-fileName', name);
+			settings.saveValue(currentType + '-fileName', name);
 		}
 	});
 
@@ -1946,6 +1903,86 @@ function registerEvents() {
 
 }
 
+const util = {
+	entitize : function(text) {
+		text = text.replace(/[<>"'&]/g, (m) => {
+			if(m === '<') return  '&lt;';
+			else if(m === '>') return  '&gt;';
+			else if(m === '"') return  '&quot;';
+			else if(m === '&') return  '&amp;';
+			return  '&#039;';
+		});
+		return  text;
+	}
+};
+
+const settings = {
+	library : 'standard',
+	loadDefault : true,
+	showTooltips : false,
+
+	save : function() {
+		const str = JSON.stringify(settings);
+		this.saveValue('settings', str);
+	},
+
+	load : function() {
+		const str = this.loadValue('settings');
+		if(str) {
+			const json = Json.parseJson(str);
+			if(json) {
+				if(json.library) {
+					this.library = json.library;
+					$('#library').prop('checked', this.library === 'advanced')
+				}
+
+				if( !isNullOrUndefined(json.loadDefault)) {
+					this.loadDefault = json.loadDefault;
+					$('#load-default').prop('checked', this.loadDefault)
+				}
+
+				if( !isNullOrUndefined(json.showTooltips)) {
+					this.showTooltips = json.showTooltips;
+					$('#show-tooltips').prop('checked', this.showTooltips)
+				}
+			}
+		}
+		switchLibrary(this.library === 'advanced');
+	},
+
+	changed : function(elem) {
+		if(elem.id === 'library') {
+			const checked = $(elem).prop('checked');
+			this.library = checked ? 'advanced' : 'standard';
+			switchLibrary(checked);
+		}
+		this.loadDefault = $('#load-default').prop('checked');
+		this.showTooltips = $('#show-tooltips').prop('checked');
+		this.save();
+	},
+
+	loadValue : function(key) {
+		try {
+			return  localStorage.getItem(key);
+		} catch(e) {
+			log('localStorage ' + e.message);
+		}
+		return  null;
+	},
+
+	saveValue : function(key, value) {
+		try {
+			const saved = localStorage.getItem(key);
+
+			if(value !== saved) {
+				localStorage.setItem(key, value);
+			}
+		} catch(e) {
+			log('localStorage ' + e.message);
+		}
+	}
+};
+
 function toText(obj, title, msg) {
 	let text = '';
 
@@ -1956,7 +1993,7 @@ function toText(obj, title, msg) {
 }
 
 function getFileName() {
-	let name = loadValue(currentType + '-fileName');
+	let name = settings.loadValue(currentType + '-fileName');
 
 	return  name || `${(currentType === 'string_' ? 'string' : currentType)}-${settings.library}-lib.json`;
 }
@@ -2093,7 +2130,7 @@ function detectLibrary() {
 	let both = info.jquery && info.javascript && info.jquery !== info.javascript;
 
 	if(both) {
-		const lib = loadValue('library');
+		const lib = settings.loadValue('library');
 
 		if( !lib || lib === 'standard') {
 			jqueryMark = info.jquery === 'standard';
@@ -2160,27 +2197,6 @@ function getContext(selector, jquery) {
 	return  jquery ? $(selector) : new Mark(document.querySelector(selector));
 }
 
-function loadValue(key) {
-	try {
-		return  localStorage.getItem(key);
-	} catch(e) {
-		log('localStorage ' + e.message);
-	}
-	return  null;
-}
-
-function saveValue(key, value) {
-	try {
-		const saved = localStorage.getItem(key);
-
-		if(value !== saved) {
-			localStorage.setItem(key, value);
-		}
-	} catch(e) {
-		log('localStorage ' + e.message);
-	}
-}
-
 function testSaveLoad() {
 	let json, str, testStr;
 
@@ -2191,13 +2207,14 @@ function testSaveLoad() {
 		testStr = testJSONs[type];
 
 		json = Json.parseJson(testStr);
-		importer.setOptions(type, json);
+		importer.setOptions(json);
 
 		str = Json.buildJson();
 
-		if( !str || str !== testStr) {
+		// delete 'version and library' entries from resulted string
+		if( !str || str.replace(/^\{[^,]+,[^,]+,/, '{') !== testStr) {
 			console.log(`The 'save/load' test for ${type} is failed`);
-			console.log(str);
+			console.log(str.replace(/^\{[^,]+,[^,]+,/, '{'));
 
 		} else {
 			console.log(`The 'save/load' test for ${type} is passed`);

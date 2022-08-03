@@ -48,9 +48,9 @@
 <div class="json-form">
 <div class="close"></div>
 <div class="row actions right">
-<button class="export-json" type="button" title="Build JSON for current tab" onclick="exportJson();">Export JSON</button>
-<button class="import-json" type="button" title="Set options from JSON and run" onclick="importJson();">Import JSON</button>
-<button class="copy" type="button">Copy</button>
+<button class="export-json" type="button" title="Build JSON for the current tab" onclick="exportJson();">Export JSON</button>
+<button class="import-json" type="button" title="Set options from the JSON" onclick="importJson();">Import JSON</button>
+<button class="copy" type="button" title="Copy to clipboard">Copy</button>
 <button class="clear" type="button" onclick="clearJsonEditor(this);"></button>
 </div>
 <p>JSON</p>
@@ -80,21 +80,21 @@
 <div class="row">
 <div class="switch-library hide">
 <input id="library" type="checkbox" onchange="settings.changed(this);">
-<label for="library">Mark library</label>
+<label for="library" title="Switch Mark library if both standard and advanced libraries are present">Mark library</label>
 </div>
 </div>
 
 <div class="row">
 <div class="load-default">
 <input id="load-default" type="checkbox" onchange="settings.changed(this);">
-<label for="load-default">Load default</label>
+<label for="load-default" title="If checks load default tab, unchecked - if there is a saved tab, loads saved one, otherwise load default">Load default</label>
 </div>
 </div>
 
 <div class="row">
 <div class="show-tooltips">
 <input id="show-tooltips" type="checkbox" onchange="settings.changed(this);">
-<label for="show-tooltips">Show tooltips</label>
+<label for="show-tooltips" title="Currently, the tooltips have rudimentary implementation">Show tooltips</label>
 </div>
 </div>
 

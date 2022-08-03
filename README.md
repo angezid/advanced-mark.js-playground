@@ -47,7 +47,7 @@ Note:
 
 Warning:
 - currently there is no protection on unsaved state on the browser reload or on load from local storage.  
-You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
+  You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
 
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
