@@ -6,7 +6,6 @@ let version = '1.0.0',
 	maxLength = 100000,
 	time = 0,
 	dFlagSupport = true,
-	scroll = true,
 	currentIndex = 0,
 	currentType = '',
 	currentSection = '',
@@ -25,7 +24,7 @@ const currentLibrary = { old : false, jquery : false };
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'blockElementsBoundary', 'blockElements', 'wildcards', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'blockElements', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'debug' ],
 		editors : { 'queryString' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
@@ -85,6 +84,14 @@ const defaultOptions = {
 	log : { value : false, type : 'checkbox' },
 };
 
+// used to reset all tab options to default value
+const defaultJsons = {
+	string_ : `{"section":{"type":"string_","queryString":null,"testString":{}}}`,
+	array : `{"section":{"type":"array","queryArray":null,"testString":{}}}`,
+	regexp : `{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
+	ranges : `{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
+};
+
 $(document).ready(function() {
 	let t0 = performance.now();
 
@@ -136,12 +143,12 @@ const tab = {
 
 		settings.saveValue('tabType', type);
 		currentType = type;
-		// lengthy path prevents influence on test Html container and vice versa
-		currentSection = `body.playground>main>article>section.${currentType}`;
+
+		currentSection = `.playground section.${currentType}`;
 		optionPad = `${currentSection}>.right-column`;
 
 		if(currentType === 'array') {
-			this.buildSelector(`${currentSection}>.left-column>.queryArray select`, wordArrays);
+			this.buildSelector(`${currentSection} .queryArray select`, wordArrays);
 		}
 
 		codeBuilder.initCodeSnippet();
@@ -149,13 +156,12 @@ const tab = {
 
 		settings.load();
 
-		testContainerSelector = `${currentSection}>.left-column>.testString>.editor`;
 		currentTabId = `${settings.library}_section_${currentType}`;
 
 		$('.file-form .file-name').val(getFileName());
 
-		previousButton = $(`${currentSection}>.left-column>.testString>.actions .previous`);
-		nextButton = $(`${currentSection}>.left-column>.testString>.actions .next`);
+		previousButton = $(`${currentSection} .testString .previous`);
+		nextButton = $(`${currentSection} .testString .next`);
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', 0.5);
 	},
@@ -203,6 +209,7 @@ const tab = {
 			case 'regexp' :
 				if( !currentLibrary.old) {
 					setBlockElementsBoundary($(`${optionPad} .acrossElements input`)[0]);
+					setSeparateGroupsDependable($(`${optionPad} .separateGroups input`)[0]);
 				}
 				break;
 
@@ -237,10 +244,11 @@ const tab = {
 	},
 
 	loadDefaultHtml : function() {
-		const info = this.getTestEditorInfo();
+		const testEditor = this.getTestEditor();
 
-		if(info.editor.toString().trim() === '') {
-			$(testContainerSelector).html(defaultHtml);
+		if(testEditor.toString().trim() === '') {
+			const elem = this.getTestElement();
+			elem.innerHTML = defaultHtml;
 
 			types[currentType].testEditorMode = 'text';
 			this.highlightButton('.text');
@@ -249,7 +257,6 @@ const tab = {
 
 	loadDefaultSearchParameter : function() {
 		const info = this.getSearchEditorInfo();
-		if( !info) return;
 
 		if(info.editor.toString().trim() === '') {
 			const searchParameter = defaultSearchParameter[currentType];
@@ -270,8 +277,7 @@ const tab = {
 
 		types[currentType].testEditorMode = 'html';
 
-		const editor = $(testContainerSelector),
-			html = content ? content : editor.html();
+		const html = content ? content : this.getTestElement().innerHTML;
 
 		if(html !== '') {
 			// as it turn out, the performance problem causes contenteditable attribute
@@ -299,8 +305,8 @@ const tab = {
 			currentIndex = 0;
 
 		} else {
-			const info = this.getTestEditorInfo();
-			info.editor.updateCode('');
+			const testEditor = this.getTestEditor();
+			testEditor.updateCode('');
 		}
 
 		this.highlightButton('.html');
@@ -311,8 +317,7 @@ const tab = {
 
 		types[currentType].testEditorMode = 'text';
 
-		const editor = $(testContainerSelector),
-			text = content !== null ? content : editor.text();
+		const text = content !== null ? content : this.getTestElement().innerText;
 
 		if(text !== '') {
 			// switching from html mode to text one with large highlighted html content is very slowly
@@ -328,18 +333,18 @@ const tab = {
 			}
 
 		} else {
-			const info = this.getTestEditorInfo();
-			info.editor.updateCode('');
+			const testEditor = this.getTestEditor();
+			testEditor.updateCode('');
 		}
 
 		this.highlightButton('.text');
 	},
 
 	highlightButton : function(selector) {
-		const parent = $(testContainerSelector).parent();
+		const button = $(`${currentSection} .testString ${selector}`);
 
-		parent.find(selector).addClass('pressed');
-		parent.find(selector === '.text' ? '.html' : '.text').removeClass('pressed');
+		$(`${currentSection} .testString button`).removeClass('pressed');
+		button.addClass('pressed');
 	},
 
 	initializeEditors : function() {
@@ -347,31 +352,57 @@ const tab = {
 
 		for(const key in obj.editors) {
 			if(obj.editors[key] === null) {
-				let selector = `${currentSection} .${key} .editor`;
+				if(key === 'testString') {
+					obj.editors[key] = this.initTestEditor(obj.editors[key]);
 
-				obj.editors[key] = this.initEditor(obj.editors[key], selector, key === 'testString');
+				} else {
+					let selector = `${currentSection} .${key} .editor`;
+					obj.editors[key] = this.initEditor(obj.editors[key], selector);
+				}
 			}
 		}
 	},
 
-	initEditor : function(editor, selector, testEditor) {
-		editor = CodeJar(document.querySelector(selector), () => {}, { tab : '  ' });
+	defineCustomElements : function() {
+		customElements.define('shadow-dom-' + currentType, class extends HTMLElement {
+			constructor() {
+				super();
+				const root = this.attachShadow({ mode : 'open' });
+				root.innerHTML = `<link rel="stylesheet" href="static/css/shadow-dom.css" /><div class="editor"></div>`;
+			}
+		});
+	},
 
-		if(testEditor) {
-			editor.onUpdate((code, event) => this.updateTestEditor(code, event));
-
-		} else {
-			editor.onUpdate(code => this.onUpdateEditor(code, selector));
+	initTestEditor : function(editor) {
+		if( !document.querySelector('shadow-dom-' + currentType).shadowRoot) {
+			this.defineCustomElements();
 		}
-		return  editor;
+
+		const elem = this.getTestElement();
+
+		editor = CodeJar(elem, () => {}, { tab : '  ' });
+		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
+		return editor;
+	},
+
+	getTestElement : function() {
+		const root = document.querySelector('shadow-dom-' + currentType).shadowRoot;
+		return root.querySelector('.editor');
+	},
+
+	initEditor : function(editor, selector) {
+		editor = CodeJar(document.querySelector(selector), () => {}, { tab : '  ' });
+		editor.onUpdate(code => this.onUpdateEditor(code, selector));
+
+		return editor;
 	},
 
 	isInitialize : function() {
 		const obj = types[currentType];
 		for(const key in obj.editors) {
-			if(obj.editors[key] !== null) return  true;
+			if(obj.editors[key] !== null) return true;
 		}
-		return  false;
+		return false;
 	},
 
 	destroyTestEditor : function() {
@@ -388,16 +419,15 @@ const tab = {
 	clearTestEditor : function(className) {
 		this.destroyTestEditor();
 
-		let div;
-		const elem = document.querySelector(testContainerSelector);
+		const elem = this.getTestElement();
 
 		if(elem) {
-			div = document.createElement('div');
+			let div = document.createElement('div');
 			div.className = className;
 			elem.parentNode.replaceChild(div, elem);
-			return  div;
+			return div;
 		}
-		return  null;
+		return null;
 	},
 
 	updateTestEditor : function(code, event) {
@@ -428,9 +458,7 @@ const tab = {
 			selector = `${currentSection}>.left-column>.${obj.queryEditor} .editor`,
 			editor = obj.editors[obj.queryEditor];
 
-		if( !editor) return  null;
-
-		return  { selector, editor };
+		return { selector, editor };
 	},
 
 	getCodeEditorInfo : function() {
@@ -439,26 +467,24 @@ const tab = {
 			editor = obj.customCodeEditor;
 
 		if( !editor) {
-			types[currentType].customCodeEditor = tab.initEditor(editor, selector, false);
+			types[currentType].customCodeEditor = tab.initEditor(editor, selector);
 		}
 
-		return  { selector, editor : types[currentType].customCodeEditor };
+		return { selector, editor : types[currentType].customCodeEditor };
 	},
 
-	getTestEditorInfo : function() {
-		const obj = types[currentType],
-			selector = `${currentSection}>.left-column>.testString>.editor`,
-			editor = obj.editors.testString;
+	getTestEditor : function() {
+		const editor = types[currentType].editors.testString;
 
 		if( !editor) {
-			types[currentType].editors.testString = tab.initEditor(editor, selector, true);
+			types[currentType].editors.testString = tab.initTestEditor(editor);
 		}
 
-		return  { selector, editor : types[currentType].editors.testString };
+		return types[currentType].editors.testString;
 	},
 
 	getOptionEditor : function(option) {
-		return  types[currentType].editors[option];
+		return types[currentType].editors[option];
 	},
 
 	clear : function(keep) {
@@ -471,7 +497,8 @@ const tab = {
 	},
 
 	setEditableAttribute : function(on) {
-		$(testContainerSelector).attr('contenteditable', on);
+		const elem = this.getTestElement();
+		$(elem).attr('contenteditable', on);
 	},
 
 	setLoadButton : function() {
@@ -481,13 +508,14 @@ const tab = {
 		if(value) button.removeClass('inactive');
 		else button.addClass('inactive');
 
-		return  value;
+		return value;
 	}
 };
 
 // DOM 'onclick' event
-function setIgnoreGroups(elem) {
+function setSeparateGroupsDependable(elem) {
 	tab.switchElements(elem, '.ignoreGroups', true);
+	tab.switchElements(elem, '.wrapAllRanges');
 }
 
 // also DOM 'onclick' event
@@ -546,8 +574,6 @@ function setBlockElements(elem) {
 function setAccuracy(elem) {
 	const div = $(`${optionPad} .accuracyObject`);
 
-	console.log(elem, div);
-
 	if(elem.value === 'object') div.removeClass('hide');
 	else div.addClass('hide');
 }
@@ -560,11 +586,7 @@ function setIframesTimeout(elem) {
 // DOM 'onclick' event
 function selectArray(elem) {
 	const info = tab.getSearchEditorInfo();
-	if( !info) return;
-
-	const array = $(elem).val();
-
-	info.editor.updateCode(array);
+	info.editor.updateCode($(elem).val());
 }
 
 // DOM 'onclick' event
@@ -632,7 +654,7 @@ function clearJsonEditor() {
 // DOM 'onclick' event
 function clearEditor(elem) {
 	const parent = elem.parentNode.parentNode,
-		className = parent.className,
+		className = parent.className.replace(/\b(?:advanced|dependable|hide)\b/g, '').trim(),
 		obj = types[currentType];
 
 	let editor = obj.editors[className];
@@ -699,13 +721,13 @@ const importer = {
 		}
 
 		obj.options.every(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return  false;
+			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
 
 			const selector = `${optionPad} .${option}`,
 				opt = defaultOptions[option];
-			saved = json.section[option];
 
 			if(opt) {
+				saved = json.section[option];
 				if(isNullOrUndefined(saved)) {
 					saved = opt.value;
 				}
@@ -729,9 +751,7 @@ const importer = {
 
 					case 'checkbox-number' :
 						if(option === 'combinePatterns') {
-							if( !isNullOrUndefined(json.section[option])) {
-								$(selector + ' input').prop('checked', true);
-							}
+							$(selector + ' input').prop('checked', !isNullOrUndefined(json.section[option]));
 							$(`${optionPad} .combineNumber input`).val(saved);
 						}
 						break;
@@ -739,7 +759,7 @@ const importer = {
 					default : break;
 				}
 			}
-			return  true;
+			return true;
 		});
 
 		for(const key in obj.editors) {
@@ -836,14 +856,14 @@ const importer = {
 
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
 
-		return  doc.body.innerHTML;
+		return doc.body.innerHTML;
 	}
 };
 
 function updateVariables(elementName, className) {
 	// requires to highlight the custom element
 	markElement = elementName || 'mark';
-	markElementSelector = `${testContainerSelector} ${markElement}[data-markjs]`;
+	markElementSelector = `${markElement}[data-markjs]`;
 }
 
 function switchLibrary(checked) {
@@ -866,7 +886,6 @@ function switchLibrary(checked) {
 	currentTabId = `${settings.library}_section_${currentType}`;
 
 	tab.setLoadButton();
-	//setLibrary();
 	$('.file-form .file-name').val(getFileName());
 }
 
@@ -883,8 +902,6 @@ function buildCode() {
 
 // also DOM 'onclick' event
 function runCode() {
-	//if(types[currentType].testEditorMode === 'html') return;
-
 	tab.clear();
 
 	const editor = types[currentType].customCodeEditor;
@@ -928,7 +945,7 @@ const codeBuilder = {
 
 	build : function(kind) {
 		const jsCode = this.buildCode('js');
-		if( !jsCode) return  '';
+		if( !jsCode) return '';
 
 		$('.generated-code pre>code').text(jsCode);
 
@@ -942,13 +959,12 @@ const codeBuilder = {
 		$('.internal-code').addClass('hide');
 
 		if(kind === 'internal') {
-			return  this.buildCode(kind);
+			return this.buildCode(kind);
 		}
 	},
 
 	buildCode : function(kind) {
 		const info = tab.getSearchEditorInfo();
-		if( !info) return  null;
 
 		const unmark = kind === 'internal' ? true : $('.unmark-method input').prop('checked'),
 			optionCode = this.buildOptions(kind, unmark);
@@ -965,17 +981,19 @@ const codeBuilder = {
 
 		} else {
 			const time = `\n    time = performance.now();`,
-				selector = tab.getTestEditorInfo().selector;
+				selector = `root.querySelector('.editor')`;
+
+			code = `let options;\nconst root = document.querySelector('shadow-dom-${currentType}').shadowRoot;\n`
+
 			if(currentLibrary.jquery) {
-				code = `let options;\nconst context = $('${selector}');\n`;
-				code += `context.unmark({\n  done : () => {${time}\n    context`;
+				code += `const context = $(${selector});\ncontext.unmark({\n  done : () => {${time}\n    context`;
 
 			} else {
-				code = `let options;\nconst instance = new Mark(document.querySelector('${selector}'));\ninstance.unmark({\n  done : () => {${time}\n    instance`;
+				code += `const instance = new Mark(${selector});\ninstance.unmark({\n  done : () => {${time}\n    instance`;
 			}
 		}
 
-		if(info && (text = info.editor.toString().trim()).length) {
+		if(text = info.editor.toString().trim()) {
 			switch(currentType) {
 				case 'string_' :
 					str = `.mark('${text}', ${optionCode});`;
@@ -995,12 +1013,12 @@ const codeBuilder = {
 
 				default : break;
 			}
-		}
 
-		if( !str) {
+		} else {
 			$('.generated-code code').text('');
 			log(`Missing search parameter\n`, true);
-			return  '';
+			$(tab.getSearchEditorInfo().selector).addClass('error');
+			return '';
 		}
 
 		code += str + (unmark ? '\n  }\n});' : '');
@@ -1011,7 +1029,7 @@ const codeBuilder = {
 			code = (kind === 'jq' ? '//jQuery\n' : kind === 'js' ? '//javascript\n' : '') + code;
 		}
 
-		return  code;
+		return code;
 	},
 
 	buildCustomCode : function(code, kind) {
@@ -1032,14 +1050,15 @@ const codeBuilder = {
 				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
 			text = text.replace(this.comment, '');
-			code = text.replace(/<<markjsCode>>(?:[ \t]\/\/.*)?/, code);
+			code = text.replace(/<<markjsCode>>(?:[ \t]*\/\/.*)?/, code);
 		}
 
 		function addCode(text, fn, param, regex) {
-			return  text.replace(regex, (m, gr1) => gr1.replace(reg, '') === param.replace(reg, '') ? `${m}\n  ${fn};\n` : m);
+			// adds code if normalized parameters are equal
+			return text.replace(regex, (m, gr1) => gr1.replace(reg, '') === param.replace(reg, '') ? `${m}\n  ${fn};\n` : m);
 		}
 
-		return  code;
+		return code;
 	},
 
 	buildOptions : function(kind, unmark) {
@@ -1047,12 +1066,12 @@ const codeBuilder = {
 			indent = ' '.repeat(unmark ? 6 : 2),
 			end = unmark ? ' '.repeat(4) : '';
 
-		if( !obj) return  '{}';
+		if( !obj) return '{}';
 
 		let value, text, elementName, className, code = '';
 
 		obj.options.forEach(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return  false;
+			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
 
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
@@ -1150,7 +1169,7 @@ const codeBuilder = {
 
 		updateVariables(elementName, className);
 
-		return  code;
+		return code;
 	},
 
 	buildCallbacks : function(kind, unmark) {
@@ -1180,7 +1199,6 @@ const codeBuilder = {
 
 		} else {
 			if(kind === 'internal') {
-				//code = `${code}${indent}done : highlighter.finish\n${end}`;
 				code = `${code}${indent}done : highlighter.finish\n`;
 
 			} else if($('#callbacks').prop('checked')) {
@@ -1190,34 +1208,34 @@ const codeBuilder = {
 			}
 		}
 
-		return  code + end;
+		return code + end;
 	},
 
 	getFilterParameters : function() {
 		if(currentType === 'string_' || currentType === 'array') {
-			return  `(node, term, marks, count${currentLibrary.old ? '' : ', info'})`;
+			return `(node, term, marks, count${currentLibrary.old ? '' : ', info'})`;
 
 		} else if(currentType === 'regexp') {
-			return  `(node, matchString, count${currentLibrary.old ? '' : ', info'})`;
+			return `(node, matchString, count${currentLibrary.old ? '' : ', info'})`;
 
 		}
-		return  `(node, range, matchString, index)`;
+		return `(node, range, matchString, index)`;
 	},
 
 	getEachParameters : function() {
 		if(currentType === 'ranges') {
-			return  `(element, range)`;
+			return `(element, range)`;
 		}
-		return  `(element${currentLibrary.old ? '' : ', info'})`;
+		return `(element${currentLibrary.old ? '' : ', info'})`;
 	},
 
 	getDoneParameters : function() {
 		if(currentLibrary.old) {
-			return  `(totalMarks)`;
+			return `(totalMarks)`;
 
 		} else {
 			const stats = currentType === 'string_' || currentType === 'array';
-			return  `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
+			return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
 		}
 	},
 
@@ -1249,9 +1267,9 @@ const Json = {
 			json += `,"${obj.queryEditor}":${JSON.stringify(text)}`;
 		}
 
-		const info = tab.getTestEditorInfo();
+		const testEditor = tab.getTestEditor();
 
-		if(info && (text = info.editor.toString()).trim().length) {
+		if((text = testEditor.toString()).trim().length) {
 			const mode = types[currentType].testEditorMode;
 
 			if(mode === 'html') {
@@ -1268,7 +1286,7 @@ const Json = {
 		json += '}}';
 
 		const jsonObj = Json.parseJson(json);
-		if( !jsonObj) return  null;
+		if( !jsonObj) return null;
 
 		if(format) {
 			json = JSON.stringify(jsonObj, null, '    ');
@@ -1278,7 +1296,7 @@ const Json = {
 			tab.setTextMode(null);
 		}
 
-		return  json;
+		return json;
 	},
 
 	serialiseOptions : function(json) {
@@ -1288,7 +1306,7 @@ const Json = {
 		json += `"type":"${currentType}"`;
 
 		obj.options.forEach(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return  false;
+			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
 
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
@@ -1368,7 +1386,7 @@ const Json = {
 			}
 		});
 
-		return  json;
+		return json;
 	},
 
 	serialiseCustomCode : function() {
@@ -1376,9 +1394,9 @@ const Json = {
 		const editor = types[currentType].customCodeEditor;
 
 		if(editor && (code = editor.toString().trim())) {
-			return  `,"customCode":${JSON.stringify(code)}`;
+			return `,"customCode":${JSON.stringify(code)}`;
 		}
-		return  '';
+		return '';
 	},
 
 	parseJson : function(str) {
@@ -1386,14 +1404,13 @@ const Json = {
 		try { json = JSON.parse(str); } catch(e) {
 			log('\nFailed to parse this json\n' + e.message, true);
 		}
-		return  json;
+		return json;
 	}
 };
 
 const highlighter = {
 
 	highlight : function() {
-		currentIndex = 0;
 		tab.clear();
 		noMatchTerms = [];
 		codeBuilder.build('js-jq');
@@ -1409,7 +1426,7 @@ const highlighter = {
 		}
 	},
 
-	highlightRawHtml : function(selector, length, forbid) {
+	highlightRawHtml : function(length, forbid) {
 		tab.clear(true);
 		time = performance.now();
 
@@ -1420,7 +1437,7 @@ const highlighter = {
 			regex = new RegExp(limited ? pattern : groupPattern, (limited ? '' : 'd') + 'g');
 
 		markElement = 'mark';
-		markElementSelector = `${selector} mark[data-markjs]`;
+		markElementSelector = `mark[data-markjs]`;
 
 		let totalMarks = 0,
 			totalMatches = 0,
@@ -1430,28 +1447,28 @@ const highlighter = {
 			max = forbid ? 200 : 1000;
 		}
 
-		getContext(selector, currentLibrary.jquery).markRegExp(regex, {
+		getTestContext().markRegExp(regex, {
 			'acrossElements' : true,
 			'separateGroups' : !currentLibrary.old && dFlagSupport,
 			'filter' : function(n, m, t, info) {
 				if(limited || info && info.matchStart) totalMatches++;
 
 				totalMarks++;
-				return  totalMatches < max;
+				return totalMatches < max;
 			},
 			'each' : (elem, info) => {
-				if(currentLibrary.old) {
+				if(limited) {
 					$(elem).attr('data-markjs', 'start-1');
 
 				} else {
-					if(info.matchStart) {
+					if(info.matchStart && info.groupIndex === 1) {
 						$(elem).attr('data-markjs', 'start-1');
 					}
 					if(info.groupIndex === 1 || info.groupIndex === 3 || info.groupIndex === 4 || info.groupIndex === 6) {
 						$(elem).addClass('mark-element');
 
 					} else if(info.groupIndex === 2 || info.groupIndex === 5) {
-						$(elem).addClass('groups');
+						$(elem).addClass('mark-term');
 					}
 				}
 			},
@@ -1465,16 +1482,11 @@ const highlighter = {
 	},
 
 	markStringArray : function() {
-		const obj = tab.getSearchEditorInfo();
-		if( !obj) return;
-
-		const searchParameter = obj.editor.toString();
-		if( !searchParameter) return;
+		const parameter = this.getSearchParameter(currentType === 'array' ? 'Array' : 'String');
+		if( !parameter) return;
 
 		const hl = this,
 			settings = this.getCurrentSettings();
-
-		let count = 1;
 
 		const options = {
 			'element' : settings.elementName,
@@ -1496,7 +1508,7 @@ const highlighter = {
 			'iframesTimeout' : settings.iframesTimeout,
 
 			'filter' : (node, term, marks, count, info) => {
-				return  true;
+				return true;
 			},
 			'each' : (elem, info) => {
 				hl.flagStartElement(elem, info, !settings.acrossElements);
@@ -1511,21 +1523,8 @@ const highlighter = {
 			options.cacheTextNodes = settings.cacheTextNodes;
 			if(settings.acrossElements) {
 				options.wrapAllRanges = settings.wrapAllRanges;
+				options.blockElementsBoundary = settings.blockElementsBoundary;
 			}
-		}
-
-		let parameter;
-
-		if(currentType === 'array') {
-			const array = this.tryEvaluate(searchParameter, obj.selector, 'Array');
-			if( !array) return;
-
-			parameter = array;
-			log(`Search parameter 'Array' : ${searchParameter}\n`);
-
-		} else {
-			parameter = searchParameter;
-			log(`Search parameter 'String' : '${searchParameter}'\n`);
 		}
 
 		settings.context.unmark({
@@ -1537,16 +1536,11 @@ const highlighter = {
 	},
 
 	markRegExp : function() {
-		const obj = tab.getSearchEditorInfo();
-		if( !obj) return;
-
-		const searchParameter = obj.editor.toString();
-		if( !searchParameter) return;
+		const regex = this.getSearchParameter('RegExp');
+		if( !regex) return;
 
 		const hl = this,
 			settings = this.getCurrentSettings();
-
-		let count = 1;
 
 		const options = {
 			'element' : settings.elementName,
@@ -1554,14 +1548,13 @@ const highlighter = {
 			'acrossElements' : settings.acrossElements,
 			'separateGroups' : settings.separateGroups,
 			'blockElementsBoundary' : settings.blockElementsBoundary,
-			'cacheTextNodes' : settings.cacheTextNodes,
 			'wrapAllRanges' : settings.wrapAllRanges,
 			'exclude' : settings.exclude,
 			'iframes' : settings.iframes,
 			'iframesTimeout' : settings.iframesTimeout,
 
 			'filter' : (node, match, totalMarks, info) => {
-				return  true;
+				return true;
 			},
 			'each' : (elem, info) => {
 				hl.flagStartElement(elem, info, !settings.acrossElements);
@@ -1570,11 +1563,6 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (t) => { noMatchTerms.push(t); }
 		};
-
-		const regex = this.tryEvaluate(searchParameter, obj.selector, 'RegExp');
-		if( !regex) return;
-
-		log(`Search parameter 'RegExp' : ${searchParameter}\n`);
 
 		settings.context.unmark({
 			'done' : () => {
@@ -1585,16 +1573,11 @@ const highlighter = {
 	},
 
 	markRanges : function() {
-		const obj = tab.getSearchEditorInfo();
-		if( !obj) return;
-
-		const searchParameter = obj.editor.toString();
-		if( !searchParameter) return;
+		const ranges = this.getSearchParameter('Ranges');
+		if( !ranges) return;
 
 		const hl = this,
 			settings = this.getCurrentSettings();
-
-		let count = 1;
 
 		const options = {
 			'element' : settings.elementName,
@@ -1605,7 +1588,7 @@ const highlighter = {
 			'iframesTimeout' : settings.iframesTimeout,
 
 			'filter' : (node, range, match, counter) => {
-				return  true;
+				return true;
 			},
 			'each' : (elem, range) => {
 				hl.flagStartElement(elem, null, true);
@@ -1613,11 +1596,6 @@ const highlighter = {
 			'debug' : settings.debug,
 			'done' : hl.finish
 		};
-
-		const ranges = this.tryEvaluate(searchParameter, obj.selector, 'Ranges');
-		if( !ranges) return;
-
-		log(`Search parameter 'Ranges' : ${searchParameter}\n`);
 
 		settings.context.unmark({
 			'done' : () => {
@@ -1637,16 +1615,14 @@ const highlighter = {
 		// disable contenteditable attribute for performance reason
 		tab.setEditableAttribute(false);
 
-		const obj = {},
-			context = getContext(testContainerSelector, currentLibrary.jquery),
-			elementName = $(`${optionPad} .element input`).val(),
-			className = $(`${optionPad} .className input`).val();
+		const obj = {};
 
-		updateVariables(elementName, className);
+		obj.context = getTestContext();
+		obj.elementName = $(`${optionPad} .element input`).val();
+		obj.className = $(`${optionPad} .className input`).val();
 
-		obj.context = context;
-		obj.elementName = elementName;
-		obj.className = className;
+		updateVariables(obj.elementName, obj.className);
+
 		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
 		obj.debug = $(`${optionPad} .debug input`).prop('checked');
 
@@ -1712,7 +1688,7 @@ const highlighter = {
 			}
 		}
 
-		return  obj;
+		return obj;
 	},
 
 	tryToEvaluate : function(option, minLength) {
@@ -1724,7 +1700,7 @@ const highlighter = {
 
 			if(text.length > minLength) {
 				try {
-					return  eval(`'use strict'; (${text})`);
+					return eval(`'use strict'; (${text})`);
 
 				} catch(e) {
 					log(`Failed to evaluate ${option} object:\n${e.message}`, true);
@@ -1736,18 +1712,33 @@ const highlighter = {
 				$(`${optionPad} .${option} .editor`).addClass('warning');
 			}
 		}
-		return  null;
+		return null;
 	},
 
-	tryEvaluate : function(parameter, selector, name) {
-		try {
-			return  eval("'use strict';" + parameter);
+	getSearchParameter : function(name) {
+		const info = tab.getSearchEditorInfo(),
+			parameter = info.editor.toString();
+		if( !parameter.trim()) return null;
 
-		} catch(e) {
-			log(`Failed to evaluate the ${name}:\n${e.message}`, true);
-			$(selector).addClass('error');
+		let result;
+
+		if(currentType === 'string_') {
+			result = parameter;
+
+		} else {
+			try {
+				result = eval("'use strict';" + parameter);
+
+			} catch(e) {
+				log(`Failed to evaluate the ${name}:\n${e.message}`, true);
+				$(selector).addClass('error');
+
+				return null;
+			}
 		}
-		return  null;
+
+		log(`Search parameter '${name}' : ${parameter}\n`);
+		return result;
 	},
 
 	finish : function(totalMarks, totalMatches, termStats) {
@@ -1759,7 +1750,7 @@ const highlighter = {
 
 		log(`${matchCount}totalMarks = ${totalMarks}\nmark time = ${totalTime} ms${stats}${noMatch}`);
 
-		marks = $(markElementSelector);
+		marks = $(tab.getTestElement().querySelectorAll(markElementSelector));
 		startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
 
 		if(marks.length > 0) {
@@ -1807,12 +1798,6 @@ function registerEvents() {
 		} else {
 			button.addClass('hide');
 		}
-	});
-
-	$("div.actions>input.copy").on('mouseup', function(e) {
-		document.getSelection().selectAllChildren($(this).parent().parent()[0]);
-		document.execCommand('copy');
-		document.getSelection().removeAllRanges();
 	});
 
 	$("input[type=checkbox], input[type=number], select[name]").on('change', function(e) {
@@ -1940,13 +1925,13 @@ function registerEvents() {
 const util = {
 	entitize : function(text) {
 		text = text.replace(/[<>"'&]/g, (m) => {
-			if(m === '<') return  '&lt;';
-			else if(m === '>') return  '&gt;';
-			else if(m === '"') return  '&quot;';
-			else if(m === '&') return  '&amp;';
-			return  '&#039;';
+			if(m === '<') return '&lt;';
+			else if(m === '>') return '&gt;';
+			else if(m === '"') return '&quot;';
+			else if(m === '&') return '&amp;';
+			return '&#039;';
 		});
-		return  text;
+		return text;
 	}
 };
 
@@ -1997,11 +1982,11 @@ const settings = {
 
 	loadValue : function(key) {
 		try {
-			return  localStorage.getItem(key);
+			return localStorage.getItem(key);
 		} catch(e) {
 			log('localStorage ' + e.message);
 		}
-		return  null;
+		return null;
 	},
 
 	saveValue : function(key, value) {
@@ -2023,7 +2008,7 @@ function writeTermStats(obj, title) {
 			array.push(`${key} = ${obj[key]}`);
 		}
 	}
-	return  array.length ? title + array.join('<b>,</b> ') : '';
+	return array.length ? title + array.join('<b>,</b> ') : '';
 }
 
 function toText(obj, title, msg) {
@@ -2031,19 +2016,17 @@ function toText(obj, title, msg) {
 	for(let key in obj) {
 		text += `\n${key} = ${obj[key]}`;
 	}
-	return  text ? title + text : msg ? title + msg : '';
+	return text ? title + text : msg ? title + msg : '';
 }
 
 function getFileName() {
 	let name = settings.loadValue(currentType + '-fileName');
 
-	return  name || `${(currentType === 'string_' ? 'string' : currentType)}-${settings.library}-lib.json`;
+	return name || `${(currentType === 'string_' ? 'string' : currentType)}-${settings.library}-lib.json`;
 }
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-
-	if(elem.data('powertiptarget')) elem.powerTip('destroy');
 
 	elem.data('powertiptarget', id).powerTip({
 		manual : true,
@@ -2092,7 +2075,7 @@ function showHideInfo(id) {
 }
 
 function isChecked(option) {
-	return  $(`${optionPad} .${option} input`).prop('checked');
+	return $(`${optionPad} .${option} input`).prop('checked');
 }
 
 function log(message, error, warning) {
@@ -2110,7 +2093,7 @@ function log(message, error, warning) {
 }
 
 function isNullOrUndefined(prop) {
-	return  typeof prop === 'undefined' || prop === null;
+	return typeof prop === 'undefined' || prop === null;
 }
 
 function previousMatch() {
@@ -2148,7 +2131,7 @@ function highlightMatch(index) {
 			if( !found) {
 				if(el === startElem[0]) found = true;
 
-			} else if($(this).data('markjs') === 'start-1') return  false;    // the start of the next 'start element' means the end of the current match
+			} else if($(this).data('markjs') === 'start-1') return false;    // the start of the next 'start element' means the end of the current match
 
 			if(found) {
 				$(this).addClass('current');
@@ -2161,7 +2144,7 @@ function highlightMatch(index) {
 }
 
 function scrollIntoView(elem) {
-	if(scroll && elem.length) {
+	if(elem.length) {
 		elem[0].scrollIntoView(true);
 		window.scrollBy(0, -10000);
 	}
@@ -2221,7 +2204,7 @@ function getLibrariesInfo() {
 	if(js) {
 		info.javascript = getLibrary(false);
 	}
-	return  info;
+	return info;
 }
 
 function getLibrary(jquery) {
@@ -2231,16 +2214,22 @@ function getLibrary(jquery) {
 		getContext('#playground-article h1', jquery).markRegExp(/^\s*\w/g, {
 			'filter' : (n, m, t, info) => {
 				if( !info) library = 'standard';
-				return  false;
+				return false;
 			}
 		});
-	} catch(e) { return  'none'; }
+	} catch(e) { return 'none'; }
 
-	return  library;
+	return library;
 }
 
 function getContext(selector, jquery) {
-	return  jquery ? $(selector) : new Mark(document.querySelector(selector));
+	return jquery ? $(selector) : new Mark(document.querySelector(selector));
+}
+
+function getTestContext() {
+	const elem = tab.getTestElement();
+
+	return currentLibrary.jquery ? $(elem) : new Mark(elem);
 }
 
 function testSaveLoad() {

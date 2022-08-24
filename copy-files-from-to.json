@@ -13,6 +13,10 @@
       "to": "static/css/main.css"
     },
     {
+      "from": "src/shadow-dom.css",
+      "to": "static/css/shadow-dom.css"
+    },
+    {
       "from": "node_modules/jquery/dist/jquery.min.js",
       "to": "static/js/jquery.js"
     },

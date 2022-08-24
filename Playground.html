@@ -33,7 +33,7 @@
 </div>
 
 <div class="button-block left">
-<button class="run" type="button" onclick="runCode(this);">Run</button>
+<button class="run" type="button" onclick="runCode(true);">Run</button>
 </div>
 
 <div class="button-block right">
@@ -126,8 +126,8 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor" >
-</div>
+<shadow-dom-string_ class="test-container">
+</shadow-dom-string_>
 </div>
 
 </div><!-- left-column -->
@@ -310,8 +310,8 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor" >
-</div>
+<shadow-dom-array class="test-container">
+</shadow-dom-array>
 </div>
 
 </div><!-- left-column -->
@@ -492,9 +492,10 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor" >
+<shadow-dom-regexp class="test-container">
+</shadow-dom-regexp>
 </div>
-</div>
+
 </div><!-- left-column -->
 
 <div class="right-column">
@@ -506,7 +507,7 @@
 <label for="regexp-acrossElements">Across elements</label>
 </div>
 <div class="separateGroups advanced">
-<input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="setIgnoreGroups(this)">
+<input name="separateGroups" id="regexp-separateGroups" type="checkbox" onchange="setSeparateGroupsDependable(this)">
 <label for="regexp-separateGroups">Separate groups</label>
 </div>
 <div class="blockElementsBoundary advanced dependable hide">
@@ -609,8 +610,8 @@
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Test Html</p>
-<div class="editor" >
-</div>
+<shadow-dom-ranges class="test-container">
+</shadow-dom-ranges>
 </div>
 
 </div><!-- left-column -->

@@ -1,6 +1,6 @@
 # Mark.js-playground
 
-<img height="540" src="assets/images/playground.png">
+<img height="540" src="assets/images/playground.png" border="1px solid">
 
 ### Description
 The program can handle `mark.js` or `jquery.mark.js` - it only requires adding according reference in `Playground.html` file.

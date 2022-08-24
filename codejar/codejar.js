@@ -476,9 +476,9 @@ function CodeJar(editor, highlight, opt = {}) {
         event.preventDefault();
     }
     function getSelection() {
-        var _a;
-        if (((_a = editor.parentNode) === null || _a === void 0 ? void 0 : _a.nodeType) == Node.DOCUMENT_FRAGMENT_NODE) {
-            return editor.parentNode.getSelection();
+        const root = editor.getRootNode();
+        if (root.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+            try { return root.getSelection(); } catch(e) { } 
         }
         return window.getSelection();
     }

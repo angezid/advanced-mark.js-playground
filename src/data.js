@@ -1,13 +1,6 @@
 
 const defaultSearchParameter = { string_ : 'wiki wikipedia encyclopedia', array : ['wiki', 'wikipedia', 'encyclopedia'], regexp : '/\\b(?:wiki|wikipedia|encyclopedia)\\b/gi', ranges : [{start : 1, length : 9}, {start : 310, length : 9}] };
 
-const defaultJsons = {
-    string_:`{"section":{"type":"string_","queryString":null,"testString":{}}}`,
-    array:`{"section":{"type":"array","queryArray":null,"testString":{}}}`,
-    regexp:`{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
-    ranges:`{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
-};
-
 // arrays can be used for performance test
 const wordArrays = {
     name : 'wordArrays',
@@ -32,12 +25,11 @@ const defaultHtml = `
 `;
 
 const testJSONs = {
-    string_ : `{"section":{"type":"string_","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"object","accuracyObject":"{'value':'exactly','limiters':[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","wildcards":"enabled","combinePatterns":101,"cacheTextNodes":true,"wrapAllRanges":true,"debug":true,"queryString":"query test","testString":{"mode":"html","content":"Test html string."}}}`,
-    array : `{"section":{"type":"array","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"object","accuracyObject":"{'value':'exactly','limiters':[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","combinePatterns":101,"cacheTextNodes":true,"wrapAllRanges":true,"debug":true,"queryArray":"['query','test']","testString":{"mode":"html","content":"Test html string."}}}`,
-    regexp :`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"ignoreGroups":1,"debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/gi","testString":{"mode":"html","content":"Test html string."}}}`,
-    ranges :`{"section":{"type":"ranges","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"wrapAllRanges":true,"debug":true,"queryRanges":"[{'start':0,'length':5},{'start':10,'length':6}]","testString":{"mode":"html","content":"Test html string."}}}`
+    string_ : `{"section":{"type":"string_","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"object","accuracyObject":"{'value':'exactly','limiters':[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","combinePatterns":101,"cacheTextNodes":true,"wrapAllRanges":true,"debug":true,"queryString":"query test","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`,
+    array : `{"section":{"type":"array","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"object","accuracyObject":"{'value':'exactly','limiters':[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","combinePatterns":101,"cacheTextNodes":true,"wrapAllRanges":true,"debug":true,"queryArray":"['query','test']","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`,
+    regexp : `{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"ignoreGroups":1,"separateGroups":true,"blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","wrapAllRanges":true,"debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/gi","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`,
+    ranges :`{"section":{"type":"ranges","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"wrapAllRanges":true,"debug":true,"queryRanges":"[{'start':0,'length':5},{'start':10,'length':6}]","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`
 };
-
 
 
 
