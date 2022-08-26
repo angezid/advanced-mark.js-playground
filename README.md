@@ -42,8 +42,6 @@ The generated code for all options other than the default option is in the 'Gene
 
 Note:
 - due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.
-- dealing with big Html content is slow, especially in Html mode, so I added some limits on syntax/matches highlighting
-- if you change `mark` element name, highlighting of matches won't work in the Html mode.
 
 Warning:
 - currently there is no protection on unsaved state on the browser reload or on load from local storage.  

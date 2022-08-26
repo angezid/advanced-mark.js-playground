@@ -5,15 +5,15 @@ const defaultSearchParameter = { string_ : 'wiki wikipedia encyclopedia', array 
 const wordArrays = {
     name : 'wordArrays',
     default : defaultSearchParameter.array,
-    
+
     topWords_50 : ['the','of','and','to','in','is','you','are','for','that','or','it','as','be','on','your','with','can','have','this','an','by','not','but','at','from','they','more','will','if','some','there','what','about','which','when','one','their','all','also','how','many','do','has','most','people','other','time','so','was'],
-    
+
     words_50 : ['these','may','like','use','into','than','up','out','who','them','make','because','such','through','get','work','even','different','its','no','our','new','film','just','only','see','used','good','been','system','after','computer','best','must','her','life','since','could','does','now','during','learn','around','usually','form','meat','air','day','place','become','number'],
-    
+
     words_100 : ['thanks','specific','enough','long','lot','hand','popular','small','though','experience','include','job','music','person','really','although','thank','book','early','reading','end','method','never','less','play','able','data','feel','high','off','point','type','whether','food','understanding','here','home','certain','economy','little','theory','tonight','law','put','under','value','always','body','common','market','set','bird','guide','provide','change','interest','literature','sometimes','problem','say','next','create','simple','software','state','together','control','knowledge','power','radio','ability','basic','course','economics','hard','add','company','known','love','past','price','size','away','big','internet','possible','television','three','understand','various','yourself','card','difficult','including','list','mind','particular','real','science','trade'],
-    
+
     words_150 : ['consider','either','library','likely','nature','fact','line','product','care','group','idea','risk','several','someone','temperature','united','word','fat','force','key','light','simply','today','training','until','major','name','personal','school','top','current','generally','historical','investment','left','national','amount','level','order','practice','research','sense','service','area','cut','hot','instead','least','natural','physical','piece','show','society','try','check','choose','develop','second','useful','web','activity','boss','short','story','call','industry','last','media','mental','move','pay','sport','thing','actually','against','far','fun','house','let','page','remember','term','test','within','along','answer','increase','oven','quite','scared','single','sound','again','community','definition','focus','individual','matter','safety','turn','everything','kind','quality','soil','ask','board','buy','development','guard','hold','language','later','main','offer','oil','picture','potential','professional','rather','access','additional','almost','especially','garden','international','lower','management','open','player','range','rate','reason','travel','variety','video','week','above','according','cook','determine','future','site','alternative','demand','ever','exercise','following','image','quickly','special'],
-}; 
+};
 
 const minHtml = `<div id="mw-page-base" class="noprint"><p>Wikipedia is the largest and most-read <a href="#">reference work</a> in history.</p></div>`;
 
@@ -30,7 +30,6 @@ const testJSONs = {
     regexp : `{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"ignoreGroups":1,"separateGroups":true,"blockElementsBoundary":true,"blockElements":"{tagNames:['div','p'],char:'.'}","wrapAllRanges":true,"debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/gi","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`,
     ranges :`{"section":{"type":"ranges","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"wrapAllRanges":true,"debug":true,"queryRanges":"[{'start':0,'length':5},{'start':10,'length':6}]","testString":{"mode":"html","content":"<p>Test html string.</p>"}}}`
 };
-
 
 
 

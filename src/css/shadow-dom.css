@@ -1,0 +1,28 @@
+﻿
+.editor {
+	font-family: Arial, sans-serif;
+	font-size: 1em;
+	border: #ccc 1px solid;
+	border-radius: 3px;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 5px 0 rgba(0, 0, 0, 0.07), 0 3px 1px -2px rgba(0, 0, 0, 0.05);
+	font-size: 14px;
+	font-weight: 400;
+	min-height: 40vh;
+	max-height: 55vh;
+	max-width: 44vw;
+	letter-spacing: normal;
+	line-height: 20px;
+	margin: 0;
+	padding: 5px 10px;
+	tab-size: 4;
+}
+
+mark[data-markjs],
+*[data-markjs].custom-element { background: #ddd; padding: 0; border: #d4d4d4 1px solid; }
+
+mark[data-markjs].current,
+*[data-markjs].custom-element.current { font-size: 110%; background: #ffe408; border-color: #ffe408; border-bottom: #444 2px solid; }
+
+mark[data-markjs].mark-term { background: #ffe408; }
+
+mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }

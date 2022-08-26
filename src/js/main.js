@@ -9,11 +9,13 @@ let version = '1.0.0',
 	currentIndex = 0,
 	currentType = '',
 	currentSection = '',
-	testContainerSelector = '',
 	markElementSelector = '',
 	markElement = '',
 	optionPad = '',
 	jsonEditor = null,
+	resetIndex = true,
+	isScrolled = false,
+	flagEveryElement = false,
 	noMatchTerms = [],
 	marks = $(),
 	startElements = $(),
@@ -86,10 +88,10 @@ const defaultOptions = {
 
 // used to reset all tab options to default value
 const defaultJsons = {
-	string_ : `{"section":{"type":"string_","queryString":null,"testString":{}}}`,
-	array : `{"section":{"type":"array","queryArray":null,"testString":{}}}`,
-	regexp : `{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
-	ranges : `{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
+	string_:`{"section":{"type":"string_","queryString":null,"testString":{}}}`,
+	array:`{"section":{"type":"array","queryArray":null,"testString":{}}}`,
+	regexp:`{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
+	ranges:`{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
 };
 
 $(document).ready(function() {
@@ -122,10 +124,10 @@ const tab = {
 
 				this.loadDefaultSearchParameter();
 				this.loadDefaultHtml();
-				runCode();
+				runCode(true);
 
 			} else {
-				importer.loadOptions();
+				importer.loadTab();
 			}
 		}
 
@@ -143,7 +145,6 @@ const tab = {
 
 		settings.saveValue('tabType', type);
 		currentType = type;
-
 		currentSection = `.playground section.${currentType}`;
 		optionPad = `${currentSection}>.right-column`;
 
@@ -164,6 +165,8 @@ const tab = {
 		nextButton = $(`${currentSection} .testString .next`);
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', 0.5);
+
+		isScrolled = false;
 	},
 
 	setVisibility : function() {
@@ -186,6 +189,7 @@ const tab = {
 
 		$('body.playground>main>article>section').addClass('hide');
 		$(currentSection).removeClass('hide');
+		$('.internal-code').addClass('hide');
 
 		switch(currentType) {
 			case 'string_' :
@@ -286,23 +290,13 @@ const tab = {
 			if( !div) return;
 
 			if(highlight) {
-				// it's still better to avoid syntax highlighting in some cases - the performance is more important
-				let forbid = html.length > maxLength || currentLibrary.old && (isChecked('acrossElements') || currentType === 'ranges') && html.length > maxLength / 2;
-				if( !forbid) {
-					div.innerHTML = hljs.highlight(html, { language : 'html' }).value;
-
-				} else {
-					div.innerHTML = util.entitize(html);
-				}
-				highlighter.highlightRawHtml(testContainerSelector, html.length, forbid);
+				highlighter.highlightRawHtml(div, html);
 
 			} else {
-				// innerText removes white spaces
+				// .innerText removes/normalizes white spaces
 				div.innerHTML = util.entitize(html);
 			}
-
 			this.initializeEditors();
-			currentIndex = 0;
 
 		} else {
 			const testEditor = this.getTestEditor();
@@ -320,8 +314,6 @@ const tab = {
 		const text = content !== null ? content : this.getTestElement().innerText;
 
 		if(text !== '') {
-			// switching from html mode to text one with large highlighted html content is very slowly
-			// this is a workaround for this issue
 			const div = this.clearTestEditor('editor');
 			if( !div) return;
 
@@ -368,7 +360,7 @@ const tab = {
 			constructor() {
 				super();
 				const root = this.attachShadow({ mode : 'open' });
-				root.innerHTML = `<link rel="stylesheet" href="static/css/shadow-dom.css" /><div class="editor"></div>`;
+				root.innerHTML = `<link rel="stylesheet" href="css/shadow-dom.css" /><div class="editor"></div>`;
 			}
 		});
 	},
@@ -379,6 +371,7 @@ const tab = {
 		}
 
 		const elem = this.getTestElement();
+		elem.addEventListener('scroll', testContainerScrolled);
 
 		editor = CodeJar(elem, () => {}, { tab : '  ' });
 		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
@@ -393,7 +386,6 @@ const tab = {
 	initEditor : function(editor, selector) {
 		editor = CodeJar(document.querySelector(selector), () => {}, { tab : '  ' });
 		editor.onUpdate(code => this.onUpdateEditor(code, selector));
-
 		return editor;
 	},
 
@@ -409,7 +401,6 @@ const tab = {
 		tab.setEditableAttribute(false);
 
 		const obj = types[currentType];
-
 		if(obj.editors.testString !== null) {
 			obj.editors.testString.destroy();
 			obj.editors.testString = null;
@@ -420,8 +411,8 @@ const tab = {
 		this.destroyTestEditor();
 
 		const elem = this.getTestElement();
-
 		if(elem) {
+			elem.removeEventListener('scroll', testContainerScrolled);
 			let div = document.createElement('div');
 			div.className = className;
 			elem.parentNode.replaceChild(div, elem);
@@ -441,7 +432,7 @@ const tab = {
 	onUpdateEditor : function(code, selector) {
 		const button = $(selector).parents('div').first().find('button.clear');
 
-		if(code.trim().length) button.removeClass('hide');
+		if(code.trim()) button.removeClass('hide');
 		else button.addClass('hide');
 	},
 
@@ -455,7 +446,7 @@ const tab = {
 
 	getSearchEditorInfo : function() {
 		const obj = types[currentType],
-			selector = `${currentSection}>.left-column>.${obj.queryEditor} .editor`,
+			selector = `${currentSection} .${obj.queryEditor} .editor`,
 			editor = obj.editors[obj.queryEditor];
 
 		return { selector, editor };
@@ -469,17 +460,14 @@ const tab = {
 		if( !editor) {
 			types[currentType].customCodeEditor = tab.initEditor(editor, selector);
 		}
-
 		return { selector, editor : types[currentType].customCodeEditor };
 	},
 
 	getTestEditor : function() {
 		const editor = types[currentType].editors.testString;
-
 		if( !editor) {
 			types[currentType].editors.testString = tab.initTestEditor(editor);
 		}
-
 		return types[currentType].editors.testString;
 	},
 
@@ -491,7 +479,7 @@ const tab = {
 		$('.results code').empty();
 		$('.internal-code code').empty();
 		if( !keep) $('.generated-code code').empty();
-		$('body *').removeClass('error warning');
+		$('section .editor, header li').removeClass('error warning');
 		marks = $();
 		startElements = $();
 	},
@@ -616,7 +604,7 @@ function save() {
 
 // DOM 'onclick' event
 function load() {
-	importer.loadOptions();
+	importer.loadTab();
 }
 
 // DOM 'onclick' event
@@ -675,9 +663,8 @@ function clearEditor(elem) {
 
 const importer = {
 
-	loadOptions : function() {
+	loadTab : function() {
 		const str = settings.loadValue(currentTabId);
-
 		if(str) {
 			this.loadJson(str);
 
@@ -728,6 +715,7 @@ const importer = {
 
 			if(opt) {
 				saved = json.section[option];
+
 				if(isNullOrUndefined(saved)) {
 					saved = opt.value;
 				}
@@ -782,7 +770,7 @@ const importer = {
 
 			} else {
 				if(key === 'queryArray') {
-					const querySelect = `${currentSection}>.left-column>.queryArray select`;
+					const querySelect = `${currentSection} .queryArray select`;
 					$(querySelect).val(saved);
 				}
 				editor.updateCode(saved);
@@ -860,9 +848,11 @@ const importer = {
 	}
 };
 
-function updateVariables(elementName, className) {
-	// requires to highlight the custom element
-	markElement = elementName || 'mark';
+function setVariables() {
+	noMatchTerms = [];
+	flagEveryElement = currentLibrary.old || currentType !== 'ranges' && !isChecked('acrossElements');
+
+	markElement = $(`${optionPad} .element input`).val().trim() || 'mark';
 	markElementSelector = `${markElement}[data-markjs]`;
 }
 
@@ -884,7 +874,6 @@ function switchLibrary(checked) {
 	codeBuilder.initCodeSnippet();
 
 	currentTabId = `${settings.library}_section_${currentType}`;
-
 	tab.setLoadButton();
 	$('.file-form .file-name').val(getFileName());
 }
@@ -901,8 +890,12 @@ function buildCode() {
 }
 
 // also DOM 'onclick' event
-function runCode() {
+function runCode(reset) {
 	tab.clear();
+
+	if(reset) {
+		currentIndex = 0;
+	}
 
 	const editor = types[currentType].customCodeEditor;
 
@@ -910,7 +903,7 @@ function runCode() {
 		const code = codeBuilder.build('internal');
 
 		if(code) {
-			noMatchTerms = [];
+			setVariables();
 			// disable contenteditable attribute for performance reason
 			tab.setEditableAttribute(false);
 
@@ -982,7 +975,6 @@ const codeBuilder = {
 		} else {
 			const time = `\n    time = performance.now();`,
 				selector = `root.querySelector('.editor')`;
-
 			code = `let options;\nconst root = document.querySelector('shadow-dom-${currentType}').shadowRoot;\n`
 
 			if(currentLibrary.jquery) {
@@ -1022,7 +1014,6 @@ const codeBuilder = {
 		}
 
 		code += str + (unmark ? '\n  }\n});' : '');
-
 		code = this.buildCustomCode(code, kind);
 
 		if(kind !== 'internal') {
@@ -1039,17 +1030,15 @@ const codeBuilder = {
 
 		if(editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
 			if(kind === 'internal') {
-				const ranges = currentType === 'ranges',
-					every = ranges || !isChecked('acrossElements'),
-					// necessary for the next/previous buttons functionality
-					fn = `highlighter.flagStartElement(element, ${currentLibrary.old || ranges ? null : 'info'}, ${every})`,
+				// necessary for the next/previous buttons functionality
+				const fn = `highlighter.flagStartElement(element, ${currentLibrary.old || currentType === 'ranges' ? null : 'info'})`,
 					eachParam = this.getEachParameters(),
 					doneParam = this.getDoneParameters();
 
 				text = addCode(text, fn, eachParam, /\bfunction\s+each(\([^)]+\))\s*\{/);
 				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
-			text = text.replace(this.comment, '');
+			text = text.replace(new RegExp(`${this.comment}\s*\n`), '');
 			code = text.replace(/<<markjsCode>>(?:[ \t]*\/\/.*)?/, code);
 		}
 
@@ -1068,7 +1057,7 @@ const codeBuilder = {
 
 		if( !obj) return '{}';
 
-		let value, text, elementName, className, code = '';
+		let value, text, code = '';
 
 		obj.options.forEach(option => {
 			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
@@ -1088,17 +1077,10 @@ const codeBuilder = {
 						break;
 
 					case 'text' :
-						text = $(input).val();
+						text = $(input).val().trim();
 
 						if(text && text !== opt.value) {
 							code += `${indent}${option} : '${text}',\n`;
-
-							if(option === 'element') {
-								elementName = text;
-
-							} else if(option === 'className') {
-								className = text;
-							}
 						}
 						break;
 
@@ -1106,7 +1088,7 @@ const codeBuilder = {
 						if(option !== 'accuracyObject') {
 							const editor = tab.getOptionEditor(option);
 
-							if(editor && (text = editor.toString().trim()).length) {
+							if(editor && (text = editor.toString().trim())) {
 								if(option === 'blockElements') {
 									code = code.replace(/\bblockElementsBoundary *: *true/, `blockElementsBoundary : ${text}`);
 
@@ -1137,7 +1119,7 @@ const codeBuilder = {
 					case 'number' :
 						if(option === 'iframesTimeout' && !isChecked('iframes')) break;
 
-						value = $(input).val();
+						value = $(input).val().trim();
 
 						if(value !== opt.value) {
 							code += `${indent}${option} : ${value},\n`;
@@ -1153,7 +1135,7 @@ const codeBuilder = {
 							} else if(isChecked('combinePatterns')) add = true;
 
 							if(add) {
-								const num = $(`${optionPad} .combineNumber input`).val();
+								const num = $(`${optionPad} .combineNumber input`).val().trim();
 								code += `${indent}combinePatterns : ${num},\n`;
 							}
 						}
@@ -1166,8 +1148,6 @@ const codeBuilder = {
 
 		code += this.buildCallbacks(kind, unmark);
 		code = !code.trim() ? '{}' : (kind === 'internal' ? 'options = ' : '') + `{\n${code}}`;
-
-		updateVariables(elementName, className);
 
 		return code;
 	},
@@ -1263,13 +1243,13 @@ const Json = {
 
 		json += this.serialiseCustomCode();
 
-		if(editor && (text = editor.toString().trim()).length) {
+		if(editor && (text = editor.toString()).trim()) {
 			json += `,"${obj.queryEditor}":${JSON.stringify(text)}`;
 		}
 
 		const testEditor = tab.getTestEditor();
 
-		if((text = testEditor.toString()).trim().length) {
+		if((text = testEditor.toString()).trim()) {
 			const mode = types[currentType].testEditorMode;
 
 			if(mode === 'html') {
@@ -1323,7 +1303,7 @@ const Json = {
 						break;
 
 					case 'text' :
-						text = $(input).val();
+						text = $(input).val().trim();
 
 						if(text && text !== opt.value) {
 							json += `,"${option}":"${text}"`
@@ -1359,7 +1339,7 @@ const Json = {
 					case 'number' :
 						if(option === 'iframesTimeout' && !isChecked('iframes')) break;
 
-						value = $(input).val();
+						value = $(input).val().trim();
 
 						if(value !== opt.value) {
 							json += `,"${option}":${value}`;
@@ -1375,7 +1355,7 @@ const Json = {
 							} else if(isChecked('combinePatterns')) add = true;
 
 							if(add) {
-								const num = $(`${optionPad} .combineNumber input`).val();
+								const num = $(`${optionPad} .combineNumber input`).val().trim();
 								json += `,"combinePatterns":${num}`;
 							}
 						}
@@ -1412,6 +1392,7 @@ const highlighter = {
 
 	highlight : function() {
 		tab.clear();
+		setVariables();
 		noMatchTerms = [];
 		codeBuilder.build('js-jq');
 
@@ -1426,59 +1407,75 @@ const highlighter = {
 		}
 	},
 
-	highlightRawHtml : function(length, forbid) {
-		tab.clear(true);
+	highlightRawHtml : function(elem, text) {
 		time = performance.now();
+		tab.clear(true);
+		setVariables();
 
-		const limited = currentLibrary.old || !dFlagSupport,
-			open = '<mark data-markjs=[^>]+>',
-			pattern = `(?<=${open}\s*)[^<]+(?=</mark>|${open})|(?<=</mark>)\s*(?:(?!${open})[^])+?(?=</mark>)`,
-			groupPattern = `(?<=(${open})\s*)([^<]*)(?=(</mark>|${open}))|(?<=(</mark>))\s*((?:(?!${open})[^])+?)(?=(</mark>))`,
-			regex = new RegExp(limited ? pattern : groupPattern, (limited ? '' : 'd') + 'g');
+		const markReg = new RegExp(`<\/?${markElement}([> ])`, 'g'),
+			openReg = new RegExp(`data-markjs="([^"]+)"[^>]*>`, 'y'),
+			stack = [];
+
+		let totalMarks = 0,
+			totalMatches = 0,
+			data = '',
+			html = '',
+			index = 0,
+			match;
+
+		// RegExp doesn't supports balance groups which makes it difficult to find open/close pairs of tags when mark elements are nested
+		// this is a workaround
+		while((match = markReg.exec(text)) !== null) {
+			let i = match.index;
+
+			if(match[1] === '>' && stack.length) {
+				data = stack.pop();
+
+				if(index < i) {
+					html += wrap(index, i, data, true);
+				}
+
+				index = markReg.lastIndex;
+				html += wrap(i, index, data) + `</mark>`;
+
+			} else if(match[1] === ' ') {
+				openReg.lastIndex = markReg.lastIndex;
+
+				if((match = openReg.exec(text)) !== null) {
+					if(index < i) {
+						html += stack.length ? wrap(index, i, data, true) : util.entitize(text.substring(index, i));
+					}
+
+					data = match[1];
+
+					if(data === 'start-1') {
+						data = 'true';
+						totalMatches++;
+					}
+
+					markReg.lastIndex = index = openReg.lastIndex;
+					html += `<mark data-markjs="${match[1]}" class="mark-element">` + wrap(i, index, data);
+
+					stack.push(data);
+					totalMarks++;
+				}
+			}
+		}
+
+		function wrap(start, end, data, term) {
+			return `<mark data-markjs="${data}"${term ? ' class="mark-term"' : ''}>${util.entitize(text.substring(start, end))}</mark>`;
+		}
+
+		if(index < text.length - 1) {
+			html += util.entitize(text.substring(index, text.length - 1));
+		}
+
+		elem.innerHTML = html;
 
 		markElement = 'mark';
 		markElementSelector = `mark[data-markjs]`;
 
-		let totalMarks = 0,
-			totalMatches = 0,
-			max = Math.max(2000 - length / 1000, 200);
-
-		if( !limited && /firefox/i.test(window.navigator.userAgent)) {
-			max = forbid ? 200 : 1000;
-		}
-
-		getTestContext().markRegExp(regex, {
-			'acrossElements' : true,
-			'separateGroups' : !currentLibrary.old && dFlagSupport,
-			'filter' : function(n, m, t, info) {
-				if(limited || info && info.matchStart) totalMatches++;
-
-				totalMarks++;
-				return totalMatches < max;
-			},
-			'each' : (elem, info) => {
-				if(limited) {
-					$(elem).attr('data-markjs', 'start-1');
-
-				} else {
-					if(info.matchStart && info.groupIndex === 1) {
-						$(elem).attr('data-markjs', 'start-1');
-					}
-					if(info.groupIndex === 1 || info.groupIndex === 3 || info.groupIndex === 4 || info.groupIndex === 6) {
-						$(elem).addClass('mark-element');
-
-					} else if(info.groupIndex === 2 || info.groupIndex === 5) {
-						$(elem).addClass('mark-term');
-					}
-				}
-			},
-			done : () => {
-				if(totalMatches > max) {
-					log(`Total highlighted matches are limited to ${max}\n`, false, true);
-				}
-				this.finish(totalMarks, totalMatches, null);
-			}
-		});
+		this.finish(totalMarks, totalMatches, null);
 	},
 
 	markStringArray : function() {
@@ -1511,7 +1508,7 @@ const highlighter = {
 				return true;
 			},
 			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info, !settings.acrossElements);
+				hl.flagStartElement(elem, info);
 			},
 			'debug' : settings.debug,
 			'done' : hl.finish,
@@ -1521,6 +1518,7 @@ const highlighter = {
 		if( !currentLibrary.old) {
 			options.combinePatterns = settings.combinePatterns;
 			options.cacheTextNodes = settings.cacheTextNodes;
+
 			if(settings.acrossElements) {
 				options.wrapAllRanges = settings.wrapAllRanges;
 				options.blockElementsBoundary = settings.blockElementsBoundary;
@@ -1557,11 +1555,11 @@ const highlighter = {
 				return true;
 			},
 			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info, !settings.acrossElements);
+				hl.flagStartElement(elem, info);
 			},
 			'debug' : settings.debug,
 			'done' : hl.finish,
-			'noMatch' : (t) => { noMatchTerms.push(t); }
+			'noMatch' : (reg) => { noMatchTerms.push(reg); }
 		};
 
 		settings.context.unmark({
@@ -1605,8 +1603,8 @@ const highlighter = {
 		});
 	},
 
-	flagStartElement : function(elem, info, every) {
-		if(every || !info || info.matchStart) {
+	flagStartElement : function(elem, info) {
+		if(flagEveryElement || !info || info.matchStart) {
 			$(elem).attr('data-markjs', 'start-1');
 		}
 	},
@@ -1618,17 +1616,15 @@ const highlighter = {
 		const obj = {};
 
 		obj.context = getTestContext();
-		obj.elementName = $(`${optionPad} .element input`).val();
-		obj.className = $(`${optionPad} .className input`).val();
-
-		updateVariables(obj.elementName, obj.className);
+		obj.elementName = $(`${optionPad} .element input`).val().trim();
+		obj.className = $(`${optionPad} .className input`).val().trim();
 
 		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
 		obj.debug = $(`${optionPad} .debug input`).prop('checked');
 
 		obj.iframes = $(`${optionPad} .iframes input`).prop('checked');
 		if(obj.iframes) {
-			obj.iframesTimeout = parseInt($(`${optionPad} .iframesTimeout input`).val(), 10);
+			obj.iframesTimeout = parseInt($(`${optionPad} .iframesTimeout input`).val().trim(), 10);
 		}
 
 		if(currentType === 'string_' || currentType === 'array') {
@@ -1683,7 +1679,7 @@ const highlighter = {
 
 				const combine = $(`${optionPad} .combinePatterns input`).prop('checked');
 				if(combine) {
-					obj.combinePatterns = parseInt($(`${optionPad} .combineNumber input`).val(), 10);
+					obj.combinePatterns = parseInt($(`${optionPad} .combineNumber input`).val().trim(), 10);
 				}
 			}
 		}
@@ -1732,21 +1728,21 @@ const highlighter = {
 			} catch(e) {
 				log(`Failed to evaluate the ${name}:\n${e.message}`, true);
 				$(selector).addClass('error');
-
 				return null;
 			}
 		}
 
-		log(`Search parameter '${name}' : ${parameter}\n`);
 		return result;
 	},
 
 	finish : function(totalMarks, totalMatches, termStats) {
 		let matchCount = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
 			totalTime = (performance.now() - time) | 0,
-			len = noMatchTerms.length,
-			noMatch = len ? `\n\n<span>Not found term${len > 1 ? 's' : ''} : </span>${noMatchTerms.flat().join('<b>,</b> ')}` : '',
-			stats = termStats ? writeTermStats(termStats, '\n\n<span>Terms stats : </span>') : '';
+			array = noMatchTerms.flat(),
+			len = array.length,
+			span = '<span class="header">',
+			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
+			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
 		log(`${matchCount}totalMarks = ${totalMarks}\nmark time = ${totalTime} ms${stats}${noMatch}`);
 
@@ -1754,14 +1750,18 @@ const highlighter = {
 		startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
 
 		if(marks.length > 0) {
-			highlightMatch(0);
+			let elem;
+			if(currentIndex !== -1 && (elem = startElements.eq(currentIndex)).length) {
+				highlightMatch(elem);
+
+			} else {
+				highlightMatch(marks.first());
+			}
 
 			if(markElement !== 'mark') {
-				$(markElementSelector).addClass('custom-element');
+				marks.addClass('custom-element');
 			}
 		}
-		previousButton.css('opacity', 0.5);
-		nextButton.css('opacity', marks.length ? 1 : 0.5);
 		// restore contenteditable attribute
 		tab.setEditableAttribute(true);
 	}
@@ -1770,7 +1770,7 @@ const highlighter = {
 function registerEvents() {
 
 	$(document).on('mouseup', function() {
-		$('body.playground *').removeClass('error warning');
+		$('section .editor, header li').removeClass('error warning');
 	});
 
 	$(".mark-type li").on('click', function() {
@@ -1831,10 +1831,10 @@ function registerEvents() {
 				jsonEditor = CodeJar($('.json-form .editor')[0], () => {});
 
 				jsonEditor.onUpdate(code => {
-					$('button.import-json').attr('disabled', code.trim().length ? false : true);
+					$('button.import-json').attr('disabled', code.trim() ? false : true);
 				});
 			}
-			$('button.import-json').attr('disabled', jsonEditor.toString().trim().length ? false : true);
+			$('button.import-json').attr('disabled', jsonEditor.toString().trim() ? false : true);
 		}
 	});
 
@@ -1952,17 +1952,17 @@ const settings = {
 			if(json) {
 				if(json.library) {
 					this.library = json.library;
-					$('#library').prop('checked', this.library === 'advanced')
+					$('#library').prop('checked', this.library === 'advanced');
 				}
 
 				if( !isNullOrUndefined(json.loadDefault)) {
 					this.loadDefault = json.loadDefault;
-					$('#load-default').prop('checked', this.loadDefault)
+					$('#load-default').prop('checked', this.loadDefault);
 				}
 
 				if( !isNullOrUndefined(json.showTooltips)) {
 					this.showTooltips = json.showTooltips;
-					$('#show-tooltips').prop('checked', this.showTooltips)
+					$('#show-tooltips').prop('checked', this.showTooltips);
 				}
 			}
 		}
@@ -2096,50 +2096,101 @@ function isNullOrUndefined(prop) {
 	return typeof prop === 'undefined' || prop === null;
 }
 
+function testContainerScrolled() {
+	isScrolled = true;
+}
+
 function previousMatch() {
 	if( !startElements.length) return;
 
-	if(--currentIndex <= 0) {
-		currentIndex = 0;
-		previousButton.css('opacity', 0.5);
-	}
-	highlightMatch(currentIndex);
-
-	nextButton.css('opacity', 1);
+	findNextPrevious(false);
 }
 
 function nextMatch() {
 	if( !startElements.length) return;
 
-	if(++currentIndex >= startElements.length - 1) {
-		currentIndex = startElements.length - 1;
-		nextButton.css('opacity', 0.5);
-	}
-	highlightMatch(currentIndex);
-
-	previousButton.css('opacity', 1);
+	findNextPrevious(true);
 }
 
-function highlightMatch(index) {
-	marks.removeClass('current');
+function findNextPrevious(next) {
+	let elem,
+		top = $(`${currentSection} .testString>.test-container`).offset().top;
 
-	let startElem = startElements.eq(index);
-	if(startElem.length) {
-		let found = false;
+	if(next) {
+		startElements.each(function(i) {
+			if(isScrolled) {
+				if($(this).offset().top > top) elem = $(this);
 
-		marks.each(function(i, el) {
-			if( !found) {
-				if(el === startElem[0]) found = true;
+			} else if(i > currentIndex) elem = $(this);
 
-			} else if($(this).data('markjs') === 'start-1') return false;    // the start of the next 'start element' means the end of the current match
-
-			if(found) {
-				$(this).addClass('current');
-				$(this).find(markElement + '[data-markjs]').addClass('current');
+			if(elem) {
+				currentIndex = i;
+				return false;
 			}
 		});
+		if( !elem) {
+			elem = startElements.last();
+			currentIndex = startElements.length - 1;
+		}
 
-		scrollIntoView(startElem);
+	} else {
+		startElements.each(function(i) {
+			if(isScrolled) {
+				if($(this).offset().top > top) {
+					currentIndex = i > 0 ? i - 1 : i;
+					return false;
+				}
+
+			} else if(i === currentIndex) {
+				currentIndex = i > 0 ? i - 1 : i;
+				return false;
+			}
+			elem = $(this);
+		});
+		if( !elem) {
+			elem = startElements.first();
+			currentIndex = 0;
+		}
+	}
+
+	highlightMatch(elem);
+}
+
+function highlightMatch(elem) {
+	marks.removeClass('current');
+
+	const htmlMode = types[currentType].testEditorMode === 'html';
+	let found = false;
+
+	marks.each(function(i, el) {
+		if( !found) {
+			if(el === elem[0]) found = true;
+
+		} else if($(this).data('markjs') === 'start-1') return false;    // the start of the next 'start element' means the end of the current match
+
+		if(found) {
+			if(htmlMode) {
+				$(this).find(markElementSelector + '.mark-term').addClass('current');
+
+			} else {
+				$(this).addClass('current');
+				$(this).find(markElementSelector).addClass('current');
+			}
+		}
+	});
+
+	setButtonOpacity();
+	setTimeout(function() { scrollIntoView(elem); }, 100);
+}
+
+function setButtonOpacity() {
+	if( !startElements.length) {
+		previousButton.css('opacity', 0.5);
+		nextButton.css('opacity', 0.5);
+
+	} else {
+		previousButton.css('opacity', currentIndex > 0 ? 1 : 0.5);
+		nextButton.css('opacity', currentIndex < startElements.length - 1 ? 1 : 0.5);
 	}
 }
 
@@ -2147,6 +2198,7 @@ function scrollIntoView(elem) {
 	if(elem.length) {
 		elem[0].scrollIntoView(true);
 		window.scrollBy(0, -10000);
+		setTimeout(function() { isScrolled = false; }, 150);
 	}
 }
 

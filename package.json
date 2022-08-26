@@ -11,15 +11,15 @@
   "license": "MIT",
   "dependencies": {
     "codejar": "^3.6.0",
+    "copy-files-from-to": "^3.2.2",
     "jquery": "^3.6.0",
     "jquery-powertip": "^1.3.2",
     "mark.js": "^8.11.1"
   },
   "scripts": {
     "build": "npm run copyFiles",
-    "copyFiles": "copy-files-from-to"
-  },
-  "devDependencies": {
-    "copy-files-from-to": "^3.2.2"
+    "dev": "npm run copyFilesDev",
+    "copyFiles": "copy-files-from-to",
+    "copyFilesDev": "copy-files-from-to --mode development"
   }
 }

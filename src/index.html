@@ -5,20 +5,22 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>Playground</title>
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
-<link rel="icon" type="image/png" href="static/img/logo.png" />
-<link rel="stylesheet" href="static/css/main.css" />
+<link rel="icon" type="image/png" href="img/logo.png" />
+<link rel="stylesheet" href="css/main.css" />
 
-<script src="static/js/codejar.js"></script>
-<script src="static/js/highlight.js"></script>
+<!-- build:[src] js/ -->
+<script src="js3/codejar.js"></script>
+<script src="js3/highlight.js"></script>
 
-<script src="static/js/jquery.js"></script>
-<script src="static/js/jquery.powertip.js"></script>
+<script src="js3/jquery.js"></script>
+<script src="js3/jquery.powertip.js"></script>
 
-<script src="static/js/jquery.mark.js"></script>
-<script src="static/js/mark.js"></script>
+<script src="js3/jquery.mark.js"></script>
+<script src="js3/mark.js"></script>
+<!-- /build -->
 
-<script src="static/js/data.js"></script>
-<script src="static/js/main.js"></script>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
 </head>
 <body class="playground">
 
@@ -98,6 +100,12 @@
 </div>
 </div>
 
+<div class="row">
+<div class="unsaved">
+<input id="unsaved" type="checkbox" onchange="settings.changed(this);">
+<label for="unsaved" title="">Show warning on unsaved</label>
+</div>
+</div>
 </div>
 
 <main class="playground-main">
@@ -862,4 +870,3 @@ Receives
 <footer></footer>
 <br><br>
 </body></html>
-
