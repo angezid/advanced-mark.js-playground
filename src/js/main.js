@@ -3,19 +3,19 @@
 
 let version = '1.0.0',
 	currentTabId = '',
-	maxLength = 100000,
 	time = 0,
-	dFlagSupport = true,
+	matchCount = 0,
 	currentIndex = 0,
 	currentType = '',
 	currentSection = '',
 	markElementSelector = '',
 	markElement = '',
 	optionPad = '',
-	jsonEditor = null,
-	resetIndex = true,
+	dFlagSupport = true,
 	isScrolled = false,
+	canBeNested = false,
 	flagEveryElement = false,
+	jsonEditor = null,
 	noMatchTerms = [],
 	marks = $(),
 	startElements = $(),
@@ -30,7 +30,8 @@ const types = {
 		editors : { 'queryString' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
-		customCodeEditor : null
+		customCodeEditor : null,
+		isDirty : false
 	},
 
 	array : {
@@ -38,7 +39,8 @@ const types = {
 		editors : { 'queryArray' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
-		customCodeEditor : null
+		customCodeEditor : null,
+		isDirty : false
 	},
 
 	regexp : {
@@ -47,6 +49,7 @@ const types = {
 		queryEditor : 'queryRegExp',
 		testEditorMode : 'text',
 		customCodeEditor : null,
+		isDirty : false
 	},
 
 	ranges : {
@@ -54,7 +57,8 @@ const types = {
 		editors : { 'queryRanges' : null, 'testString' : null, 'exclude' : null, },
 		queryEditor : 'queryRanges',
 		testEditorMode : 'text',
-		customCodeEditor : null
+		customCodeEditor : null,
+		isDirty : false
 	}
 };
 
@@ -88,10 +92,10 @@ const defaultOptions = {
 
 // used to reset all tab options to default value
 const defaultJsons = {
-	string_:`{"section":{"type":"string_","queryString":null,"testString":{}}}`,
-	array:`{"section":{"type":"array","queryArray":null,"testString":{}}}`,
-	regexp:`{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
-	ranges:`{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
+	string_ : `{"section":{"type":"string_","queryString":null,"testString":{}}}`,
+	array : `{"section":{"type":"array","queryArray":null,"testString":{}}}`,
+	regexp : `{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
+	ranges : `{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
 };
 
 $(document).ready(function() {
@@ -105,6 +109,8 @@ $(document).ready(function() {
 	registerEvents();
 	tab.selectTab();
 	tab.initTab();
+	settings.setCheckboxes();
+	tab.setDirty(false);
 
 	console.log('total time - ' + (performance.now() - t0));
 });
@@ -160,6 +166,7 @@ const tab = {
 		currentTabId = `${settings.library}_section_${currentType}`;
 
 		$('.file-form .file-name').val(getFileName());
+		$('header .save').toggleClass('dirty', types[currentType].isDirty);
 
 		previousButton = $(`${currentSection} .testString .previous`);
 		nextButton = $(`${currentSection} .testString .next`);
@@ -281,12 +288,10 @@ const tab = {
 
 		types[currentType].testEditorMode = 'html';
 
-		const html = content ? content : this.getTestElement().innerHTML;
+		let html = content || this.getTestElement().innerHTML;
 
-		if(html !== '') {
-			// as it turn out, the performance problem causes contenteditable attribute
-			// nevertheless, it's better to replace the editor node by the new one
-			const div = this.clearTestEditor('editor lang-html');
+		if(html) {
+			const div = this.destroyTestEditor('editor lang-html');
 			if( !div) return;
 
 			if(highlight) {
@@ -299,8 +304,7 @@ const tab = {
 			this.initializeEditors();
 
 		} else {
-			const testEditor = this.getTestEditor();
-			testEditor.updateCode('');
+			this.getTestEditor().updateCode('');
 		}
 
 		this.highlightButton('.html');
@@ -311,10 +315,10 @@ const tab = {
 
 		types[currentType].testEditorMode = 'text';
 
-		const text = content !== null ? content : this.getTestElement().innerText;
+		const text = content || this.getTestElement().innerText;
 
-		if(text !== '') {
-			const div = this.clearTestEditor('editor');
+		if(text) {
+			const div = this.destroyTestEditor('editor');
 			if( !div) return;
 
 			div.innerHTML = text;
@@ -325,8 +329,7 @@ const tab = {
 			}
 
 		} else {
-			const testEditor = this.getTestEditor();
-			testEditor.updateCode('');
+			this.getTestEditor().updateCode('');
 		}
 
 		this.highlightButton('.text');
@@ -397,7 +400,8 @@ const tab = {
 		return false;
 	},
 
-	destroyTestEditor : function() {
+	// for performance reason it destroys an old editor, and replaces the old editor div element by the new one
+	destroyTestEditor : function(className) {
 		tab.setEditableAttribute(false);
 
 		const obj = types[currentType];
@@ -405,14 +409,11 @@ const tab = {
 			obj.editors.testString.destroy();
 			obj.editors.testString = null;
 		}
-	},
-
-	clearTestEditor : function(className) {
-		this.destroyTestEditor();
 
 		const elem = this.getTestElement();
 		if(elem) {
 			elem.removeEventListener('scroll', testContainerScrolled);
+
 			let div = document.createElement('div');
 			div.className = className;
 			elem.parentNode.replaceChild(div, elem);
@@ -427,6 +428,7 @@ const tab = {
 				this.setHtmlMode(importer.sanitizeHtml(code));
 			}
 		}
+		this.setDirty(true);
 	},
 
 	onUpdateEditor : function(code, selector) {
@@ -434,6 +436,8 @@ const tab = {
 
 		if(code.trim()) button.removeClass('hide');
 		else button.addClass('hide');
+
+		this.setDirty(true);
 	},
 
 	updateCustomCode : function(content) {
@@ -497,6 +501,15 @@ const tab = {
 		else button.addClass('inactive');
 
 		return value;
+	},
+
+	setDirty : function(value) {
+		types[currentType].isDirty = value;
+		$('header .save').toggleClass('dirty', value);
+	},
+
+	isChecked : function(option) {
+		return $(`${optionPad} .${option} input`).prop('checked');
 	}
 };
 
@@ -600,10 +613,16 @@ function save() {
 		settings.saveValue(currentTabId, str);
 		tab.setLoadButton();
 	}
+	tab.setDirty(false);
 }
 
 // DOM 'onclick' event
 function load() {
+	if(types[currentType].isDirty) {
+		if( !window.confirm("Are you sure you want to reload the current tab and lose the changes made in it?")) {
+			return;
+		}
+	}
 	importer.loadTab();
 }
 
@@ -630,7 +649,10 @@ function clearCodeEditor(elem) {
 		editor.updateCode('');
 	}
 	$(elem).addClass('hide');
-	buildCode();
+	
+	tab.clear();
+	codeBuilder.build('js-jq');
+	tab.setDirty(true);
 }
 
 // DOM 'onclick' event
@@ -643,18 +665,19 @@ function clearJsonEditor() {
 function clearEditor(elem) {
 	const parent = elem.parentNode.parentNode,
 		className = parent.className.replace(/\b(?:advanced|dependable|hide)\b/g, '').trim(),
-		obj = types[currentType];
-
-	let editor = obj.editors[className];
+		obj = types[currentType],
+		editor = obj.editors[className];
 
 	if(editor) {
 		if(className === 'testString') {
-			tab.clearTestEditor('editor' + (obj.testEditorMode === 'html' ? ' lang-html' : ''));
+			tab.destroyTestEditor('editor' + (obj.testEditorMode === 'html' ? ' lang-html' : ''));
 			tab.initializeEditors();
 
 		} else {
 			editor.updateCode('');
 		}
+
+		tab.setDirty(true);
 	}
 	if(className !== obj.queryEditor && className !== 'testString') {
 		$(elem).addClass('hide');
@@ -784,6 +807,8 @@ const importer = {
 		if(textMode) {
 			tab.setTextMode(null);
 		}
+
+		tab.setDirty(false);
 	},
 
 	sanitizeHtml : function(str) {
@@ -844,16 +869,27 @@ const importer = {
 
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
 
-		return doc.body.innerHTML;
+		const html = doc.body.innerHTML;
+
+		// restores starting white spaces if any - vital for ranges
+		const spcReg = /^\s+/y;
+		if(spcReg.test(str) && !/^\s+/.test(html)) {
+			return str.substring(0, spcReg.lastIndex) + html;
+		}
+
+		return html;
 	}
 };
 
 function setVariables() {
+	matchCount = 0;
 	noMatchTerms = [];
-	flagEveryElement = currentLibrary.old || currentType !== 'ranges' && !isChecked('acrossElements');
+	canBeNested = !currentLibrary.old && (currentType === 'regexp' || currentType === 'ranges') && tab.isChecked('wrapAllRanges');
+	flagEveryElement = currentLibrary.old || currentType !== 'ranges' && !tab.isChecked('acrossElements');
 
-	markElement = $(`${optionPad} .element input`).val().trim() || 'mark';
-	markElementSelector = `${markElement}[data-markjs]`;
+	const className = $(`${optionPad} .className input`).val().trim();
+	markElement = $(`${optionPad} .element input`).val().trim().toLowerCase() || 'mark';
+	markElementSelector = `${markElement}[data-markjs]${className ? '.' + className : ''}`;
 }
 
 function switchLibrary(checked) {
@@ -883,12 +919,6 @@ function unmarkMethod(elem) {
 	codeBuilder.build('js-jq');
 }
 
-// DOM 'onclick' event
-function buildCode() {
-	tab.clear();
-	codeBuilder.build('js-jq');
-}
-
 // also DOM 'onclick' event
 function runCode(reset) {
 	tab.clear();
@@ -909,7 +939,7 @@ function runCode(reset) {
 
 			log('Evaluating the whole code\n');
 
-			try { eval(`'use strict'; ${code}`); } catch(e) {
+			try { new Function('"use strict"; ' + code)(); } catch(e) {
 				log('Failed to evaluate the code\n' + e.message, true);
 				tab.setEditableAttribute(true);
 			}
@@ -1031,6 +1061,7 @@ const codeBuilder = {
 		if(editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
 			if(kind === 'internal') {
 				// necessary for the next/previous buttons functionality
+				//const fn = `highlighter.flagStartElement(element, ${currentLibrary.old ? null : 'info'})`,
 				const fn = `highlighter.flagStartElement(element, ${currentLibrary.old || currentType === 'ranges' ? null : 'info'})`,
 					eachParam = this.getEachParameters(),
 					doneParam = this.getDoneParameters();
@@ -1117,7 +1148,7 @@ const codeBuilder = {
 						break;
 
 					case 'number' :
-						if(option === 'iframesTimeout' && !isChecked('iframes')) break;
+						if(option === 'iframesTimeout' && !tab.isChecked('iframes')) break;
 
 						value = $(input).val().trim();
 
@@ -1130,9 +1161,9 @@ const codeBuilder = {
 						if(option === 'combinePatterns') {
 							let add = false;
 							if(currentType === 'string_') {
-								if(isChecked('separateWordSearch') && isChecked('combinePatterns')) add = true;
+								if(tab.isChecked('separateWordSearch') && tab.isChecked('combinePatterns')) add = true;
 
-							} else if(isChecked('combinePatterns')) add = true;
+							} else if(tab.isChecked('combinePatterns')) add = true;
 
 							if(add) {
 								const num = $(`${optionPad} .combineNumber input`).val().trim();
@@ -1337,7 +1368,7 @@ const Json = {
 						break;
 
 					case 'number' :
-						if(option === 'iframesTimeout' && !isChecked('iframes')) break;
+						if(option === 'iframesTimeout' && !tab.isChecked('iframes')) break;
 
 						value = $(input).val().trim();
 
@@ -1350,9 +1381,9 @@ const Json = {
 						if(option === 'combinePatterns') {
 							let add = false;
 							if(currentType === 'string_') {
-								if(isChecked('separateWordSearch') && isChecked('combinePatterns')) add = true;
+								if(tab.isChecked('separateWordSearch') && tab.isChecked('combinePatterns')) add = true;
 
-							} else if(isChecked('combinePatterns')) add = true;
+							} else if(tab.isChecked('combinePatterns')) add = true;
 
 							if(add) {
 								const num = $(`${optionPad} .combineNumber input`).val().trim();
@@ -1393,7 +1424,7 @@ const highlighter = {
 	highlight : function() {
 		tab.clear();
 		setVariables();
-		noMatchTerms = [];
+
 		codeBuilder.build('js-jq');
 
 		if(currentType === 'string_' || currentType === 'array') {
@@ -1420,10 +1451,11 @@ const highlighter = {
 			totalMatches = 0,
 			data = '',
 			html = '',
+			number = '0',
 			index = 0,
 			match;
 
-		// RegExp doesn't supports balance groups which makes it difficult to find open/close pairs of tags when mark elements are nested
+		// RegExp don't support balance groups, which makes it difficult to find open/close pairs of tags when mark elements are nested
 		// this is a workaround
 		while((match = markReg.exec(text)) !== null) {
 			let i = match.index;
@@ -1451,6 +1483,9 @@ const highlighter = {
 					if(data === 'start-1') {
 						data = 'true';
 						totalMatches++;
+
+					} else if(canBeNested && data > number) {
+						number = data;
 					}
 
 					markReg.lastIndex = index = openReg.lastIndex;
@@ -1468,6 +1503,10 @@ const highlighter = {
 
 		if(index < text.length - 1) {
 			html += util.entitize(text.substring(index, text.length - 1));
+		}
+
+		if(canBeNested && number !== '0') {
+			totalMatches = parseInt(number) + 1;
 		}
 
 		elem.innerHTML = html;
@@ -1504,9 +1543,9 @@ const highlighter = {
 			'iframes' : settings.iframes,
 			'iframesTimeout' : settings.iframesTimeout,
 
-			'filter' : (node, term, marks, count, info) => {
+			/*'filter' : (node, term, marks, count, info) => {
 				return true;
-			},
+			},*/
 			'each' : (elem, info) => {
 				hl.flagStartElement(elem, info);
 			},
@@ -1551,9 +1590,9 @@ const highlighter = {
 			'iframes' : settings.iframes,
 			'iframesTimeout' : settings.iframesTimeout,
 
-			'filter' : (node, match, totalMarks, info) => {
+			/*'filter' : (node, match, totalMarks, info) => {
 				return true;
-			},
+			},*/
 			'each' : (elem, info) => {
 				hl.flagStartElement(elem, info);
 			},
@@ -1585,12 +1624,14 @@ const highlighter = {
 			'iframes' : settings.iframes,
 			'iframesTimeout' : settings.iframesTimeout,
 
-			'filter' : (node, range, match, counter) => {
+			/*'filter' : (node, range, match, counter) => {
 				return true;
+			},*/
+			// currently, 'each' callback doesn't have 'info' parameter
+			'each' : (elem, range, info) => {
+				hl.flagStartElement(elem, info);
 			},
-			'each' : (elem, range) => {
-				hl.flagStartElement(elem, null, true);
-			},
+
 			'debug' : settings.debug,
 			'done' : hl.finish
 		};
@@ -1604,7 +1645,10 @@ const highlighter = {
 	},
 
 	flagStartElement : function(elem, info) {
-		if(flagEveryElement || !info || info.matchStart) {
+		if(canBeNested) {
+			$(elem).attr('data-markjs', info ? info.count - 1 : matchCount++);
+
+		} else if(flagEveryElement || !info || info.matchStart) {
 			$(elem).attr('data-markjs', 'start-1');
 		}
 	},
@@ -1620,18 +1664,18 @@ const highlighter = {
 		obj.className = $(`${optionPad} .className input`).val().trim();
 
 		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
-		obj.debug = $(`${optionPad} .debug input`).prop('checked');
+		obj.debug = tab.isChecked('debug');
 
-		obj.iframes = $(`${optionPad} .iframes input`).prop('checked');
+		obj.iframes = tab.isChecked('iframes');
 		if(obj.iframes) {
-			obj.iframesTimeout = parseInt($(`${optionPad} .iframesTimeout input`).val().trim(), 10);
+			obj.iframesTimeout = parseInt($(`${optionPad} .iframesTimeout input`).val().trim());
 		}
 
 		if(currentType === 'string_' || currentType === 'array') {
-			obj.separateWordSearch = $(`${optionPad} .separateWordSearch input`).prop('checked');
-			obj.diacritics = $(`${optionPad} .diacritics input`).prop('checked');
-			obj.caseSensitive = $(`${optionPad} .caseSensitive input`).prop('checked');
-			obj.ignoreJoiners = $(`${optionPad} .ignoreJoiners input`).prop('checked');
+			obj.separateWordSearch = tab.isChecked('separateWordSearch');
+			obj.diacritics = tab.isChecked('diacritics');
+			obj.caseSensitive = tab.isChecked('caseSensitive');
+			obj.ignoreJoiners = tab.isChecked('ignoreJoiners');
 
 			obj.accuracy = $(`${optionPad} .accuracy select`).val();
 			obj.wildcards = $(`${optionPad} .wildcards select`).val();
@@ -1647,18 +1691,18 @@ const highlighter = {
 			}
 
 		} else if(currentType === 'regexp') {
-			obj.separateGroups = $(`${optionPad} .separateGroups input`).prop('checked');
+			obj.separateGroups = tab.isChecked('separateGroups');
 		}
 
 		if(currentType !== 'ranges') {
-			obj.acrossElements = $(`${optionPad} .acrossElements input`).prop('checked');
+			obj.acrossElements = tab.isChecked('acrossElements');
 		}
 
 		if( !currentLibrary.old) {
 			const acrossElements = (currentType === 'string_' || currentType === 'array') && obj.acrossElements;
 
 			if(acrossElements || currentType === 'regexp') {
-				const boundary = $(`${optionPad} .blockElementsBoundary input`).prop('checked');
+				const boundary = tab.isChecked('blockElementsBoundary');
 				if(boundary) {
 					const blockElements = this.tryToEvaluate('blockElements', 5);
 					if(blockElements) {
@@ -1671,15 +1715,15 @@ const highlighter = {
 			}
 
 			if(acrossElements || currentType === 'regexp' || currentType === 'ranges') {
-				obj.wrapAllRanges = $(`${optionPad} .wrapAllRanges input`).prop('checked');
+				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
 			}
 
 			if(currentType === 'string_' && obj.separateWordSearch || currentType === 'array') {
-				obj.cacheTextNodes = $(`${optionPad} .cacheTextNodes input`).prop('checked');
+				obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
 
-				const combine = $(`${optionPad} .combinePatterns input`).prop('checked');
+				const combine = tab.isChecked('combinePatterns');
 				if(combine) {
-					obj.combinePatterns = parseInt($(`${optionPad} .combineNumber input`).val().trim(), 10);
+					obj.combinePatterns = parseInt($(`${optionPad} .combineNumber input`).val().trim());
 				}
 			}
 		}
@@ -1696,7 +1740,7 @@ const highlighter = {
 
 			if(text.length > minLength) {
 				try {
-					return eval(`'use strict'; (${text})`);
+					return new Function('"use strict"; return (' + text + ')')();
 
 				} catch(e) {
 					log(`Failed to evaluate ${option} object:\n${e.message}`, true);
@@ -1723,7 +1767,7 @@ const highlighter = {
 
 		} else {
 			try {
-				result = eval("'use strict';" + parameter);
+				result = new Function('"use strict"; return (' + parameter + ')')();
 
 			} catch(e) {
 				log(`Failed to evaluate the ${name}:\n${e.message}`, true);
@@ -1731,12 +1775,13 @@ const highlighter = {
 				return null;
 			}
 		}
-
 		return result;
 	},
 
 	finish : function(totalMarks, totalMatches, termStats) {
-		let matchCount = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
+		matchCount = totalMatches || totalMarks;
+
+		let matches = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
 			totalTime = (performance.now() - time) | 0,
 			array = noMatchTerms.flat(),
 			len = array.length,
@@ -1744,30 +1789,46 @@ const highlighter = {
 			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
 			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
-		log(`${matchCount}totalMarks = ${totalMarks}\nmark time = ${totalTime} ms${stats}${noMatch}`);
+		log(`mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}`);
 
 		marks = $(tab.getTestElement().querySelectorAll(markElementSelector));
-		startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
 
 		if(marks.length > 0) {
-			let elem;
-			if(currentIndex !== -1 && (elem = startElements.eq(currentIndex)).length) {
-				highlightMatch(elem);
-
-			} else {
-				highlightMatch(marks.first());
-			}
-
 			if(markElement !== 'mark') {
 				marks.addClass('custom-element');
 			}
+
+			if(canBeNested) {
+				highlightMatch2();
+
+			} else {
+				startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
+
+				// synchronizes current match in both 'text' and 'html' modes
+				let elem;
+				if(currentIndex !== -1 && (elem = startElements.eq(currentIndex)).length) {
+					highlightMatch(elem);
+
+				} else {
+					highlightMatch(marks.first());
+				}
+			}
 		}
+
 		// restore contenteditable attribute
 		tab.setEditableAttribute(true);
 	}
 };
 
 function registerEvents() {
+
+	$(window).on("beforeunload", function(e) {
+		if(settings.showWarning && isDirty()) {
+			e.preventDefault();
+			e.returnValue = '';
+			return '';
+		}
+	});
 
 	$(document).on('mouseup', function() {
 		$('section .editor, header li').removeClass('error warning');
@@ -1793,15 +1854,25 @@ function registerEvents() {
 				tab.updateCustomCode(codeBuilder.snippet);
 			}
 			button.removeClass('hide');
-			buildCode();
+			tab.clear();
+			codeBuilder.build('js-jq');
 
 		} else {
 			button.addClass('hide');
 		}
 	});
 
+	$("input[type=text]").on('input', function(e) {
+		codeBuilder.build('js-jq');
+		tab.setDirty(true);
+	});
+
 	$("input[type=checkbox], input[type=number], select[name]").on('change', function(e) {
 		codeBuilder.build('js-jq');
+
+		if($(this).attr('name')) {
+			tab.setDirty(true);
+		}
 	});
 
 	$("label[for], input[name], option[name], div.editor[name]").on('mouseenter', function(e) {
@@ -1939,6 +2010,7 @@ const settings = {
 	library : 'advanced',
 	loadDefault : true,
 	showTooltips : false,
+	showWarning : true,
 
 	save : function() {
 		const str = JSON.stringify(settings);
@@ -1952,21 +2024,30 @@ const settings = {
 			if(json) {
 				if(json.library) {
 					this.library = json.library;
-					$('#library').prop('checked', this.library === 'advanced');
 				}
 
 				if( !isNullOrUndefined(json.loadDefault)) {
 					this.loadDefault = json.loadDefault;
-					$('#load-default').prop('checked', this.loadDefault);
 				}
 
 				if( !isNullOrUndefined(json.showTooltips)) {
 					this.showTooltips = json.showTooltips;
-					$('#show-tooltips').prop('checked', this.showTooltips);
 				}
+
+				if( !isNullOrUndefined(json.showWarning)) {
+					this.showWarning = json.showWarning;
+				}
+				this.setCheckboxes();
 			}
 		}
 		switchLibrary(this.library === 'advanced');
+	},
+
+	setCheckboxes : function() {
+		$('#library').prop('checked', this.library === 'advanced');
+		$('#load-default').prop('checked', this.loadDefault);
+		$('#show-tooltips').prop('checked', this.showTooltips);
+		$('#unsaved').prop('checked', this.showWarning);
 	},
 
 	changed : function(elem) {
@@ -1977,6 +2058,7 @@ const settings = {
 		}
 		this.loadDefault = $('#load-default').prop('checked');
 		this.showTooltips = $('#show-tooltips').prop('checked');
+		this.showWarning = $('#unsaved').prop('checked');
 		this.save();
 	},
 
@@ -2040,8 +2122,8 @@ function showTooltip(id, elem, e) {
 }
 
 function showHideInfo(id) {
-	const separateGroups = isChecked('separateGroups'),
-		acrossElements = isChecked('acrossElements'),
+	const separateGroups = tab.isChecked('separateGroups'),
+		acrossElements = tab.isChecked('acrossElements'),
 		info = $('article.options-info #' + id),
 		elemsAE = info.find('.acrossElements').addClass('hide'),
 		elemsSG = info.find('.separateGroups').addClass('hide');
@@ -2074,10 +2156,6 @@ function showHideInfo(id) {
 	}
 }
 
-function isChecked(option) {
-	return $(`${optionPad} .${option} input`).prop('checked');
-}
-
 function log(message, error, warning) {
 	if(error) {
 		$('header .mark-type li.selected').addClass('error');
@@ -2096,20 +2174,41 @@ function isNullOrUndefined(prop) {
 	return typeof prop === 'undefined' || prop === null;
 }
 
+function isDirty() {
+	for(const type in types) {
+		if(types[type].isDirty) return true;
+	}
+	return false;
+}
+
 function testContainerScrolled() {
 	isScrolled = true;
 }
 
 function previousMatch() {
-	if( !startElements.length) return;
+	if(canBeNested) {
+		if(--currentIndex <= 0) currentIndex = 0;
 
-	findNextPrevious(false);
+		highlightMatch2();
+
+	} else {
+		if( !startElements.length) return;
+
+		findNextPrevious(false);
+	}
 }
 
 function nextMatch() {
-	if( !startElements.length) return;
+	if(canBeNested) {
+		if(++currentIndex > matchCount - 1) currentIndex = matchCount - 1;
 
-	findNextPrevious(true);
+		highlightMatch2();
+
+	} else {
+		if( !startElements.length) return;
+
+		findNextPrevious(true);
+	}
 }
 
 function findNextPrevious(next) {
@@ -2166,7 +2265,10 @@ function highlightMatch(elem) {
 		if( !found) {
 			if(el === elem[0]) found = true;
 
-		} else if($(this).data('markjs') === 'start-1') return false;    // the start of the next 'start element' means the end of the current match
+		} else {
+			// the start of the next 'start element' means the end of the current match
+			if($(this).data('markjs') === 'start-1') return false;
+		}
 
 		if(found) {
 			if(htmlMode) {
@@ -2183,21 +2285,41 @@ function highlightMatch(elem) {
 	setTimeout(function() { scrollIntoView(elem); }, 100);
 }
 
+// highlight whole match using only the 'start elements' not possible with nesting/overlapping matches
+// using numbers as unique match identifiers can solve this problem but only with single pass methods - 'markRegExp' and 'markRanges'
+function highlightMatch2() {
+	marks.removeClass('current');
+	let elems;
+
+	if(types[currentType].testEditorMode === 'html') {
+		elems = marks.filter((i, elem) => $(elem).data('markjs') === currentIndex);
+		elems.filter((i, elem) => $(elem).hasClass('mark-term')).addClass('current');
+		elems.find('mark[data-markjs].mark-term').addClass('current');
+
+	} else {
+		elems = marks.filter((i, elem) => $(elem).data('markjs') === currentIndex).addClass('current');
+		elems.find(`${markElement}[data-markjs]`).addClass('current');
+	}
+	setButtonOpacity();
+	setTimeout(function() { scrollIntoView(elems.first()); }, 100);
+}
+
 function setButtonOpacity() {
-	if( !startElements.length) {
+	if(canBeNested && matchCount === 0 || !canBeNested && !startElements.length) {
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', 0.5);
 
 	} else {
 		previousButton.css('opacity', currentIndex > 0 ? 1 : 0.5);
-		nextButton.css('opacity', currentIndex < startElements.length - 1 ? 1 : 0.5);
+		nextButton.css('opacity', currentIndex < (canBeNested ? matchCount - 1 : startElements.length - 1) ? 1 : 0.5);
 	}
 }
 
 function scrollIntoView(elem) {
 	if(elem.length) {
 		elem[0].scrollIntoView(true);
-		window.scrollBy(0, -10000);
+		// 'scrollBy' is very slow in Firefox on big test content
+		window.scrollBy(0, -1000);
 		setTimeout(function() { isScrolled = false; }, 150);
 	}
 }

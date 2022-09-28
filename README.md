@@ -41,11 +41,7 @@ Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.
 The generated code for all options other than the default option is in the 'Generated code'.
 
 Note:
-- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected in the Text mode.
-
-Warning:
-- currently there is no protection on unsaved state on the browser reload or on load from local storage.  
-  You may accidentally click the Load button and silently overwrite the current state by a previously saved one.
+- due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected.
 
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
