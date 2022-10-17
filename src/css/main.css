@@ -213,6 +213,9 @@ button.inactive { color: #888; border-color: #ccc; }
 
 .left-column .testString { margin: 25px 0 20px 0; }
 
+.left-column .selector-all { float: right; margin: 10px 32px 0 10px; }
+.left-column .selectors .editor { height: auto; min-height: 20px; max-height: 10em; padding: 10px; }
+
 .left-column .queryString>.editor,
 .left-column .queryArray>.editor,
 .left-column .queryRegExp>.editor,

@@ -124,6 +124,18 @@
 </div>
 </div>
 
+<div class="selectors">
+<details><summary>Selectors editor</summary>
+<div class="selector-all">
+<input name="selector-all" id="string_-selector-all" type="checkbox" checked>
+<label for="string_-selector-all">All</label>
+</div>
+
+<div class="editor">
+</div>
+</details>
+</div>
+
 <div class="testString">
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
@@ -180,6 +192,10 @@
 <input name="wrapAllRanges" id="string_-wrapAllRanges" type="checkbox">
 <label for="string_-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
+<div class="shadowDOM advanced">
+<input name="shadowDOM" id="string_-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
+<label for="string_-shadowDOM">Shadow DOM</label>
+</div>
 <div class="iframes">
 <input name="iframes" id="string_-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="string_-iframes">Iframes</label>
@@ -205,7 +221,6 @@
 <div class="accuracy">
 <label for="string_-accuracy">Accuracy:</label>
 <select name="accuracy" id="string_-accuracy" onchange="setAccuracy(this)">
-<option value="object" title="The 'object' is an auxiliary option to enable an accuracy object editor">object</option>
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
 <option value="complementary">complementary</option>
@@ -265,7 +280,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="exactly">'exactly'</span><span class="complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -274,8 +289,17 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
 <div class="editor" name="blockElements">
+</div>
+</div>
+
+<div class="shadowStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom shadow DOM style e.g. { style : "mark[data-markjs] { color:red; }" }</p>
+<div class="editor" name="shadowStyle">
 </div>
 </div>
 
@@ -306,6 +330,18 @@
 </select>
 <div class="editor">
 </div>
+</div>
+
+<div class="selectors">
+<details><summary>Selectors editor</summary>
+<div class="selector-all">
+<input name="selector-all" id="array-selector-all" type="checkbox" checked>
+<label for="array-selector-all">All</label>
+</div>
+
+<div class="editor">
+</div>
+</details>
 </div>
 
 <div class="testString">
@@ -364,6 +400,10 @@
 <input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
 <label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
+<div class="shadowDOM advanced">
+<input name="shadowDOM" id="array-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
+<label for="array-shadowDOM">Shadow DOM</label>
+</div>
 <div class="iframes">
 <input name="iframes" id="array-iframes" type="checkbox" onchange="setIframesTimeout(this)">
 <label for="array-iframes">Iframes</label>
@@ -389,7 +429,6 @@
 <div class="accuracy">
 <label for="array-accuracy">Accuracy:</label>
 <select name="accuracy" id="array-accuracy" onchange="setAccuracy(this)">
-<option value="object" title="The 'object' is an auxiliary option to enable an accuracy object editor">object</option>
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
 <option value="complementary">complementary</option>
@@ -445,11 +484,11 @@
 </div>
 </div>
 
-<div class="accuracyObject advanced dependable hide">
+<div class="accuracyObject hide">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': 'exactly', 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="exactly">'exactly'</span><span class="complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -458,8 +497,17 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
 <div class="editor" name="blockElements">
+</div>
+</div>
+
+<div class="shadowStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom shadow DOM style e.g. { style : "mark[data-markjs] { color:red; }" }</p>
+<div class="editor" name="shadowStyle">
 </div>
 </div>
 
@@ -488,6 +536,18 @@
 <p>RegExp</p>
 <div class="editor">
 </div>
+</div>
+
+<div class="selectors">
+<details><summary>Selectors editor</summary>
+<div class="selector-all">
+<input name="selector-all" id="regexp-selector-all" type="checkbox" checked>
+<label for="regexp-selector-all">All</label>
+</div>
+
+<div class="editor">
+</div>
+</details>
 </div>
 
 <div class="testString">
@@ -525,6 +585,10 @@
 <div class="wrapAllRanges advanced dependable hide">
 <input name="wrapAllRanges" id="regexp-wrapAllRanges" type="checkbox">
 <label for="regexp-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
+<div class="shadowDOM advanced">
+<input name="shadowDOM" id="regexp-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
+<label for="regexp-shadowDOM">Shadow DOM</label>
 </div>
 <div class="iframes">
 <input name="iframes" id="regexp-iframes" type="checkbox" onchange="setIframesTimeout(this)">
@@ -576,8 +640,17 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements (e.g. { tagNames : ['div', 'p'], /* char : '.' */ })</p>
+<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
 <div class="editor" name="blockElements">
+</div>
+</div>
+
+<div class="shadowStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom shadow DOM style e.g. { style : "mark[data-markjs] { color:red; }" }</p>
+<div class="editor" name="shadowStyle">
 </div>
 </div>
 
@@ -608,6 +681,18 @@
 </div>
 </div>
 
+<div class="selectors">
+<details><summary>Selectors editor</summary>
+<div class="selector-all">
+<input name="selector-all" id="ranges-selector-all" type="checkbox" checked>
+<label for="ranges-selector-all">All</label>
+</div>
+
+<div class="editor">
+</div>
+</details>
+</div>
+
 <div class="testString">
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
@@ -631,6 +716,10 @@
 <div class="wrapAllRanges advanced">
 <input name="wrapAllRanges" id="ranges-wrapAllRanges" type="checkbox">
 <label for="ranges-wrapAllRanges">Wrap nesting/overlaping</label>
+</div>
+<div class="shadowDOM advanced">
+<input name="shadowDOM" id="ranges-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
+<label for="ranges-shadowDOM">Shadow DOM</label>
 </div>
 <div class="iframes">
 <input name="iframes" id="ranges-iframes" type="checkbox" onchange="setIframesTimeout(this)">
@@ -670,6 +759,15 @@
 </div>
 <p>Exclude</p>
 <div class="editor" name="exclude">
+</div>
+</div>
+
+<div class="shadowStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom shadow DOM style e.g. { style : "mark[data-markjs] { color:red; }" }</p>
+<div class="editor" name="shadowStyle">
 </div>
 </div>
 
@@ -729,9 +827,19 @@
 </article>
 
 <article class="options-info">
+
+<div id="accuracyObject">
+<span class="complementary hide">The default is`!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¿`</span>
+<span class="exactly hide"></span>
+</div>
+
 <div id="blockElements">
 If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be working like a boundary.<br>
-The default <code>char</code> property value is '\x01'.
+The default <code>char</code> property value is '\x01'. 
+</div>
+
+<div id="shadowStyle">
+If you supply an object with property name <code>style</code>, the style element with the object value will be created and added to every shadowRoot.<br>
 </div>
 
 <div id="blockElementsBoundary">
