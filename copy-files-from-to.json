@@ -10,6 +10,24 @@
       }
     },
     {
+      "from": "src/js/highlighter.js",
+      "to": {
+        "development": {
+          "skip": true
+        },
+        "default": "build/js/highlighter.js"
+      }
+    },
+    {
+      "from": "src/js/tests.js",
+      "to": {
+        "development": {
+          "skip": true
+        },
+        "default": "build/js/tests.js"
+      }
+    },
+    {
       "from": "src/js/data.js",
       "to": {
         "development": {

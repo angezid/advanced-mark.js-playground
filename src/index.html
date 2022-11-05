@@ -21,6 +21,8 @@
 
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
+<script src="js/highlighter.js"></script>
+<script src="js/tests.js"></script>
 </head>
 <body class="playground">
 
@@ -58,7 +60,7 @@
 <p>JSON</p>
 <div class="editor">
 </div>
-</div>
+</div><!-- json-form -->
 
 <div class="file-form">
 <div class="close"></div>
@@ -74,7 +76,7 @@
 <label class="loaded-file-name">No file selected.</label>
 <input id="file-dialog" type="file" accept=".json">
 </div>
-</div>
+</div><!-- file-form -->
 
 <div class="setting-form">
 <div class="close"></div>
@@ -106,7 +108,18 @@
 <label for="unsaved" title="Show a confirmation message before leaving this page if it has unsaved data">Alert on unsaved data</label>
 </div>
 </div>
+
+<div class="row">
+<div class="show-test-btn">
+<input id="test" type="checkbox" onchange="toggleTestButton(this);">
+<!-- <input id="test" type="checkbox" onchange="this.parentNode.querySelector('button').classList.toggle('hide', !this.checked);"> -->
+<label for="test">Show test button</label>
+<div class="row">
+<button class="test-btn hide" type="button" onclick="test.run();">Run tests</button>
 </div>
+</div>
+</div>
+</div><!-- setting-form -->
 
 <main class="playground-main">
 <article id="playground-article">
@@ -185,7 +198,7 @@
 <label for="string_-combinePatterns">Combine term patterns</label>
 </div>
 <div class="cacheTextNodes advanced dependable hide">
-<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
+<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox" onchange="setWrapAllRanges(this)">
 <label for="string_-cacheTextNodes">Cache text nodes</label>
 </div>
 <div class="wrapAllRanges advanced dependable hide">
@@ -280,7 +293,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': <span class="exactly">'exactly'</span><span class="complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -393,7 +406,7 @@
 <label for="array-combinePatterns">Combine term patterns</label>
 </div>
 <div class="cacheTextNodes advanced">
-<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
+<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox" onchange="setWrapAllRanges(this)">
 <label for="array-cacheTextNodes">Cache text nodes</label>
 </div>
 <div class="wrapAllRanges advanced dependable hide">
@@ -488,7 +501,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': <span class="exactly">'exactly'</span><span class="complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -829,12 +842,12 @@
 <article class="options-info">
 
 <div id="accuracyObject">
-<span class="complementary hide">The default is`!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¿`</span>
-<span class="exactly hide"></span>
+<span class="accuracy-complementary hide">The default chars are`!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¿`</span>
+<span class="accuracy-exactly hide"></span>
 </div>
 
 <div id="blockElements">
-If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be working like a boundary.<br>
+If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be working as a boundary.<br>
 The default <code>char</code> property value is '\x01'. 
 </div>
 

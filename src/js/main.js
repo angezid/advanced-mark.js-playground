@@ -73,14 +73,14 @@ const defaultOptions = {
 	accuracy : { value : 'partially', type : 'select' },
 	synonyms : { value : {}, type : 'editor' },
 	iframes : { value : false, type : 'checkbox' },
-	iframesTimeout : { value : '5000', type : 'number' },
+	iframesTimeout : { value : 5000, type : 'number' },
 	acrossElements : { value : false, type : 'checkbox' },
 	caseSensitive : { value : false, type : 'checkbox' },
 	ignoreJoiners : { value : false, type : 'checkbox' },
 	ignorePunctuation : { value : [], type : 'editor' },
 	wildcards : { value : 'disabled', type : 'select' },
-	ignoreGroups : { value : '0', type : 'number' },
-	combinePatterns : { value : '10', type : 'checkbox-number' },
+	ignoreGroups : { value : 0, type : 'number' },
+	combinePatterns : { value : 10, type : 'checkbox-number' },
 	cacheTextNodes : { value : false, type : 'checkbox' },
 	wrapAllRanges : { value : false, type : 'checkbox' },
 	separateGroups : { value : false, type : 'checkbox' },
@@ -102,7 +102,6 @@ $(document).ready(function() {
 	let t0 = performance.now();
 	
 	detectLibrary();
-	//testSaveLoad();
 	
 	try { new RegExp('\\w', 'd'); } catch(e) { dFlagSupport = false; }
 	
@@ -124,9 +123,7 @@ const tab = {
 			this.initializeEditors();
 			
 			if(settings.loadDefault || !saved) {
-				const str = defaultJsons[currentType];
-				
-				importer.setOptions(Json.parseJson(str));
+				importer.resetOptions();
 				
 				this.loadDefaultSearchParameter();
 				this.loadDefaultHtml();
@@ -202,6 +199,8 @@ const tab = {
 			setShadowDOMStyle($(`${optionPad} .shadowDOM>input`)[0]);
 		}
 		
+		toggleTestButton($(`.setting-form .show-test-btn>input`)[0]);
+		
 		switch(currentType) {
 			case 'string_' :
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
@@ -209,6 +208,7 @@ const tab = {
 				if( !currentLibrary.old) {
 					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
 					setCacheAndCombine($(`${optionPad} .separateWordSearch input`)[0]);
+					setWrapAllRanges($(`${optionPad} .cacheTextNodes input`)[0]);
 				}
 				break;
 			
@@ -218,6 +218,7 @@ const tab = {
 				if( !currentLibrary.old) {
 					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
 					setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
+					setWrapAllRanges($(`${optionPad} .cacheTextNodes input`)[0]);
 				}
 				break;
 			
@@ -274,15 +275,13 @@ const tab = {
 		const info = this.getSearchEditorInfo();
 		
 		if(info.editor.toString().trim() === '') {
-			const searchParameter = defaultSearchParameter[currentType];
+			let searchParameter = defaultSearchParameter[currentType];
 			
 			if(searchParameter) {
-				let str = searchParameter;
-				
 				if(currentType === 'array' || currentType === 'ranges') {
-					str = JSON.stringify(searchParameter);
+					searchParameter = JSON.stringify(searchParameter);
 				}
-				info.editor.updateCode(str);
+				info.editor.updateCode(searchParameter);
 			}
 		}
 	},
@@ -295,7 +294,7 @@ const tab = {
 		let html = content || this.getInnerHTML();
 		
 		if(html) {
-			const div = this.destroyTestEditor('editor lang-html');
+			const div = this.destroyTestEditor();
 			if( !div) return;
 			
 			if(highlight) {
@@ -322,7 +321,7 @@ const tab = {
 		const text = content || this.getTestElement().innerText;
 		
 		if(text) {
-			const div = this.destroyTestEditor('editor');
+			const div = this.destroyTestEditor();
 			if( !div) return;
 			
 			div.innerHTML = text;
@@ -405,7 +404,7 @@ const tab = {
 	},
 	
 	// for performance reason it destroys an old editor, and replaces the old editor div element by the new one
-	destroyTestEditor : function(className) {
+	destroyTestEditor : function() {
 		tab.setEditableAttribute(false);
 		
 		const obj = types[currentType];
@@ -419,7 +418,7 @@ const tab = {
 			elem.removeEventListener('scroll', testContainerScrolled);
 			
 			let div = document.createElement('div');
-			div.className = className;
+			div.className = 'editor';
 			elem.parentNode.replaceChild(div, elem);
 			return div;
 		}
@@ -529,71 +528,97 @@ const tab = {
 		const elem = tab.getTestElement();
 		
 		if(tab.isChecked('shadowDOM')) {
-			return this.collectInnerHTML(elem).join('');
+			return this.collectInnerHTML(elem);
 		}
 		return elem.innerHTML;
 	},
 	
-	collectInnerHTML : function(elem) {
-		const elements = [];
+	collectInnerHTML : function(root) {
+		const array = [];
 		
-		var loop = function(elem) {
-			while(elem) {
-				if(elem.nodeType === Node.ELEMENT_NODE) {
-					const name = elem.nodeName.toLowerCase();
-					elements.push('<' + name);
+		var loop = function(node) {
+			while(node) {
+				if(node.nodeType === Node.ELEMENT_NODE) {
+					const name = node.nodeName.toLowerCase();
+					array.push('<' + name);
 					
-					if(elem.hasAttributes()) {
-						for(let i = 0; i < elem.attributes.length; i++) {
-							const attr = elem.attributes[i];
-							elements.push(` ${attr.name}="${attr.value}"`);
+					if(node.hasAttributes()) {
+						for(let i = 0; i < node.attributes.length; i++) {
+							const attr = node.attributes[i];
+							array.push(` ${attr.name}="${attr.value}"`);
 						}
 					}
-					elements.push('>');
+					array.push('>');
 					
-					if(elem.shadowRoot && elem.shadowRoot.mode === 'open') {
-						elements.push('\n#shadow-root (open)\n');
+					if(node.shadowRoot && node.shadowRoot.mode === 'open') {
+						array.push('\n#shadow-root (open)\n');
 						
-						let sibling = elem.shadowRoot.querySelector(':first-child');
-						if(sibling) {
-							loop(sibling);
-							elements.push(`</${name}>`);
+						if(node.shadowRoot.firstChild) {
+							loop(node.shadowRoot.firstChild);
+							array.push(`</${name}>`);
 						}
 					}
 					
-				} else if(elem.nodeType === Node.TEXT_NODE) {
-					elements.push(elem.textContent);
+				} else if(node.nodeType === Node.TEXT_NODE) {
+					array.push(node.textContent);
 				}
 				
-				if(elem.hasChildNodes()) {
-					loop(elem.firstChild);
-					elements.push(`</${elem.nodeName.toLowerCase()}>`);
+				if(node.hasChildNodes()) {
+					loop(node.firstChild);
+					array.push(`</${node.nodeName.toLowerCase()}>`);
 				}
-				elem = elem.nextSibling
+				node = node.nextSibling
 			}
 		};
 		
-		loop(elem.firstChild);
+		loop(root.firstChild);
 		
-		return elements;
+		return array.join('');
 	}
 };
 
-// DOM 'onclick' event
+// also DOM 'onchange' event
 function setSeparateGroupsDependable(elem) {
 	tab.switchElements(elem, '.ignoreGroups', true);
-	tab.switchElements(elem, '.wrapAllRanges');
+	
+	if( !currentLibrary.old) {
+		tab.switchElements(elem, '.wrapAllRanges');
+	}
 }
 
-// also DOM 'onclick' event
+// also DOM 'onchange' event
 function setAcrossElementsDependable(elem) {
-	if( !currentLibrary.old) {
+	$(`${optionPad} .wrapAllRanges`).addClass('hide');
+	
+	if((currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch')) && tab.isChecked('cacheTextNodes')) {
 		tab.switchElements(elem, '.wrapAllRanges');
 	}
 	setBlockElementsBoundary(elem);
 }
 
-// also DOM 'onclick' event
+function combinePatterns() {
+	return (currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch')) && tab.isChecked('combinePatterns');
+}
+
+function setBlockElementsBoundary(elem) {
+	$(`${optionPad} .blockElementsBoundary`).addClass('hide');
+	$(`${optionPad} .blockElements`).addClass('hide');
+	
+	if( !currentLibrary.old) {
+		tab.switchElements(elem, '.blockElementsBoundary');
+		
+		if(tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
+			setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
+		}
+	}
+}
+
+// DOM 'onchange' event
+function setBlockElements(elem) {
+	tab.switchElements(elem, '.blockElements');
+}
+
+// also DOM 'onchange' event
 function setCacheAndCombine(elem) {
 	$(`${optionPad} .combineNumber`).addClass('hide');
 	
@@ -611,43 +636,42 @@ function setCacheAndCombine(elem) {
 	}
 }
 
-// also DOM 'onclick' event
+// also DOM 'onchange' event
+function setWrapAllRanges(elem) {
+	$(`${optionPad} .wrapAllRanges`).addClass('hide');
+	
+	if(tab.isChecked('acrossElements')) {
+		tab.switchElements(elem, '.wrapAllRanges');
+	}
+}
+
+// also DOM 'onchange' event
 function setCombineNumber(elem) {
 	tab.switchElements(elem, '.combineNumber');
 }
 
-// DOM 'onclick' event
-function setBlockElementsBoundary(elem) {
-	$('.blockElementsBoundary').addClass('hide');
-	$('.blockElements').addClass('hide');
-	
-	if( !currentLibrary.old) {
-		tab.switchElements(elem, '.blockElementsBoundary');
-		
-		if($(`${optionPad} .acrossElements input`)[0] && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
-			setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
-		}
-	}
-}
-
+// also DOM 'onchange' event
 function setShadowDOMStyle(elem) {
 	tab.switchElements(elem, '.shadowStyle');
 }
 
-// DOM 'onclick' event
-function setBlockElements(elem) {
-	tab.switchElements(elem, '.blockElements');
-}
-
-// also DOM 'onclick' event
+// also DOM 'onchange' event
 function setAccuracy(elem) {
-	const div = $(`${optionPad} .accuracyObject`);
+	const div = $(`${optionPad} .accuracyObject`).addClass('hide'),
+		exactly = $(`${optionPad} .accuracyObject .accuracy-exactly`).addClass('hide'),
+		complementary = $(`${optionPad} .accuracyObject .accuracy-complementary`).addClass('hide');
 	
-	if(elem.value === 'exactly' || elem.value === 'complementary') div.removeClass('hide');
-	else div.addClass('hide');
+	if(elem.value === 'exactly') {
+		div.removeClass('hide');
+		exactly.removeClass('hide');
+		
+	} else if(elem.value === 'complementary') {
+		div.removeClass('hide');
+		complementary.removeClass('hide');
+	}
 }
 
-// also DOM 'onclick' event
+// also DOM 'onchange' event
 function setIframesTimeout(elem) {
 	tab.switchElements(elem, '.iframesTimeout');
 }
@@ -673,12 +697,17 @@ function loadDefaultHtml() {
 	tab.loadDefaultHtml();
 }
 
+// DOM 'onchange' event
+function toggleTestButton(elem) {
+	elem.parentNode.querySelector('button').classList.toggle('hide', !$(elem).prop('checked'));
+}
+
 // DOM 'onclick' event
 function save() {
-	const str = Json.buildJson();
+	const json = Json.buildJson();
 	
-	if(str) {
-		settings.saveValue(currentTabId, str);
+	if(json) {
+		settings.saveValue(currentTabId, json);
 		tab.setLoadButton();
 	}
 	tab.setDirty(false);
@@ -738,7 +767,7 @@ function clearEditor(elem) {
 	
 	if(editor) {
 		if(className === 'testString') {
-			tab.destroyTestEditor('editor' + (obj.testEditorMode === 'html' ? ' lang-html' : ''));
+			tab.destroyTestEditor();
 			tab.initializeEditors();
 			
 		} else {
@@ -777,6 +806,7 @@ const importer = {
 			if(type && types[type]) {
 				tab.selectTab(type);
 				tab.initializeEditors();
+				this.resetOptions();
 				this.setOptions(json);
 				tab.setVisibility();
 				
@@ -786,8 +816,55 @@ const importer = {
 		}
 	},
 	
+	resetOptions : function() {
+		const obj = types[currentType];
+		
+		obj.options.every(option => {
+			//if(currentLibrary.old && newOptions.includes(option)) return true;
+			
+			const selector = `${optionPad} .${option}`,
+				opt = defaultOptions[option];
+			
+			if(opt) {
+				switch(opt.type) {
+					case 'checkbox' :
+						$(selector + ' input').prop('checked', opt.value);
+						break;
+					
+					case 'text' :
+					case 'number' :
+						$(selector + ' input').val(opt.value);
+						break;
+					
+					case 'select' :
+						$(selector + ' select').val(opt.value);
+						break;
+					
+					case 'checkbox-number' :
+						if(option === 'combinePatterns') {
+							$(selector + ' input').prop('checked', false);
+							$(`${optionPad} .combineNumber input`).val(opt.value);
+						}
+						break;
+					
+					default : break;
+				}
+			}
+			return true;
+		});
+		
+		for(const key in obj.editors) {
+			for(const key in obj.editors) {
+				if(obj.editors[key]) obj.editors[key].updateCode('');
+			}
+		}
+		
+		tab.setDirty(false);
+	},
+	
 	setOptions : function(json) {
 		const obj = types[currentType],
+			across = tab.isChecked('acrossElements'),
 			textMode = obj.testEditorMode === 'text';
 		
 		let editor,
@@ -799,7 +876,7 @@ const importer = {
 		}
 		
 		obj.options.every(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
+			if(currentLibrary.old && newOptions.includes(option)) return true;
 			
 			const selector = `${optionPad} .${option}`,
 				opt = defaultOptions[option];
@@ -813,12 +890,12 @@ const importer = {
 				
 				switch(opt.type) {
 					case 'checkbox' :
-						if(option === 'shadowDOM' && (saved !== true && saved !== false)) {
+						if(option === 'shadowDOM' && saved !== true && saved !== false) {
 							const editor = tab.getOptionEditor('shadowStyle');
 							editor.updateCode(saved);
 							saved = true;
 							
-						} else if(option === 'blockElementsBoundary' && (saved !== true && saved !== false)) {
+						} else if(option === 'blockElementsBoundary' && saved !== true && saved !== false) {
 							const editor = tab.getOptionEditor('blockElements');
 							editor.updateCode(saved);
 							saved = true;
@@ -861,7 +938,7 @@ const importer = {
 		for(const key in obj.editors) {
 			if(key === 'accuracyObject' || key === 'blockElements' || key === 'shadowStyle') continue;
 			
-			editor = obj.editors[key];
+			const editor = obj.editors[key];
 			saved = json.section[key];
 			
 			if(isNullOrUndefined(saved)) {
@@ -1015,10 +1092,12 @@ function runCode(reset) {
 			
 			log('Evaluating the whole code\n');
 			
-			try { new Function('"use strict"; ' + code)(); } catch(e) {
+			let options;
+			try { options = new Function('"use strict"; ' + code)(); } catch(e) {
 				log('Failed to evaluate the code\n' + e.message, true);
 				tab.setEditableAttribute(true);
-				//console.log(e.stack );
+				console.error(e.message);
+				console.log(e.stack);
 			}
 			
 			$('.internal-code').removeClass('hide');
@@ -1031,6 +1110,8 @@ function runCode(reset) {
 			if(val && val === 'opened') {
 				$("#internal-code").attr('open', true);
 			}
+			// returning an object 'options' is only necessary for testing purposes
+			return options;
 		}
 		
 	} else {
@@ -1058,9 +1139,10 @@ const codeBuilder = {
 		
 		$('.internal-code').addClass('hide');
 		
-		if(kind === 'internal') {
-			return this.buildCode(kind);
-		}
+		return this.buildCode(kind);
+		//if(kind === 'internal') {
+			//return this.buildCode(kind);
+		//}
 	},
 	
 	buildCode : function(kind) {
@@ -1126,6 +1208,10 @@ const codeBuilder = {
 		
 		if(kind !== 'internal') {
 			code = (kind === 'jq' ? '//jQuery\n' : kind === 'js' ? '//javascript\n' : '') + code;
+			
+		} else {
+			// returning an object 'options' is only necessary for testing purposes
+			code += '\n\nreturn options;'
 		}
 		
 		return code;
@@ -1168,8 +1254,8 @@ const codeBuilder = {
 		
 		let value, text, code = '';
 		
-		obj.options.forEach(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
+		obj.options.every(option => {
+			if(currentLibrary.old && newOptions.includes(option)) return true;
 			
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
@@ -1183,21 +1269,23 @@ const codeBuilder = {
 						if(value !== opt.value) {
 							if(option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
-								code += editor && (text = editor.toString().trim()) ? `${indent}${option} : ${text},\n` : `${indent}${option} : '${value}',\n`;
+								value = editor && (text = editor.toString().trim()) ? text : value;
 								
 							} else if(option === 'wrapAllRanges') {
-								if(across) {
-									code += `${indent}${option} : '${value}',\n`;
-								}
+								value = across || currentType === 'ranges' ? value : null;
 								
 							} else if(option === 'blockElementsBoundary') {
 								if(across) {
 									const editor = tab.getOptionEditor('blockElements');
-									code += editor && (text = editor.toString().trim()) ? `${indent}${option} : ${text},\n` : `${indent}${option} : '${value}',\n`;
+									value = editor && (text = editor.toString().trim()) ? text : value;
+									
+								} else {
+									value = null;
 								}
-								
-							} else {
-								code += `${indent}${option} : '${value}',\n`;
+							}
+							
+							if(value !== null) {
+								code += `${indent}${option} : ${value},\n`;
 							}
 						}
 						break;
@@ -1237,9 +1325,10 @@ const codeBuilder = {
 						break;
 					
 					case 'number' :
-						if(option === 'iframesTimeout' && !tab.isChecked('iframes')) break;
+						if(option === 'iframesTimeout' && !tab.isChecked('iframes')
+							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
 						
-						value = $(input).val().trim();
+						value = parseInt($(input).val().trim());
 						
 						if(value !== opt.value) {
 							code += `${indent}${option} : ${value},\n`;
@@ -1247,23 +1336,16 @@ const codeBuilder = {
 						break;
 					
 					case 'checkbox-number' :
-						if(option === 'combinePatterns') {
-							let add = false;
-							if(currentType === 'string_') {
-								if(tab.isChecked('separateWordSearch') && tab.isChecked('combinePatterns')) add = true;
-								
-							} else if(tab.isChecked('combinePatterns')) add = true;
-							
-							if(add) {
-								const num = $(`${optionPad} .combineNumber input`).val().trim();
-								code += `${indent}combinePatterns : ${num},\n`;
-							}
+						if(option === 'combinePatterns' && combinePatterns()) {
+							const num = $(`${optionPad} .combineNumber input`).val().trim();
+							code += `${indent}combinePatterns : ${num},\n`;
 						}
 						break;
 					
 					default : break;
 				}
 			}
+			return true;
 		});
 		
 		code += this.buildCallbacks(kind, unmark);
@@ -1324,7 +1406,7 @@ const codeBuilder = {
 	
 	getEachParameters : function() {
 		if(currentType === 'ranges') {
-			return `(element, range)`;
+			return `(element, range${currentLibrary.old ? '' : ', info'})`;
 		}
 		return `(element${currentLibrary.old ? '' : ', info'})`;
 	},
@@ -1411,8 +1493,8 @@ const Json = {
 		let value, text;
 		json += `"type":"${currentType}"`;
 		
-		obj.options.forEach(option => {
-			if(currentLibrary.old && newOptions.indexOf(option) !== -1) return false;
+		obj.options.every(option => {
+			if(currentLibrary.old && newOptions.includes(option)) return true;
 			
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
@@ -1429,10 +1511,13 @@ const Json = {
 								
 								if(editor && (text = editor.toString().trim())) {
 									json += `,"${option}":${JSON.stringify(text)}`;
+									
+								} else {
+									json += `,"${option}":${value}`;
 								}
 								
 							} else if(option === 'wrapAllRanges') {
-								if(across) {
+								if(across || currentType === 'ranges') {
 									json += `,"${option}":${value}`;
 								}
 								
@@ -1442,6 +1527,9 @@ const Json = {
 									
 									if(editor && (text = editor.toString().trim())) {
 										json += `,"${option}":${JSON.stringify(text)}`;
+										
+									} else {
+										json += `,"${option}":${value}`;
 									}
 								}
 								
@@ -1484,9 +1572,10 @@ const Json = {
 						break;
 					
 					case 'number' :
-						if(option === 'iframesTimeout' && !tab.isChecked('iframes')) break;
+						if(option === 'iframesTimeout' && !tab.isChecked('iframes')
+							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
 						
-						value = $(input).val().trim();
+						value = parseInt($(input).val().trim());
 						
 						if(value !== opt.value) {
 							json += `,"${option}":${value}`;
@@ -1494,23 +1583,16 @@ const Json = {
 						break;
 					
 					case 'checkbox-number' :
-						if(option === 'combinePatterns') {
-							let add = false;
-							if(currentType === 'string_') {
-								if(tab.isChecked('separateWordSearch') && tab.isChecked('combinePatterns')) add = true;
-								
-							} else if(tab.isChecked('combinePatterns')) add = true;
-							
-							if(add) {
-								const num = $(`${optionPad} .combineNumber input`).val().trim();
-								json += `,"combinePatterns":${num}`;
-							}
+						if(option === 'combinePatterns' && combinePatterns()) {
+							const num = $(`${optionPad} .combineNumber input`).val().trim();
+							json += `,"combinePatterns":${num}`;
 						}
 						break;
 					
 					default : break;
 				}
 			}
+			return true;
 		});
 		
 		return json;
@@ -1529,471 +1611,9 @@ const Json = {
 	parseJson : function(str) {
 		let json;
 		try { json = JSON.parse(str); } catch(e) {
-			log('\nFailed to parse this json\n' + e.message, true);
+			log('\nFailed to parse this json\n' + e.message, e.stack);
 		}
 		return json;
-	}
-};
-
-const highlighter = {
-	
-	highlight : function() {
-		tab.clear();
-		setVariables();
-		
-		codeBuilder.build('js-jq');
-		
-		if(currentType === 'string_' || currentType === 'array') {
-			this.markStringArray();
-			
-		} else if(currentType === 'regexp') {
-			this.markRegExp();
-			
-		} else if(currentType === 'ranges') {
-			this.markRanges();
-		}
-	},
-	
-	highlightRawHtml : function(elem, text) {
-		time = performance.now();
-		tab.clear(true);
-		setVariables();
-		
-		const markReg = new RegExp(`<\/?${markElement}([> ])`, 'g'),
-			openReg = new RegExp(`data-markjs="([^"]+)"[^>]*>`, 'y'),
-			stack = [];
-		
-		let totalMarks = 0,
-			totalMatches = 0,
-			data = '',
-			html = '',
-			number = '0',
-			index = 0,
-			match;
-		
-		// RegExp don't support balance groups, which makes it difficult to find open/close pairs of tags when mark elements are nested
-		// this is a workaround
-		while((match = markReg.exec(text)) !== null) {
-			let i = match.index;
-			
-			if(match[1] === '>' && stack.length) {
-				data = stack.pop();
-				
-				if(index < i) {
-					html += wrap(index, i, data, true);
-				}
-				
-				index = markReg.lastIndex;
-				html += wrap(i, index, data) + `</mark>`;
-				
-			} else if(match[1] === ' ') {
-				openReg.lastIndex = markReg.lastIndex;
-				
-				if((match = openReg.exec(text)) !== null) {
-					if(index < i) {
-						html += stack.length ? wrap(index, i, data, true) : util.entitize(text.substring(index, i));
-					}
-					
-					data = match[1];
-					
-					if(data === 'start-1') {
-						data = 'true';
-						totalMatches++;
-						
-					} else if(canBeNested && data > number) {
-						number = data;
-					}
-					
-					markReg.lastIndex = index = openReg.lastIndex;
-					html += `<mark data-markjs="${match[1]}" class="mark-element">` + wrap(i, index, data);
-					
-					stack.push(data);
-					totalMarks++;
-				}
-			}
-		}
-		
-		function wrap(start, end, data, term) {
-			return `<mark data-markjs="${data}"${term ? ' class="mark-term"' : ''}>${util.entitize(text.substring(start, end))}</mark>`;
-		}
-		
-		if(index < text.length - 1) {
-			html += util.entitize(text.substring(index, text.length - 1));
-		}
-		
-		if(canBeNested && number !== '0') {
-			totalMatches = parseInt(number) + 1;
-		}
-		
-		elem.innerHTML = html;
-		
-		markElement = 'mark';
-		markElementSelector = `mark[data-markjs]`;
-		
-		this.finish(totalMarks, totalMatches, null);
-	},
-	
-	markStringArray : function() {
-		const parameter = this.getSearchParameter(currentType === 'array' ? 'Array' : 'String');
-		if( !parameter) return;
-		
-		const hl = this,
-			settings = this.getCurrentSettings();
-		
-		const options = {
-			'element' : settings.elementName,
-			'className' : settings.className,
-			'separateWordSearch' : settings.separateWordSearch,
-			'diacritics' : settings.diacritics,
-			'caseSensitive' : settings.caseSensitive,
-			'ignoreJoiners' : settings.ignoreJoiners,
-			'acrossElements' : settings.acrossElements,
-			'shadowDOM' : settings.shadowDOM,
-			
-			'accuracy' : settings.accuracy,
-			'wildcards' : settings.wildcards,
-			
-			'synonyms' : settings.synonyms,
-			'ignorePunctuation' : settings.ignorePunctuation,
-			'exclude' : settings.exclude,
-			
-			'iframes' : settings.iframes,
-			'iframesTimeout' : settings.iframesTimeout,
-			
-			/*'filter' : (node, term, marks, count, info) => {
-				return true;
-			},*/
-			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info);
-			},
-			'debug' : settings.debug,
-			'done' : hl.finish,
-			'noMatch' : (t) => { noMatchTerms.push(t); }
-		};
-		
-		if( !currentLibrary.old) {
-			options.combinePatterns = settings.combinePatterns;
-			options.cacheTextNodes = settings.cacheTextNodes;
-			
-			if(settings.acrossElements) {
-				options.wrapAllRanges = settings.wrapAllRanges;
-				options.blockElementsBoundary = settings.blockElementsBoundary;
-			}
-		}
-		
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.mark(parameter, options);
-			}
-		});
-	},
-	
-	markRegExp : function() {
-		const regex = this.getSearchParameter('RegExp');
-		if( !regex) return;
-		
-		const hl = this,
-			settings = this.getCurrentSettings();
-		
-		const options = {
-			'element' : settings.elementName,
-			'className' : settings.className,
-			'acrossElements' : settings.acrossElements,
-			'separateGroups' : settings.separateGroups,
-			'wrapAllRanges' : settings.wrapAllRanges,
-			'shadowDOM' : settings.shadowDOM,
-			'exclude' : settings.exclude,
-			'blockElementsBoundary' : settings.blockElementsBoundary,
-			'iframes' : settings.iframes,
-			'iframesTimeout' : settings.iframesTimeout,
-			
-			/*'filter' : (node, match, totalMarks, info) => {
-				return true;
-			},*/
-			'each' : (elem, info) => {
-				hl.flagStartElement(elem, info);
-			},
-			'debug' : settings.debug,
-			'done' : hl.finish,
-			'noMatch' : (reg) => { noMatchTerms.push(reg); }
-		};
-		
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.markRegExp(regex, options);
-			}
-		});
-	},
-	
-	markRanges : function() {
-		const ranges = this.getSearchParameter('Ranges');
-		if( !ranges) return;
-		
-		const hl = this,
-			settings = this.getCurrentSettings();
-		
-		const options = {
-			'element' : settings.elementName,
-			'className' : settings.className,
-			'wrapAllRanges' : settings.wrapAllRanges,
-			'shadowDOM' : settings.shadowDOM,
-			'exclude' : settings.exclude,
-			'iframes' : settings.iframes,
-			'iframesTimeout' : settings.iframesTimeout,
-			
-			/*'filter' : (node, range, match, counter) => {
-				return true;
-			},*/
-			'each' : (elem, range, info) => {
-				hl.flagStartElement(elem, info);
-			},
-			
-			'debug' : settings.debug,
-			'done' : hl.finish
-		};
-		
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.markRanges(ranges, options);
-			}
-		});
-	},
-	
-	flagStartElement : function(elem, info) {
-		if(canBeNested) {
-			$(elem).attr('data-markjs', info ? info.count - 1 : matchCount++);
-			
-		} else if(flagEveryElement || !info || info.matchStart) {
-			$(elem).attr('data-markjs', 'start-1');
-		}
-	},
-	
-	getCurrentSettings : function() {
-		// disable contenteditable attribute for performance reason
-		tab.setEditableAttribute(false);
-		
-		const obj = {};
-		
-		obj.context = getTestContexts();
-		obj.testContainer = getTestContainer();
-		
-		obj.elementName = $(`${optionPad} .element input`).val().trim();
-		obj.className = $(`${optionPad} .className input`).val().trim();
-		
-		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
-		obj.debug = tab.isChecked('debug');
-		
-		obj.iframes = tab.isChecked('iframes');
-		if(obj.iframes) {
-			obj.iframesTimeout = parseInt($(`${optionPad} .iframesTimeout input`).val().trim());
-		}
-		
-		if(currentType === 'string_' || currentType === 'array') {
-			obj.separateWordSearch = tab.isChecked('separateWordSearch');
-			obj.diacritics = tab.isChecked('diacritics');
-			obj.caseSensitive = tab.isChecked('caseSensitive');
-			obj.ignoreJoiners = tab.isChecked('ignoreJoiners');
-			
-			obj.accuracy = $(`${optionPad} .accuracy select`).val();
-			obj.wildcards = $(`${optionPad} .wildcards select`).val();
-			
-			obj.synonyms = this.tryToEvaluate('synonyms', 8) || {};
-			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 4) || [];
-			
-			if(obj.accuracy === 'exactly' || obj.accuracy === 'complementary') {
-				const accuracy = this.tryToEvaluate('accuracyObject', 30);
-				if(accuracy) {
-					obj.accuracy = accuracy;
-				}
-			}
-			
-		} else if(currentType === 'regexp') {
-			obj.separateGroups = tab.isChecked('separateGroups');
-		}
-		
-		if(currentType !== 'ranges') {
-			obj.acrossElements = tab.isChecked('acrossElements');
-		}
-		
-		if( !currentLibrary.old) {
-			const shadowDOM = tab.isChecked('shadowDOM');
-			if(shadowDOM) {
-				const styleObj = this.tryToEvaluate('shadowStyle', 16);
-				if(styleObj) {
-					obj.shadowDOM = styleObj;
-					
-				} else {
-					obj.shadowDOM = true;
-				}
-			}
-			
-			const acrossElements = (currentType === 'string_' || currentType === 'array') && obj.acrossElements;
-			
-			if(acrossElements || currentType === 'regexp') {
-				const boundary = tab.isChecked('blockElementsBoundary');
-				if(boundary) {
-					const blockElements = this.tryToEvaluate('blockElements', 5);
-					if(blockElements) {
-						obj.blockElementsBoundary = blockElements;
-						
-					} else {
-						obj.blockElementsBoundary = true;
-					}
-				}
-			}
-			
-			if(acrossElements || currentType === 'regexp' || currentType === 'ranges') {
-				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
-			}
-			
-			if(currentType === 'string_' && obj.separateWordSearch || currentType === 'array') {
-				obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
-				
-				const combine = tab.isChecked('combinePatterns');
-				if(combine) {
-					obj.combinePatterns = parseInt($(`${optionPad} .combineNumber input`).val().trim());
-				}
-			}
-		}
-		
-		return obj;
-	},
-	
-	tryToEvaluate : function(option, minLength) {
-		const editor = tab.getOptionEditor(option);
-		let text;
-		
-		if(editor) {
-			text = editor.toString().trim();
-			
-			if(text.length > minLength) {
-				try {
-					return new Function('"use strict"; return (' + text + ')')();
-					
-				} catch(e) {
-					log(`Failed to evaluate ${option} object:\n${e.message}`, true);
-					$(`${optionPad} .${option} .editor`).addClass('error');
-				}
-				
-			} else if(text) {
-				log(`Skips evaluating ${option} object due to suspicious length.`, false, true);
-				$(`${optionPad} .${option} .editor`).addClass('warning');
-			}
-		}
-		return null;
-	},
-	
-	getSearchParameter : function(name) {
-		const info = tab.getSearchEditorInfo(),
-			parameter = info.editor.toString();
-		if( !parameter.trim()) return null;
-		
-		let result;
-		
-		if(currentType === 'string_') {
-			result = parameter;
-			
-		} else {
-			try {
-				result = new Function('"use strict"; return (' + parameter + ')')();
-				
-			} catch(e) {
-				log(`Failed to evaluate the ${name}:\n${e.message}`, true);
-				$(selector).addClass('error');
-				return null;
-			}
-		}
-		return result;
-	},
-	
-	getMarkElements : function() {
-		const elem = tab.getTestElement();
-		let markElements;
-		
-		if(tab.isChecked('shadowDOM')) {
-			const className = types[currentType].testEditorMode === 'text' ? $(`${optionPad} .className input`).val().trim() : null;
-			markElements = this.collectMarkElements(elem, className);
-			
-		} else {
-			markElements = elem.querySelectorAll(markElementSelector);
-		}
-		return $(markElements);
-	},
-	
-	collectMarkElements : function(root, className) {
-		var elements = [];
-		
-		var loop = function(node) {
-			while(node) {
-				if(node.nodeType === Node.ELEMENT_NODE) {
-					if(node.nodeName.toLowerCase() === markElement && node.hasAttribute('data-markjs')) {
-						if( !className || node.classList.contains(className)) elements.push(node);
-					}
-					
-					if(node.shadowRoot && node.shadowRoot.mode === 'open') {
-						let elem = node.shadowRoot.querySelector(':first-child');
-						if(elem) {
-							loop(elem);
-						}
-					}
-				}
-				
-				if(node.hasChildNodes()) {
-					loop(node.firstChild);
-				}
-				node = node.nextSibling;
-			}
-		};
-		
-		loop(root.firstChild);
-		
-		return elements;
-	},
-	
-	finish : function(totalMarks, totalMatches, termStats) {
-		matchCount = totalMatches || totalMarks;
-		
-		let matches = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
-			totalTime = (performance.now() - time) | 0,
-			array = noMatchTerms.flat(),
-			len = array.length,
-			span = '<span class="header">',
-			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
-			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
-		
-		log(`mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}`);
-		
-		marks = highlighter.getMarkElements();
-		
-		if(marks.length > 0) {
-			if(markElement !== 'mark') {
-				marks.addClass('custom-element');
-			}
-			
-			if(canBeNested) {
-				highlightMatch2();
-				
-			} else {
-				startElements = marks.filter((i, elem) => $(elem).data('markjs') === 'start-1');
-				// synchronizes current match in both 'text' and 'html' modes
-				let elem;
-				if(currentIndex !== -1 && (elem = startElements.eq(currentIndex)).length) {
-					highlightMatch(elem);
-					
-				} else {
-					highlightMatch(marks.first());
-				}
-			}
-		}
-		
-		// restore contenteditable attribute
-		tab.setEditableAttribute(true);
 	}
 };
 
@@ -2614,31 +2234,6 @@ function getTestContainer() {
 	const elem = tab.getTestElement();
 	
 	return currentLibrary.jquery ? $(elem) : new Mark(elem);
-}
-
-function testSaveLoad() {
-	let json, str, testStr;
-	
-	for(const type in types) {
-		tab.selectTab(type);
-		tab.initializeEditors();
-		
-		testStr = testJSONs[type];
-		
-		json = Json.parseJson(testStr);
-		importer.setOptions(json);
-		
-		str = Json.buildJson();
-		
-		// delete 'version and library' entries from resulted string
-		if( !str || str.replace(/^\{[^,]+,[^,]+,/, '{') !== testStr) {
-			console.log(`The 'save/load' test for ${type} is failed`);
-			console.log(str.replace(/^\{[^,]+,[^,]+,/, '{'));
-			
-		} else {
-			console.log(`The 'save/load' test for ${type} is passed`);
-		}
-	}
 }
 
 
