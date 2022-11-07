@@ -33,7 +33,7 @@ const types = {
 		customCodeEditor : null,
 		isDirty : false
 	},
-	
+
 	array : {
 		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
@@ -42,7 +42,7 @@ const types = {
 		customCodeEditor : null,
 		isDirty : false
 	},
-	
+
 	regexp : {
 		options : [ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryRegExp' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'blockElements' : null, 'shadowStyle' : null },
@@ -51,7 +51,7 @@ const types = {
 		customCodeEditor : null,
 		isDirty : false
 	},
-	
+
 	ranges : {
 		options : [ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryRanges' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'shadowStyle' : null },
@@ -80,7 +80,7 @@ const defaultOptions = {
 	ignorePunctuation : { value : [], type : 'editor' },
 	wildcards : { value : 'disabled', type : 'select' },
 	ignoreGroups : { value : 0, type : 'number' },
-	combinePatterns : { value : 10, type : 'checkbox-number' },
+	combinePatterns : { value : false, type : 'checkbox' },    //combinePatterns default value is actually number - 10
 	cacheTextNodes : { value : false, type : 'checkbox' },
 	wrapAllRanges : { value : false, type : 'checkbox' },
 	separateGroups : { value : false, type : 'checkbox' },
@@ -90,152 +90,144 @@ const defaultOptions = {
 	log : { value : false, type : 'checkbox' },
 };
 
-// used to reset all tab options to default value
-const defaultJsons = {
-	string_ : `{"section":{"type":"string_","queryString":null,"testString":{}}}`,
-	array : `{"section":{"type":"array","queryArray":null,"testString":{}}}`,
-	regexp : `{"section":{"type":"regexp","queryRegExp":null,"testString":{}}}`,
-	ranges : `{"section":{"type":"ranges","queryRanges":null,"testString":{}}}`,
-};
-
 $(document).ready(function() {
 	let t0 = performance.now();
-	
+
 	detectLibrary();
-	
+
 	try { new RegExp('\\w', 'd'); } catch(e) { dFlagSupport = false; }
-	
+
 	registerEvents();
 	tab.selectTab();
 	tab.initTab();
 	settings.setCheckboxes();
 	tab.setDirty(false);
-	
+
 	console.log('total time - ' + (performance.now() - t0));
 });
 
 const tab = {
-	
+
 	initTab : function() {
 		const saved = this.setLoadButton();
-		
+
 		if( !this.isInitialize()) {
 			this.initializeEditors();
-			
+
 			if(settings.loadDefault || !saved) {
 				importer.resetOptions();
-				
+
 				this.loadDefaultSearchParameter();
 				this.loadDefaultHtml();
 				runCode(true);
-				
+
 			} else {
 				importer.loadTab();
 			}
 		}
-		
+
 		this.setVisibility();
 	},
-	
+
 	selectTab : function(type) {
 		if( !type) {
 			type = settings.loadValue('tabType');
 			if( !type) type = 'string_';
 		}
-		
+
 		$('body.playground>header .mark-type li').removeClass('selected');
 		$('body.playground>header .mark-type li[data-type=' + type + ']').addClass('selected');
-		
+
 		settings.saveValue('tabType', type);
 		currentType = type;
 		currentSection = `.playground section.${currentType}`;
 		optionPad = `${currentSection}>.right-column`;
-		
+
 		if(currentType === 'array') {
 			this.buildSelector(`${currentSection} .queryArray select`, wordArrays);
 		}
-		
+
 		codeBuilder.initCodeSnippet();
 		this.clear();
-		
+
 		settings.load();
-		
+
 		currentTabId = `${settings.library}_section_${currentType}`;
-		
+
 		$('.file-form .file-name').val(getFileName());
 		$('header .save').toggleClass('dirty', types[currentType].isDirty);
-		
+
 		previousButton = $(`${currentSection} .testString .previous`);
 		nextButton = $(`${currentSection} .testString .next`);
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', 0.5);
-		
+
 		isScrolled = false;
 	},
-	
+
 	setVisibility : function() {
 		$(`${currentSection} .dependable`).addClass('hide');
-		
+
 		if(currentLibrary.old) {
 			$(`${currentSection} .advanced`).addClass('hide');
 			$(`${currentSection} .standard`).removeClass('hide');
-			
+
 		} else {
 			$(`${currentSection} .standard`).addClass('hide');
 			$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
 		}
-		
+
 		$('.switch-library input').prop('checked', !currentLibrary.old);
 		$('.switch-library label').text((currentLibrary.old ? 'standard' : 'advanced') + ' library' + (currentLibrary.jquery ? ' (jquery)' : ''));
 		$('button.open-setting-form').css('color', currentLibrary.old ? '#000' : '#f80');
-		
+
 		setIframesTimeout($(`${optionPad} .iframes input`)[0]);
-		
+
 		$('body.playground>main>article>section').addClass('hide');
 		$(currentSection).removeClass('hide');
 		$('.internal-code').addClass('hide');
-		
+
 		if( !currentLibrary.old) {
 			setShadowDOMStyle($(`${optionPad} .shadowDOM>input`)[0]);
 		}
-		
+
 		toggleTestButton($(`.setting-form .show-test-btn>input`)[0]);
-		
+
 		switch(currentType) {
 			case 'string_' :
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
-				
+
 				if( !currentLibrary.old) {
 					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
 					setCacheAndCombine($(`${optionPad} .separateWordSearch input`)[0]);
 					setWrapAllRanges($(`${optionPad} .cacheTextNodes input`)[0]);
 				}
 				break;
-			
+
 			case 'array' :
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
-				
+
 				if( !currentLibrary.old) {
 					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
 					setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
 					setWrapAllRanges($(`${optionPad} .cacheTextNodes input`)[0]);
 				}
 				break;
-			
+
 			case 'regexp' :
 				if( !currentLibrary.old) {
 					setBlockElementsBoundary($(`${optionPad} .acrossElements input`)[0]);
 					setSeparateGroupsDependable($(`${optionPad} .separateGroups input`)[0]);
 				}
 				break;
-			
+
 			default : break;
 		}
 	},
-	
+
 	buildSelector : function(selector, obj) {
 		let options = '';
-		
+
 		for(const key in obj) {
 			if(key !== 'name') {
 				const value = key.startsWith('default') ? `['${obj[key].toString().split(',').join("', '")}']` : `${obj.name}.${key}`;
@@ -244,39 +236,39 @@ const tab = {
 		}
 		$(selector).html(options);
 	},
-	
+
 	switchElements : function(elem, selector, negate) {
 		const div = $(`${optionPad} ${selector}`),
 			checked = $(elem).prop('checked');
-		
+
 		if(negate) {
 			if(checked) div.addClass('hide');
 			else div.removeClass('hide');
-			
+
 		} else {
 			if(checked) div.removeClass('hide');
 			else div.addClass('hide');
 		}
 	},
-	
+
 	loadDefaultHtml : function(force) {
 		const testEditor = this.getTestEditor();
-		
+
 		if(force || testEditor.toString().trim() === '') {
 			const elem = this.getTestElement();
 			elem.innerHTML = defaultHtml;
-			
+
 			types[currentType].testEditorMode = 'text';
 			this.highlightButton('.text');
 		}
 	},
-	
+
 	loadDefaultSearchParameter : function() {
 		const info = this.getSearchEditorInfo();
-		
+
 		if(info.editor.toString().trim() === '') {
 			let searchParameter = defaultSearchParameter[currentType];
-			
+
 			if(searchParameter) {
 				if(currentType === 'array' || currentType === 'ranges') {
 					searchParameter = JSON.stringify(searchParameter);
@@ -285,74 +277,74 @@ const tab = {
 			}
 		}
 	},
-	
+
 	setHtmlMode : function(content, highlight = true) {
 		if(types[currentType].testEditorMode === 'html' && !content) return;
-		
+
 		types[currentType].testEditorMode = 'html';
-		
+
 		let html = content || this.getInnerHTML();
-		
+
 		if(html) {
 			const div = this.destroyTestEditor();
 			if( !div) return;
-			
+
 			if(highlight) {
 				highlighter.highlightRawHtml(div, html);
-				
+
 			} else {
 				// .innerText removes/normalizes white spaces
 				div.innerHTML = util.entitize(html);
 			}
 			this.initializeEditors();
-			
+
 		} else {
 			this.getTestEditor().updateCode('');
 		}
-		
+
 		this.highlightButton('.html');
 	},
-	
+
 	setTextMode : function(content, highlight = false) {
 		if(types[currentType].testEditorMode === 'text') return;
-		
+
 		types[currentType].testEditorMode = 'text';
-		
+
 		const text = content || this.getTestElement().innerText;
-		
+
 		if(text) {
 			const div = this.destroyTestEditor();
 			if( !div) return;
-			
+
 			div.innerHTML = text;
 			this.initializeEditors();
-			
+
 			if(highlight) {
 				runCode();
 			}
-			
+
 		} else {
 			this.getTestEditor().updateCode('');
 		}
-		
+
 		this.highlightButton('.text');
 	},
-	
+
 	highlightButton : function(selector) {
 		const button = $(`${currentSection} .testString ${selector}`);
-		
+
 		$(`${currentSection} .testString button`).removeClass('pressed');
 		button.addClass('pressed');
 	},
-	
+
 	initializeEditors : function() {
 		const obj = types[currentType];
-		
+
 		for(const key in obj.editors) {
 			if(obj.editors[key] === null) {
 				if(key === 'testString') {
 					obj.editors[key] = this.initTestEditor(obj.editors[key]);
-					
+
 				} else {
 					let selector = `${currentSection} .${key} .editor`;
 					obj.editors[key] = this.initEditor(obj.editors[key], selector);
@@ -360,7 +352,7 @@ const tab = {
 			}
 		}
 	},
-	
+
 	defineCustomElements : function() {
 		customElements.define('shadow-dom-' + currentType, class extends HTMLElement {
 			constructor() {
@@ -370,31 +362,31 @@ const tab = {
 			}
 		});
 	},
-	
+
 	initTestEditor : function(editor) {
 		if( !document.querySelector('shadow-dom-' + currentType).shadowRoot) {
 			this.defineCustomElements();
 		}
-		
+
 		const elem = this.getTestElement();
 		elem.addEventListener('scroll', testContainerScrolled);
-		
+
 		editor = CodeJar(elem, () => {}, { tab : '  ' });
 		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
 		return editor;
 	},
-	
+
 	getTestElement : function() {
 		const root = document.querySelector('shadow-dom-' + currentType).shadowRoot;
 		return root.querySelector('.editor');
 	},
-	
+
 	initEditor : function(editor, selector) {
 		editor = CodeJar(document.querySelector(selector), () => {}, { tab : '  ' });
 		editor.onUpdate(code => this.onUpdateEditor(code, selector));
 		return editor;
 	},
-	
+
 	isInitialize : function() {
 		const obj = types[currentType];
 		for(const key in obj.editors) {
@@ -402,21 +394,21 @@ const tab = {
 		}
 		return false;
 	},
-	
+
 	// for performance reason it destroys an old editor, and replaces the old editor div element by the new one
 	destroyTestEditor : function() {
 		tab.setEditableAttribute(false);
-		
+
 		const obj = types[currentType];
 		if(obj.editors.testString !== null) {
 			obj.editors.testString.destroy();
 			obj.editors.testString = null;
 		}
-		
+
 		const elem = this.getTestElement();
 		if(elem) {
 			elem.removeEventListener('scroll', testContainerScrolled);
-			
+
 			let div = document.createElement('div');
 			div.className = 'editor';
 			elem.parentNode.replaceChild(div, elem);
@@ -424,7 +416,7 @@ const tab = {
 		}
 		return null;
 	},
-	
+
 	updateTestEditor : function(code, event) {
 		if(event.type === 'paste' || event.type === 'drop') {
 			if(types[currentType].testEditorMode === 'html') {
@@ -433,52 +425,52 @@ const tab = {
 		}
 		this.setDirty(true);
 	},
-	
+
 	onUpdateEditor : function(code, selector) {
 		const button = $(selector).parents('div').first().find('button.clear');
-		
+
 		if(code.trim()) button.removeClass('hide');
 		else button.addClass('hide');
-		
+
 		this.setDirty(true);
 	},
-	
+
 	updateCustomCode : function(content) {
 		const info = this.getCodeEditorInfo();
 		info.editor.updateCode(content);
-		
+
 		$(info.selector).parent().attr('open', true);
 		hljs.highlightElement($(info.selector)[0]);
 	},
-	
+
 	getSelectorsEditorInfo : function() {
 		const obj = types[currentType],
 			checkbox = `${currentSection} .selectors .selector-all>input`,
 			selector = `${currentSection} .selectors .editor`,
 			editor = obj.editors['selectors'];
-		
+
 		return { selector, editor, all : checkbox };
 	},
-	
+
 	getSearchEditorInfo : function() {
 		const obj = types[currentType],
 			selector = `${currentSection} .${obj.queryEditor} .editor`,
 			editor = obj.editors[obj.queryEditor];
-		
+
 		return { selector, editor };
 	},
-	
+
 	getCodeEditorInfo : function() {
 		const obj = types[currentType],
 			selector = `${optionPad} .customCode .editor`,
 			editor = obj.customCodeEditor;
-		
+
 		if( !editor) {
 			types[currentType].customCodeEditor = tab.initEditor(editor, selector);
 		}
 		return { selector, editor : types[currentType].customCodeEditor };
 	},
-	
+
 	getTestEditor : function() {
 		const editor = types[currentType].editors.testString;
 		if( !editor) {
@@ -486,11 +478,11 @@ const tab = {
 		}
 		return types[currentType].editors.testString;
 	},
-	
+
 	getOptionEditor : function(option) {
 		return types[currentType].editors[option];
 	},
-	
+
 	clear : function(keep) {
 		$('.results code').empty();
 		$('.internal-code code').empty();
@@ -499,49 +491,49 @@ const tab = {
 		marks = $();
 		startElements = $();
 	},
-	
+
 	setEditableAttribute : function(on) {
 		const elem = this.getTestElement();
 		$(elem).attr('contenteditable', on);
 	},
-	
+
 	setLoadButton : function() {
 		const value = settings.loadValue(currentTabId),
 			button = $('header button.load');
-		
+
 		if(value) button.removeClass('inactive');
 		else button.addClass('inactive');
-		
+
 		return value;
 	},
-	
+
 	setDirty : function(value) {
 		types[currentType].isDirty = value;
 		$('header .save').toggleClass('dirty', value);
 	},
-	
+
 	isChecked : function(option) {
 		return $(`${optionPad} .${option} input`).prop('checked');
 	},
-	
+
 	getInnerHTML : function() {
 		const elem = tab.getTestElement();
-		
+
 		if(tab.isChecked('shadowDOM')) {
 			return this.collectInnerHTML(elem);
 		}
 		return elem.innerHTML;
 	},
-	
+
 	collectInnerHTML : function(root) {
 		const array = [];
-		
+
 		var loop = function(node) {
 			while(node) {
 				if(node.nodeType === Node.ELEMENT_NODE) {
 					const name = node.nodeName.toLowerCase();
 					array.push('<' + name);
-					
+
 					if(node.hasAttributes()) {
 						for(let i = 0; i < node.attributes.length; i++) {
 							const attr = node.attributes[i];
@@ -549,20 +541,20 @@ const tab = {
 						}
 					}
 					array.push('>');
-					
+
 					if(node.shadowRoot && node.shadowRoot.mode === 'open') {
 						array.push('\n#shadow-root (open)\n');
-						
+
 						if(node.shadowRoot.firstChild) {
 							loop(node.shadowRoot.firstChild);
 							array.push(`</${name}>`);
 						}
 					}
-					
+
 				} else if(node.nodeType === Node.TEXT_NODE) {
 					array.push(node.textContent);
 				}
-				
+
 				if(node.hasChildNodes()) {
 					loop(node.firstChild);
 					array.push(`</${node.nodeName.toLowerCase()}>`);
@@ -570,9 +562,9 @@ const tab = {
 				node = node.nextSibling
 			}
 		};
-		
+
 		loop(root.firstChild);
-		
+
 		return array.join('');
 	}
 };
@@ -580,7 +572,7 @@ const tab = {
 // also DOM 'onchange' event
 function setSeparateGroupsDependable(elem) {
 	tab.switchElements(elem, '.ignoreGroups', true);
-	
+
 	if( !currentLibrary.old) {
 		tab.switchElements(elem, '.wrapAllRanges');
 	}
@@ -589,28 +581,28 @@ function setSeparateGroupsDependable(elem) {
 // also DOM 'onchange' event
 function setAcrossElementsDependable(elem) {
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
-	
-	if((currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch')) && tab.isChecked('cacheTextNodes')) {
+
+	if(markArray() && tab.isChecked('cacheTextNodes')) {
 		tab.switchElements(elem, '.wrapAllRanges');
 	}
 	setBlockElementsBoundary(elem);
 }
 
-function combinePatterns() {
-	return (currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch')) && tab.isChecked('combinePatterns');
-}
-
 function setBlockElementsBoundary(elem) {
 	$(`${optionPad} .blockElementsBoundary`).addClass('hide');
 	$(`${optionPad} .blockElements`).addClass('hide');
-	
+
 	if( !currentLibrary.old) {
 		tab.switchElements(elem, '.blockElementsBoundary');
-		
+
 		if(tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
 			setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
 		}
 	}
+}
+
+function markArray() {
+	return currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch');
 }
 
 // DOM 'onchange' event
@@ -621,15 +613,18 @@ function setBlockElements(elem) {
 // also DOM 'onchange' event
 function setCacheAndCombine(elem) {
 	$(`${optionPad} .combineNumber`).addClass('hide');
-	
+	$(`${optionPad} .wrapAllRanges`).addClass('hide');
+
 	if(currentLibrary.old) {
 		$(`${optionPad} .combinePatterns`).addClass('hide');
 		$(`${optionPad} .cacheTextNodes`).addClass('hide');
-		
+
 	} else {
 		tab.switchElements(elem, '.combinePatterns');
 		tab.switchElements(elem, '.cacheTextNodes');
-		
+
+		setWrapAllRanges(elem);
+
 		if( !$(`${optionPad} .combinePatterns`).hasClass('hide')) {
 			setCombineNumber($('#string_-combinePatterns')[0]);
 		}
@@ -639,10 +634,16 @@ function setCacheAndCombine(elem) {
 // also DOM 'onchange' event
 function setWrapAllRanges(elem) {
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
-	
+
 	if(tab.isChecked('acrossElements')) {
-		tab.switchElements(elem, '.wrapAllRanges');
+		if(markArray() && tab.isChecked('cacheTextNodes')) {
+			tab.switchElements(elem, '.wrapAllRanges');
+		}
 	}
+
+	/*if(tab.isChecked('acrossElements')) {
+		tab.switchElements(elem, '.wrapAllRanges');
+	}*/
 }
 
 // also DOM 'onchange' event
@@ -660,11 +661,11 @@ function setAccuracy(elem) {
 	const div = $(`${optionPad} .accuracyObject`).addClass('hide'),
 		exactly = $(`${optionPad} .accuracyObject .accuracy-exactly`).addClass('hide'),
 		complementary = $(`${optionPad} .accuracyObject .accuracy-complementary`).addClass('hide');
-	
+
 	if(elem.value === 'exactly') {
 		div.removeClass('hide');
 		exactly.removeClass('hide');
-		
+
 	} else if(elem.value === 'complementary') {
 		div.removeClass('hide');
 		complementary.removeClass('hide');
@@ -705,7 +706,7 @@ function toggleTestButton(elem) {
 // DOM 'onclick' event
 function save() {
 	const json = Json.buildJson();
-	
+
 	if(json) {
 		settings.saveValue(currentTabId, json);
 		tab.setLoadButton();
@@ -726,7 +727,7 @@ function load() {
 // DOM 'onclick' event
 function exportJson() {
 	const json = Json.buildJson(true);
-	
+
 	if(json) {
 		jsonEditor.updateCode(json);
 		$('button.import-json').attr('disabled', false);
@@ -746,7 +747,7 @@ function clearCodeEditor(elem) {
 		editor.updateCode('');
 	}
 	$(elem).addClass('hide');
-	
+
 	tab.clear();
 	codeBuilder.build('js-jq');
 	tab.setDirty(true);
@@ -764,16 +765,16 @@ function clearEditor(elem) {
 		className = parent.className.replace(/\b(?:advanced|dependable|hide)\b/g, '').trim(),
 		obj = types[currentType],
 		editor = obj.editors[className];
-	
+
 	if(editor) {
 		if(className === 'testString') {
 			tab.destroyTestEditor();
 			tab.initializeEditors();
-			
+
 		} else {
 			editor.updateCode('');
 		}
-		
+
 		tab.setDirty(true);
 	}
 	if(className !== obj.queryEditor && className !== 'testString') {
@@ -782,17 +783,17 @@ function clearEditor(elem) {
 }
 
 const importer = {
-	
+
 	loadTab : function() {
 		const str = settings.loadValue(currentTabId);
 		if(str) {
 			this.loadJson(str);
-			
+
 		} else {
 			log('\nSomething is wrong with the local storage', true);
 		}
 	},
-	
+
 	loadJson : function(str) {
 		if(str) {
 			const json = Json.parseJson(str);
@@ -800,101 +801,95 @@ const importer = {
 				log('\nFailed to parse the JSON', true);
 				return;
 			}
-			
+
 			const type = json.section['type'];
-			
+
 			if(type && types[type]) {
 				tab.selectTab(type);
 				tab.initializeEditors();
-				this.resetOptions();
 				this.setOptions(json);
 				tab.setVisibility();
-				
+
 			} else {
 				log('\nSomething is wrong with the json', true);
 			}
 		}
 	},
-	
+
 	resetOptions : function() {
 		const obj = types[currentType];
-		
+
 		obj.options.every(option => {
-			//if(currentLibrary.old && newOptions.includes(option)) return true;
-			
 			const selector = `${optionPad} .${option}`,
 				opt = defaultOptions[option];
-			
+
 			if(opt) {
 				switch(opt.type) {
 					case 'checkbox' :
 						$(selector + ' input').prop('checked', opt.value);
 						break;
-					
+
 					case 'text' :
 					case 'number' :
 						$(selector + ' input').val(opt.value);
 						break;
-					
+
 					case 'select' :
 						$(selector + ' select').val(opt.value);
 						break;
-					
-					case 'checkbox-number' :
-						if(option === 'combinePatterns') {
-							$(selector + ' input').prop('checked', false);
-							$(`${optionPad} .combineNumber input`).val(opt.value);
-						}
-						break;
-					
+
 					default : break;
 				}
 			}
 			return true;
 		});
-		
+
 		for(const key in obj.editors) {
 			for(const key in obj.editors) {
 				if(obj.editors[key]) obj.editors[key].updateCode('');
 			}
 		}
-		
-		tab.setDirty(false);
 	},
-	
+
 	setOptions : function(json) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements'),
 			textMode = obj.testEditorMode === 'text';
-		
+
 		let editor,
 			saved = json.library;
-		
+
 		if( !isNullOrUndefined(saved)) {
 			$('#library').prop('checked', saved === 'advanced');
 			settings.changed($('#library')[0]);
 		}
-		
+
+		this.resetOptions();
+
 		obj.options.every(option => {
 			if(currentLibrary.old && newOptions.includes(option)) return true;
-			
+
 			const selector = `${optionPad} .${option}`,
 				opt = defaultOptions[option];
-			
+
 			if(opt) {
 				saved = json.section[option];
-				
+
 				if(isNullOrUndefined(saved)) {
 					saved = opt.value;
 				}
-				
+
 				switch(opt.type) {
 					case 'checkbox' :
-						if(option === 'shadowDOM' && saved !== true && saved !== false) {
+						if(option === 'combinePatterns') {
+							$(`${optionPad} .combineNumber input`).val(parseInt(saved) || 10);
+							saved = !isNullOrUndefined(json.section[option]);
+
+						} else if(option === 'shadowDOM' && saved !== true && saved !== false) {
 							const editor = tab.getOptionEditor('shadowStyle');
 							editor.updateCode(saved);
 							saved = true;
-							
+
 						} else if(option === 'blockElementsBoundary' && saved !== true && saved !== false) {
 							const editor = tab.getOptionEditor('blockElements');
 							editor.updateCode(saved);
@@ -902,69 +897,61 @@ const importer = {
 						}
 						$(selector + ' input').prop('checked', saved);
 						break;
-					
+
 					case 'text' :
 						$(selector + ' input').val(saved);
 						break;
-					
+
 					case 'number' :
 						$(selector + ' input').val(saved);
 						break;
-					
+
 					case 'select' :
 						if(option === 'accuracy' && (saved !== 'exactly' && saved !== 'complementary' && saved !== 'partially')) {
 							const editor = tab.getOptionEditor('accuracyObject');
 							editor.updateCode(saved);
-							
+
 							const value = saved.replace(/^\{\s*[^:]+:\s*['"]([^'"]+)['"].+/, '$1');
 							saved = value === 'exactly' || value === 'complementary' ? value : 'partially';
 						}
 						$(selector + ' select').val(saved);
 						break;
-					
-					case 'checkbox-number' :
-						if(option === 'combinePatterns') {
-							$(selector + ' input').prop('checked', !isNullOrUndefined(json.section[option]));
-							$(`${optionPad} .combineNumber input`).val(saved);
-						}
-						break;
-					
+
 					default : break;
 				}
 			}
 			return true;
 		});
-		
+
 		for(const key in obj.editors) {
 			if(key === 'accuracyObject' || key === 'blockElements' || key === 'shadowStyle') continue;
-			
 			const editor = obj.editors[key];
 			saved = json.section[key];
-			
+
 			if(isNullOrUndefined(saved)) {
 				editor.updateCode('');
-				
+
 			} else if(key === 'testString') {
 				const mode = isNullOrUndefined(saved.mode) || saved.mode !== 'text' ? 'html' : saved.mode;
 				const content = isNullOrUndefined(saved.content) ? '' : this.sanitizeHtml(saved.content);
-				
+
 				if(mode === 'text') {
 					tab.setTextMode(content);
-					
+
 				} else {
 					if(content === 'defaultHtml') {
 						tab.loadDefaultHtml(true);
-						
+
 					} else {
 						tab.setHtmlMode(content, false);
 					}
 				}
-				
+
 			} else {
 				if(key === 'queryArray') {
 					const querySelect = `${currentSection} .queryArray select`;
 					$(querySelect).val(saved);
-					
+
 				} else if(key === 'selectors') {
 					const all = json.section['selectorAll'];
 					if( !isNullOrUndefined(all)) {
@@ -974,23 +961,23 @@ const importer = {
 				editor.updateCode(saved);
 			}
 		}
-		
+
 		if( !isNullOrUndefined(saved = json.section['customCode'])) {
 			tab.updateCustomCode(saved);
 		}
-		
+
 		if(textMode) {
 			tab.setTextMode(null);
 		}
-		
+
 		tab.setDirty(false);
 	},
-	
+
 	sanitizeHtml : function(str) {
 		const doc = new DOMParser().parseFromString(str, "text/html"),
 			iterator = document.createNodeIterator(doc.documentElement, NodeFilter.SHOW_ALL),
 			report = {};
-		
+
 		let node;
 		while(node = iterator.nextNode()) {
 			if(/^(?:head|script|style|link|meta|#comment)$/i.test(node.nodeName)) {
@@ -998,60 +985,60 @@ const importer = {
 				add(`removed ${node.nodeType === 1 ? 'element' : ''} '${node.nodeName.toLowerCase()}'`);
 				continue;
 			}
-			
+
 			if(node.nodeType === 1) {
 				checkAttributes(node);
 			}
 		}
-		
+
 		function checkAttributes(elem) {
 			for(let i = 0; i < elem.attributes.length; i++) {
 				const attr = elem.attributes[i],
 					name = attr.name.toLowerCase();
-				
-				if(name === 'href' || name === 'src' || name === 'srcset') {
+
+				if(name === 'href' || name === 'src' && elem.nodeName.toLowerCase() !== 'iframe' || name === 'srcset') {
 					const val = decodeURIComponent(attr.value);
-					
+
 					if(/^(?!#).+/i.test(val)) {
 						attr.value = '#';
 						add(`replaced '${name}' attribute value by '#'`);
 					}
-					
+
 				} else if(/\bjavascript(?::|&colon;)/i.test(attr.value)) {
 					elem.removeAttribute(attr.name);
 					add(`removed ${name} attribute containing 'javascript:'`);
-					
+
 				} else if(name === 'style') {
 					if(/\burl\s*\(/i.test(attr.value)) {
 						elem.removeAttribute(attr.name);
 						add(`removed ${name} attribute containing 'url'`);
 					}
-					
+
 				} else if(/^xlink:href/i.test(name)) {
 					attr.value = '#';
 					add(`replaced '${name}' attribute value by '#'`);
-					
+
 				} else if(/^on[a-z]+/i.test(name)) {    // on event attribute
 					elem.removeAttribute(attr.name);
 					add(`removed '${name}' attribute`);
 				}
 			}
 		}
-		
+
 		function add(msg) {
 			report[msg] = !report[msg] ? 1 : report[msg] + 1;
 		}
-		
+
 		console.log(toText(report, 'Html sanitizer report:', ' Ok'));
-		
+
 		const html = doc.body.innerHTML;
-		
+
 		// restores starting white spaces if any - vital for ranges
 		const spcReg = /^\s+/y;
 		if(spcReg.test(str) && !/^\s+/.test(html)) {
 			return str.substring(0, spcReg.lastIndex) + html;
 		}
-		
+
 		return html;
 	}
 };
@@ -1061,7 +1048,7 @@ function setVariables() {
 	noMatchTerms = [];
 	canBeNested = !currentLibrary.old && (currentType === 'regexp' || currentType === 'ranges') && tab.isChecked('wrapAllRanges');
 	flagEveryElement = currentLibrary.old || currentType !== 'ranges' && !tab.isChecked('acrossElements');
-	
+
 	const className = $(`${optionPad} .className input`).val().trim();
 	markElement = $(`${optionPad} .element input`).val().trim().toLowerCase() || 'mark';
 	markElementSelector = `${markElement}[data-markjs]${className ? '.' + className : ''}`;
@@ -1075,23 +1062,23 @@ function unmarkMethod(elem) {
 // also DOM 'onclick' event
 function runCode(reset) {
 	tab.clear();
-	
+
 	if(reset) {
 		currentIndex = 0;
 	}
-	
+
 	const editor = types[currentType].customCodeEditor;
-	
+
 	if(editor && editor.toString().trim()) {
 		const code = codeBuilder.build('internal');
-		
+
 		if(code) {
 			setVariables();
 			// disable contenteditable attribute for performance reason
 			tab.setEditableAttribute(false);
-			
+
 			log('Evaluating the whole code\n');
-			
+
 			let options;
 			try { options = new Function('"use strict"; ' + code)(); } catch(e) {
 				log('Failed to evaluate the code\n' + e.message, true);
@@ -1099,13 +1086,13 @@ function runCode(reset) {
 				console.error(e.message);
 				console.log(e.stack);
 			}
-			
+
 			$('.internal-code').removeClass('hide');
 			$('.internal-code code').text(code);
-			
+
 			hljs.highlightElement($(`${optionPad} .customCode .editor`)[0]);
 			hljs.highlightElement($('.internal-code code')[0]);
-			
+
 			const val = settings.loadValue('internal_code');
 			if(val && val === 'opened') {
 				$("#internal-code").attr('open', true);
@@ -1113,7 +1100,7 @@ function runCode(reset) {
 			// returning an object 'options' is only necessary for testing purposes
 			return options;
 		}
-		
+
 	} else {
 		highlighter.highlight();
 	}
@@ -1123,304 +1110,309 @@ const codeBuilder = {
 	comment : '// your code before',
 	defaultSnippet : `\n<<markjsCode>> // don't remove this line\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
 	snippet : '',
-	
+
 	build : function(kind) {
 		const jsCode = this.buildCode('js');
 		if( !jsCode) return '';
-		
+
 		$('.generated-code pre>code').text(jsCode);
-		
+
 		const jqCode = this.buildCode('jq');
 		if(jqCode) {
 			$('.generated-code pre>code').append('\n\n' + jqCode);
 		}
-		
+
 		hljs.highlightElement($('.generated-code pre>code')[0]);
-		
+
 		$('.internal-code').addClass('hide');
-		
+
 		return this.buildCode(kind);
-		//if(kind === 'internal') {
-			//return this.buildCode(kind);
-		//}
 	},
-	
+
 	buildCode : function(kind) {
 		const info = tab.getSearchEditorInfo();
-		
+
 		const unmark = kind === 'internal' || $('.unmark-method input').prop('checked'),
 			shadowDOM = tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '',
 			optionCode = this.buildOptions(kind, unmark);
-		
+
 		let code = '',
 			str = '',
 			text;
-		
+
 		if(kind === 'jq') {
 			code = `$('selector')` + (unmark ? `.unmark({\n  ${shadowDOM}done : () => {\n    $('selector')` : '');
-			
+
 		} else if(kind === 'js') {
 			code = `const instance = new Mark(document.querySelector('selector'));\ninstance` + (unmark ? `.unmark({\n  ${shadowDOM}done : () => {\n    instance` : '');
-			
+
 		} else {
 			const time = `\n    time = performance.now();`,
 				selector = `root.querySelector('.editor')`;
 			code = `let options;\nconst root = document.querySelector('shadow-dom-${currentType}').shadowRoot;\n`;
-			
+
 			if(currentLibrary.jquery) {
 				code += `const context = $(${selector});\ncontext.unmark({\n  ${shadowDOM}done : () => {${time}\n    context`;
-				
+
 			} else {
 				code += `const instance = new Mark(${selector});\ninstance.unmark({\n  ${shadowDOM}done : () => {${time}\n    instance`;
 			}
 		}
-		
+
 		if(text = info.editor.toString().trim()) {
 			switch(currentType) {
 				case 'string_' :
 					str = `.mark('${text}', ${optionCode});`;
 					break;
-				
+
 				case 'array' :
 					str = `.mark(${text}, ${optionCode});`;
 					break;
-				
+
 				case 'regexp' :
 					str = `.markRegExp(${text}, ${optionCode});`;
 					break;
-				
+
 				case 'ranges' :
 					str = `.markRanges(${text}, ${optionCode});`;
 					break;
-				
+
 				default : break;
 			}
-			
+
 		} else {
 			$('.generated-code code').text('');
 			log(`Missing search parameter\n`, true);
 			$(tab.getSearchEditorInfo().selector).addClass('error');
 			return '';
 		}
-		
+
 		code += str + (unmark ? '\n  }\n});' : '');
 		code = this.buildCustomCode(code, kind);
-		
+
 		if(kind !== 'internal') {
 			code = (kind === 'jq' ? '//jQuery\n' : kind === 'js' ? '//javascript\n' : '') + code;
-			
+
 		} else {
 			// returning an object 'options' is only necessary for testing purposes
 			code += '\n\nreturn options;'
 		}
-		
+
 		return code;
 	},
-	
+
 	buildCustomCode : function(code, kind) {
 		let text;
 		const reg = /\s+/g,
 			editor = types[currentType].customCodeEditor;
-		
+
 		if(editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
 			if(kind === 'internal') {
 				// necessary for the next/previous buttons functionality
 				const fn = `highlighter.flagStartElement(element, ${currentLibrary.old ? null : 'info'})`,
 					eachParam = this.getEachParameters(),
 					doneParam = this.getDoneParameters();
-				
+
 				text = addCode(text, fn, eachParam, /\bfunction\s+each(\([^)]+\))\s*\{/);
 				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
 			text = text.replace(new RegExp(`${this.comment}\s*\n`), '');
 			code = text.replace(/<<markjsCode>>(?:[ \t]*\/\/.*)?/, code);
 		}
-		
+
 		function addCode(text, fn, param, regex) {
 			// adds code if normalized parameters are equal
 			return text.replace(regex, (m, gr1) => gr1.replace(reg, '') === param.replace(reg, '') ? `${m}\n  ${fn};\n` : m);
 		}
-		
+
 		return code;
 	},
-	
+
 	buildOptions : function(kind, unmark) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements'),
 			indent = ' '.repeat(unmark ? 6 : 2),
 			end = unmark ? ' '.repeat(4) : '';
-		
+
 		if( !obj) return '{}';
-		
+
 		let value, text, code = '';
-		
+
 		obj.options.every(option => {
 			if(currentLibrary.old && newOptions.includes(option)) return true;
-			
+
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
 				opt = defaultOptions[option];
-			
+
 			if(opt) {
 				switch(opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
-						
+
 						if(value !== opt.value) {
-							if(option === 'shadowDOM') {
+							if(option === 'combinePatterns') {
+								if(markArray()) {
+									value = util.getNumericalValue('combineNumber', 10);
+
+								} else {
+									value = null;
+								}
+
+							} else if(option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
 								value = editor && (text = editor.toString().trim()) ? text : value;
-								
+
 							} else if(option === 'wrapAllRanges') {
-								value = across || currentType === 'ranges' ? value : null;
-								
+								if( !(markArray() && tab.isChecked('cacheTextNodes') && across
+									|| currentType === 'regexp' && tab.isChecked('separateGroups')
+									|| currentType === 'ranges')) {
+									value = null;
+								}
+
+							} else if(option === 'cacheTextNodes') {
+								if( !markArray()) value = null;
+
 							} else if(option === 'blockElementsBoundary') {
 								if(across) {
 									const editor = tab.getOptionEditor('blockElements');
 									value = editor && (text = editor.toString().trim()) ? text : value;
-									
+
 								} else {
 									value = null;
 								}
 							}
-							
+
 							if(value !== null) {
 								code += `${indent}${option} : ${value},\n`;
 							}
 						}
 						break;
-					
+
 					case 'text' :
 						text = $(input).val().trim();
-						
+
 						if(text && text !== opt.value) {
 							code += `${indent}${option} : '${text}',\n`;
 						}
 						break;
-					
+
 					case 'editor' :
 						if(option !== 'accuracyObject') {
 							const editor = tab.getOptionEditor(option);
-							
+
 							if(editor && (text = editor.toString().trim())) {
 								code += `${indent}${option} : ${text},\n`;
 							}
 						}
 						break;
-					
+
 					case 'select' :
 						value = $(selector + ' select').val();
-						
+
 						if(value !== opt.value) {
 							code += `${indent}${option} : `;
-							
+
 							if(option === 'accuracy' && (value === 'exactly' || value === 'complementary')) {
 								const editor = tab.getOptionEditor('accuracyObject');
 								code += editor && (text = editor.toString().trim()) ? `${text},\n` : `'${value}',\n`;
-								
+
 							} else {
 								code += `'${value}',\n`;
 							}
 						}
 						break;
-					
+
 					case 'number' :
 						if(option === 'iframesTimeout' && !tab.isChecked('iframes')
 							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
-						
-						value = parseInt($(input).val().trim());
-						
+
+						value = parseInt($(input).val().trim()) || opt.value;
+
 						if(value !== opt.value) {
 							code += `${indent}${option} : ${value},\n`;
 						}
 						break;
-					
-					case 'checkbox-number' :
-						if(option === 'combinePatterns' && combinePatterns()) {
-							const num = $(`${optionPad} .combineNumber input`).val().trim();
-							code += `${indent}combinePatterns : ${num},\n`;
-						}
-						break;
-					
+
 					default : break;
 				}
 			}
 			return true;
 		});
-		
+
 		code += this.buildCallbacks(kind, unmark);
 		code = !code.trim() ? '{}' : (kind === 'internal' ? 'options = ' : '') + `{\n${code}}`;
-		
+
 		return code;
 	},
-	
+
 	buildCallbacks : function(kind, unmark) {
 		let text,
 			code = '',
 			indent = ' '.repeat(unmark ? 6 : 2),
 			end = unmark ? ' '.repeat(4) : '';
-		
+
 		const editor = types[currentType].customCodeEditor;
-		
+
 		if(editor && (text = editor.toString())) {
 			if(/\bfunction\s+filter\s*\(/.test(text)) {
 				code += `${indent}filter : filter,\n`;
 			}
-			
+
 			if(/\bfunction\s+each\s*\(/.test(text)) {
 				code += `${indent}each : each,\n`;
 			}
-			
+
 			if(/\bfunction\s+done\s*\(/.test(text)) {
 				code += `${indent}done : done,\n`;
 			}
-			
+
 			if(kind === 'internal') {
 				code += `${indent}noMatch : (t) => { noMatchTerms.push(t); }\n`;
 			}
-			
+
 		} else {
 			if(kind === 'internal') {
 				code = `${code}${indent}done : highlighter.finish\n`;
-				
+
 			} else if($('#callbacks').prop('checked')) {
 				code = `${indent}filter : ${this.getFilterParameters()} => {},\n`;
 				code += `${indent}each : ${this.getEachParameters()} => {},\n`;
 				code = `${code}${indent}done : ${this.getDoneParameters()} => {}\n`;
 			}
 		}
-		
+
 		return code + end;
 	},
-	
+
 	getFilterParameters : function() {
 		if(currentType === 'string_' || currentType === 'array') {
 			return `(node, term, marks, count${currentLibrary.old ? '' : ', info'})`;
-			
+
 		} else if(currentType === 'regexp') {
 			return `(node, matchString, count${currentLibrary.old ? '' : ', info'})`;
-			
+
 		}
 		return `(node, range, matchString, index)`;
 	},
-	
+
 	getEachParameters : function() {
 		if(currentType === 'ranges') {
 			return `(element, range${currentLibrary.old ? '' : ', info'})`;
 		}
 		return `(element${currentLibrary.old ? '' : ', info'})`;
 	},
-	
+
 	getDoneParameters : function() {
 		if(currentLibrary.old) {
 			return `(totalMarks)`;
-			
+
 		} else {
 			const stats = currentType === 'string_' || currentType === 'array';
 			return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
 		}
 	},
-	
+
 	initCodeSnippet : function() {
 		this.snippet = (this.comment + this.defaultSnippet).replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters())
 			.replace(/\beach\(\)/g, 'each' + codeBuilder.getEachParameters())
@@ -1431,39 +1423,39 @@ const codeBuilder = {
 const Json = {
 	buildJson : function(format) {
 		const obj = types[currentType];
-		
+
 		let textMode = false;
-		
+
 		if(obj.testEditorMode === 'text') {
 			tab.setHtmlMode(null, false);
 			textMode = true;
 		}
-		
+
 		let json = this.serialiseOptions(`{"version":"${version}","library":"${settings.library}","section":{`),
 			text;
-		
+
 		json += this.serialiseCustomCode();
-		
+
 		const editor = tab.getOptionEditor(obj.queryEditor);
 		if(editor && (text = editor.toString()).trim()) {
 			json += `,"${obj.queryEditor}":${JSON.stringify(text)}`;
 		}
-		
+
 		const selectorsInfo = tab.getSelectorsEditorInfo();
 		if(selectorsInfo.editor && (text = selectorsInfo.editor.toString()).trim()) {
 			json += `,"selectors":${JSON.stringify(text)}`;
 			json += `,"selectorAll":${$(selectorsInfo.all).prop('checked')}`;
 		}
-		
+
 		const testEditor = tab.getTestEditor();
 		if((text = testEditor.toString()).trim()) {
 			const mode = types[currentType].testEditorMode;
-			
+
 			if(mode === 'html') {
 				// removes all mark elements from the text
 				const regex = new RegExp(`<${markElement} data-markjs=[^>]+>((?:(?!</${markElement}>)[^])+)</${markElement}>`, 'g');
 				let max = 20;    // just to be on the safe side
-				
+
 				while(--max > 0 && regex.test(text)) {
 					text = text.replace(regex, '$1');
 				}
@@ -1471,143 +1463,148 @@ const Json = {
 			json += `,"testString":{"mode":"${mode}","content":${JSON.stringify(text)}}`;
 		}
 		json += '}}';
-		
+
 		const jsonObj = Json.parseJson(json);
 		if( !jsonObj) return null;
-		
+
 		if(format) {
 			json = JSON.stringify(jsonObj, null, '    ');
 		}
-		
+
 		if(textMode) {
 			tab.setTextMode(null);
 		}
-		
+
 		return json;
 	},
-	
+
 	serialiseOptions : function(json) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements');
-		
+
 		let value, text;
 		json += `"type":"${currentType}"`;
-		
+
 		obj.options.every(option => {
 			if(currentLibrary.old && newOptions.includes(option)) return true;
-			
+
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
 				opt = defaultOptions[option];
-			
+
 			if(opt) {
 				switch(opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
-						
+
 						if(value !== opt.value) {
-							if(option === 'shadowDOM') {
+							if(option === 'combinePatterns') {
+								if(markArray()) {
+									json += `,"combinePatterns":${util.getNumericalValue('combineNumber', 10)}`;
+								}
+
+							} else if(option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
-								
+
 								if(editor && (text = editor.toString().trim())) {
 									json += `,"${option}":${JSON.stringify(text)}`;
-									
+
 								} else {
 									json += `,"${option}":${value}`;
 								}
-								
+
 							} else if(option === 'wrapAllRanges') {
-								if(across || currentType === 'ranges') {
+								if(markArray() && tab.isChecked('cacheTextNodes') && across
+									|| currentType === 'regexp' && tab.isChecked('separateGroups')
+									|| currentType === 'ranges') {
 									json += `,"${option}":${value}`;
 								}
-								
+
+							} else if(option === 'cacheTextNodes') {
+								if(markArray()) {
+									json += `,"${option}":${value}`;
+								}
+
 							} else if(option === 'blockElementsBoundary') {
 								if(across) {
 									const editor = tab.getOptionEditor('blockElements');
-									
+
 									if(editor && (text = editor.toString().trim())) {
 										json += `,"${option}":${JSON.stringify(text)}`;
-										
+
 									} else {
 										json += `,"${option}":${value}`;
 									}
 								}
-								
+
 							} else {
 								json += `,"${option}":${value}`;
 							}
 						}
 						break;
-					
+
 					case 'text' :
 						text = $(input).val().trim();
-						
+
 						if(text && text !== opt.value) {
 							json += `,"${option}":"${text}"`
 						}
 						break;
-					
+
 					case 'editor' :
 						if(option !== 'accuracyObject') {
 							const editor = tab.getOptionEditor(option);
-							
+
 							if(editor && (text = editor.toString().trim())) {
 								json += `,"${option}":${JSON.stringify(text)}`;
 							}
 						}
 						break;
-					
+
 					case 'select' :
 						value = $(selector + ' select').val();
-						
+
 						if(value !== opt.value) {
 							if(option === 'accuracy' && (value === 'exactly' || value === 'complementary')) {
 								const editor = tab.getOptionEditor('accuracyObject');
 								json += editor && (text = editor.toString().trim()) ? `,"${option}":${JSON.stringify(text)}` : `,"${option}":"${value}"`;
-								
+
 							} else {
 								json += `,"${option}":"${value}"`;
 							}
 						}
 						break;
-					
+
 					case 'number' :
 						if(option === 'iframesTimeout' && !tab.isChecked('iframes')
 							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
-						
-						value = parseInt($(input).val().trim());
-						
+
+						value = parseInt($(input).val().trim()) || opt.value;
+
 						if(value !== opt.value) {
 							json += `,"${option}":${value}`;
 						}
 						break;
-					
-					case 'checkbox-number' :
-						if(option === 'combinePatterns' && combinePatterns()) {
-							const num = $(`${optionPad} .combineNumber input`).val().trim();
-							json += `,"combinePatterns":${num}`;
-						}
-						break;
-					
+
 					default : break;
 				}
 			}
 			return true;
 		});
-		
+
 		return json;
 	},
-	
+
 	serialiseCustomCode : function() {
 		let code;
 		const editor = types[currentType].customCodeEditor;
-		
+
 		if(editor && (code = editor.toString().trim())) {
 			return `,"customCode":${JSON.stringify(code)}`;
 		}
 		return '';
 	},
-	
+
 	parseJson : function(str) {
 		let json;
 		try { json = JSON.parse(str); } catch(e) {
@@ -1618,7 +1615,7 @@ const Json = {
 };
 
 function registerEvents() {
-	
+
 	$(window).on("beforeunload", function(e) {
 		if(settings.showWarning && isDirty()) {
 			e.preventDefault();
@@ -1626,52 +1623,52 @@ function registerEvents() {
 			return '';
 		}
 	});
-	
+
 	$(document).on('mouseup', function() {
 		$('section .editor, header li').removeClass('error warning');
 	});
-	
+
 	$(".mark-type li").on('click', function() {
 		tab.selectTab($(this).data('type'));
 		tab.initTab();
 	});
-	
+
 	$("#internal-code").on('toggle', function(e) {
 		const attr = $(this).attr('open');
 		settings.saveValue('internal_code', attr ? 'opened' : 'closed');
 	});
-	
+
 	$(".customCode details, .customCode details>summary").on('toggle', function(e) {
 		const button = $(this).parents('.customCode').first().find('button.clear');
-		
+
 		if($(this).attr('open')) {
 			const editor = types[currentType].customCodeEditor;
-			
+
 			if( !editor || !editor.toString().trim()) {
 				tab.updateCustomCode(codeBuilder.snippet);
 			}
 			button.removeClass('hide');
 			tab.clear();
 			codeBuilder.build('js-jq');
-			
+
 		} else {
 			button.addClass('hide');
 		}
 	});
-	
+
 	$("input[type=text]").on('input', function(e) {
 		codeBuilder.build('js-jq');
 		tab.setDirty(true);
 	});
-	
+
 	$("input[type=checkbox], input[type=number], select[name]").on('change', function(e) {
 		codeBuilder.build('js-jq');
-		
+
 		if($(this).attr('name')) {
 			tab.setDirty(true);
 		}
 	});
-	
+
 	$("label[for], input[name], option[name], div.editor[name]").on('mouseenter', function(e) {
 		if(settings.showTooltips || e.ctrlKey || e.metaKey) {
 			const attr = $(this).attr('for');
@@ -1679,7 +1676,7 @@ function registerEvents() {
 				if($(`input#${attr}[name]`).length) {
 					showTooltip($(this).attr('for').replace(/^[^-]+-/, ''), $(this), e);
 				}
-				
+
 			} else {
 				showTooltip($(this).attr('name'), $(this), e);
 			}
@@ -1687,17 +1684,17 @@ function registerEvents() {
 	}).on('mouseleave', function() {
 		$(this).powerTip('hide', true);
 	});
-	
+
 	$('button.open-json-form').on('click', function() {
 		if($('.json-form:visible').length) {
 			$('.json-form').css('display', 'none');
-			
+
 		} else {
 			$('.json-form').css('display', 'block');
-			
+
 			if(jsonEditor === null) {
 				jsonEditor = CodeJar($('.json-form .editor')[0], () => {});
-				
+
 				jsonEditor.onUpdate(code => {
 					$('button.import-json').attr('disabled', code.trim() ? false : true);
 				});
@@ -1705,92 +1702,96 @@ function registerEvents() {
 			$('button.import-json').attr('disabled', jsonEditor.toString().trim() ? false : true);
 		}
 	});
-	
+
 	$('.json-form>.close, .setting-form>.close').on('click', function() {
 		$(this).parent().css('display', 'none');
 	});
-	
+
 	$('button.open-setting-form').on('click', function() {
 		if($('.setting-form:visible').length) {
 			$('.setting-form').css('display', 'none');
-			
+
 		} else {
 			$('.setting-form').css('display', 'block');
 		}
 	});
-	
+
 	$('button.open-file-form').on('click', function() {
 		if($('.file-form:visible').length) {
 			$('.file-form').css('display', 'none');
-			
+
 		} else {
 			$('.file-form').css('display', 'block');
 			$('.file-form .file-name').attr('placeholder', getFileName());
 		}
 	});
-	
+
 	$('.file-form>.close').on('click', function() {
 		$(this).parent().css('display', 'none');
 	});
-	
+
 	$(document).on('keydown', function(e) {
 		if(e.ctrlKey || e.metaKey) {
 			if(e.code === 'KeyS') {    // s
 				$('.file-form a.save-file')[0].click();
 				e.preventDefault();
-				
+
 			} else if(e.code === 'KeyO') {    // o
 				$('.file-form #file-dialog')[0].click();
 				e.preventDefault();
 			}
 		}
 	});
-	
+
 	$('.file-form a.save-file').on('click', function(e) {
 		const json = Json.buildJson(true);
-		
+
 		if(json) {
 			let name = $('.file-form .file-name').val();
-			
+
 			if(name && !/\.json$/i.test(name)) {
 				name = name.replace(/[.]+$/g, '') + '.json';
 			}
 			name = (name || getFileName());
-			
+
 			this.download = name;
 			this.href = URL.createObjectURL(new Blob([json], { type : 'text/json' }));
 			//URL.revokeObjectURL(this.href);
-			
+
 			$('.file-form .file-name').val(name);
 			settings.saveValue(currentType + '-fileName', name);
 		}
 	});
-	
+
 	$('.file-form #file-dialog').on('change', function() {
 		const reader = new FileReader(),
 			file = this.files[0];
 		reader.file = file;
-		
+
 		reader.onload = function() {
 			importer.loadJson(this.result);
-			
+
 			$('.file-form .loaded-file-name').text(file.name);
 			$('.file-form .file-name').val(file.name);
 			$('.file-form').css('display', 'none');
 		};
-		
+
 		reader.readAsText(file);
 	});
-	
+
 	$(".copy").on('mouseup', function(e) {
 		document.getSelection().selectAllChildren($(this).parent().parent().find('.editor')[0]);
 		document.execCommand('copy');
 		document.getSelection().removeAllRanges();
 	});
-	
+
 }
 
 const util = {
+	getNumericalValue : function(option, defaultValue) {
+		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
+	},
+
 	entitize : function(text) {
 		text = text.replace(/[<>"'&]/g, (m) => {
 			if(m === '<') return '&lt;';
@@ -1808,12 +1809,12 @@ const settings = {
 	loadDefault : true,
 	showTooltips : false,
 	showWarning : true,
-	
+
 	save : function() {
 		const str = JSON.stringify(settings);
 		this.saveValue('settings', str);
 	},
-	
+
 	load : function() {
 		const str = this.loadValue('settings');
 		if(str) {
@@ -1822,15 +1823,15 @@ const settings = {
 				if(json.library) {
 					this.library = json.library;
 				}
-				
+
 				if( !isNullOrUndefined(json.loadDefault)) {
 					this.loadDefault = json.loadDefault;
 				}
-				
+
 				if( !isNullOrUndefined(json.showTooltips)) {
 					this.showTooltips = json.showTooltips;
 				}
-				
+
 				if( !isNullOrUndefined(json.showWarning)) {
 					this.showWarning = json.showWarning;
 				}
@@ -1839,14 +1840,14 @@ const settings = {
 		}
 		switchLibrary(this.library === 'advanced');
 	},
-	
+
 	setCheckboxes : function() {
 		$('#library').prop('checked', this.library === 'advanced');
 		$('#load-default').prop('checked', this.loadDefault);
 		$('#show-tooltips').prop('checked', this.showTooltips);
 		$('#unsaved').prop('checked', this.showWarning);
 	},
-	
+
 	changed : function(elem) {
 		if(elem.id === 'library') {
 			const checked = $(elem).prop('checked');
@@ -1858,7 +1859,7 @@ const settings = {
 		this.showWarning = $('#unsaved').prop('checked');
 		this.save();
 	},
-	
+
 	loadValue : function(key) {
 		try {
 			return localStorage.getItem(key);
@@ -1867,7 +1868,7 @@ const settings = {
 		}
 		return null;
 	},
-	
+
 	saveValue : function(key, value) {
 		try {
 			const saved = localStorage.getItem(key);
@@ -1900,13 +1901,13 @@ function toText(obj, title, msg) {
 
 function getFileName() {
 	let name = settings.loadValue(currentType + '-fileName');
-	
+
 	return name || `${(currentType === 'string_' ? 'string' : currentType)}-${settings.library}-lib.json`;
 }
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-	
+
 	elem.data('powertiptarget', id).powerTip({
 		manual : true,
 		intentPollInterval : 300,
@@ -1924,29 +1925,29 @@ function showHideInfo(id) {
 		info = $('article.options-info #' + id),
 		elemsAE = info.find('.acrossElements').addClass('hide'),
 		elemsSG = info.find('.separateGroups').addClass('hide');
-	
+
 	if(acrossElements) {
 		elemsAE.each(function() {
 			if($(this).hasClass('separateGroups')) {
 				if(separateGroups) $(this).removeClass('hide');
-				
+
 			} else $(this).removeClass('hide');
 		});
 	}
-	
+
 	if(separateGroups) {
 		elemsSG.each(function() {
 			if($(this).hasClass('acrossElements')) {
 				if(acrossElements) $(this).removeClass('hide');
-				
+
 			} else $(this).removeClass('hide');
 		});
 	}
-	
+
 	if(currentLibrary.old) {
 		$(`.options-info .advanced`).addClass('hide');
 		$(`.options-info .standard`).removeClass('hide');
-		
+
 	} else {
 		$(`.options-info .standard`).addClass('hide');
 		$(`.options-info .advanced`).removeClass('hide');
@@ -1959,11 +1960,11 @@ function log(message, error, warning) {
 		message = `<span style="color:red">${message}</span><br>`;
 		$('.results code').html(message);
 		return;
-		
+
 	} else if(warning) {
 		message = `<span style="color:#ca5500">${message}</span><br>`;
 	}
-	
+
 	$('.results code').append(message);
 }
 
@@ -1985,12 +1986,12 @@ function testContainerScrolled() {
 function previousMatch() {
 	if(canBeNested) {
 		if(--currentIndex <= 0) currentIndex = 0;
-		
+
 		highlightMatch2();
-		
+
 	} else {
 		if( !startElements.length) return;
-		
+
 		findNextPrevious(false);
 	}
 }
@@ -1998,12 +1999,12 @@ function previousMatch() {
 function nextMatch() {
 	if(canBeNested) {
 		if(++currentIndex > matchCount - 1) currentIndex = matchCount - 1;
-		
+
 		highlightMatch2();
-		
+
 	} else {
 		if( !startElements.length) return;
-		
+
 		findNextPrevious(true);
 	}
 }
@@ -2011,14 +2012,14 @@ function nextMatch() {
 function findNextPrevious(next) {
 	let elem,
 		top = $(`${currentSection} .testString>.test-container`).offset().top;
-	
+
 	if(next) {
 		startElements.each(function(i) {
 			if(isScrolled) {
 				if($(this).offset().top > top) elem = $(this);
-				
+
 			} else if(i > currentIndex) elem = $(this);
-			
+
 			if(elem) {
 				currentIndex = i;
 				return false;
@@ -2028,7 +2029,7 @@ function findNextPrevious(next) {
 			elem = startElements.last();
 			currentIndex = startElements.length - 1;
 		}
-		
+
 	} else {
 		startElements.each(function(i) {
 			if(isScrolled) {
@@ -2036,7 +2037,7 @@ function findNextPrevious(next) {
 					currentIndex = i > 0 ? i - 1 : i;
 					return false;
 				}
-				
+
 			} else if(i === currentIndex) {
 				currentIndex = i > 0 ? i - 1 : i;
 				return false;
@@ -2048,51 +2049,51 @@ function findNextPrevious(next) {
 			currentIndex = 0;
 		}
 	}
-	
+
 	highlightMatch(elem);
 }
 
 function highlightMatch(elem) {
 	marks.removeClass('current');
-	
+
 	const htmlMode = types[currentType].testEditorMode === 'html';
 	let found = false;
-	
+
 	marks.each(function(i, el) {
 		if( !found) {
 			if(el === elem[0]) found = true;
-			
+
 		} else {
 			// the start of the next 'start element' means the end of the current match
 			if($(this).data('markjs') === 'start-1') return false;
 		}
-		
+
 		if(found) {
 			if(htmlMode) {
 				$(this).find(markElementSelector + '.mark-term').addClass('current');
-				
+
 			} else {
 				$(this).addClass('current');
 				$(this).find(markElementSelector).addClass('current');
 			}
 		}
 	});
-	
+
 	setButtonOpacity();
 	setTimeout(function() { scrollIntoView(elem); }, 100);
 }
 
 // highlight whole match using only the 'start elements' not possible with nesting/overlapping matches
-// using numbers as unique match identifiers can solve this problem but only with single pass methods - 'markRegExp' and 'markRanges'
+// using numbers as unique match identifiers can solve this problem, but only with single-pass methods - 'markRegExp' and 'markRanges'
 function highlightMatch2() {
 	marks.removeClass('current');
 	let elems;
-	
+
 	if(types[currentType].testEditorMode === 'html') {
 		elems = marks.filter((i, elem) => $(elem).data('markjs') === currentIndex);
 		elems.filter((i, elem) => $(elem).hasClass('mark-term')).addClass('current');
 		elems.find('mark[data-markjs].mark-term').addClass('current');
-		
+
 	} else {
 		elems = marks.filter((i, elem) => $(elem).data('markjs') === currentIndex).addClass('current');
 		elems.find(`${markElement}[data-markjs]`).addClass('current');
@@ -2105,7 +2106,7 @@ function setButtonOpacity() {
 	if(canBeNested && matchCount === 0 || !canBeNested && !startElements.length) {
 		previousButton.css('opacity', 0.5);
 		nextButton.css('opacity', 0.5);
-		
+
 	} else {
 		previousButton.css('opacity', currentIndex > 0 ? 1 : 0.5);
 		nextButton.css('opacity', currentIndex < (canBeNested ? matchCount - 1 : startElements.length - 1) ? 1 : 0.5);
@@ -2123,21 +2124,21 @@ function scrollIntoView(elem) {
 
 function switchLibrary(checked) {
 	const info = getLibrariesInfo();
-	
+
 	if(info.jquery !== 'none' && info.javascript !== 'none') {
 		if(checked) {
 			currentLibrary.old = false;
 			currentLibrary.jquery = info.jquery === 'advanced';
-			
+
 		} else {
 			currentLibrary.old = true;
 			currentLibrary.jquery = info.jquery === 'standard';
 		}
 	}
-	
+
 	tab.setVisibility();
 	codeBuilder.initCodeSnippet();
-	
+
 	currentTabId = `${settings.library}_section_${currentType}`;
 	tab.setLoadButton();
 	$('.file-form .file-name').val(getFileName());
@@ -2146,35 +2147,35 @@ function switchLibrary(checked) {
 function detectLibrary() {
 	const info = getLibrariesInfo();
 	let both = info.jquery !== 'none' && info.javascript !== 'none' && info.jquery !== info.javascript;
-	
+
 	if(both) {
 		const lib = settings.loadValue('library');
 		if(lib) {
 			if(lib === 'standard') {
 				currentLibrary.jquery = info.jquery === 'standard';
 				currentLibrary.old = true;
-				
+
 			} else if(lib === 'advanced') {
 				currentLibrary.jquery = info.jquery === 'advanced';
 				currentLibrary.old = false;
 			}
-			
+
 		} else {
 			currentLibrary.jquery = info.jquery === 'advanced';
 			currentLibrary.old = false;
 		}
-		
+
 	} else {
 		if(info.javascript !== 'none') {
 			currentLibrary.jquery = false;
 			currentLibrary.old = info.javascript === 'standard';
-			
+
 		} else if(info.jquery !== 'none') {
 			currentLibrary.jquery = true;
 			currentLibrary.old = info.jquery === 'standard';
 		}
 	}
-	
+
 	if( !both) {
 		$('.switch-library input').attr('disabled', true);
 		$('.switch-library label').css('opacity', .4);
@@ -2184,13 +2185,13 @@ function detectLibrary() {
 function getLibrariesInfo() {
 	const info = {};
 	let jq = false, js = false;
-	
+
 	$('head script[src]').each(function(i, elem) {
 		const src = elem.getAttribute('src');
 		if(/\/jquery\.mark\./i.test(src)) jq = true;
 		if(/\/mark\./i.test(src)) js = true;
 	});
-	
+
 	if(jq) {
 		info.jquery = getLibrary(true);
 	}
@@ -2210,7 +2211,7 @@ function getLibrary(jquery) {
 			}
 		});
 	} catch(e) { return 'none'; }
-	
+
 	return library;
 }
 
@@ -2223,7 +2224,7 @@ function getTestContexts() {
 		info = tab.getSelectorsEditorInfo(),
 		selectors = info.editor.toString().trim();
 	let elems = elem;
-	
+
 	if(selectors) {
 		elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
 	}
@@ -2232,7 +2233,7 @@ function getTestContexts() {
 
 function getTestContainer() {
 	const elem = tab.getTestElement();
-	
+
 	return currentLibrary.jquery ? $(elem) : new Mark(elem);
 }
 
