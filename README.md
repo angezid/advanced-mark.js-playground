@@ -41,53 +41,22 @@ Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.
 
 Note:
 - due to limitations of the standard library, the next/previous buttons functionality with `acrossElements` option may not work as expected.
+- in test container editors, due limitation of `contenteditable` attribute, the undo won't works.
 
+### Option examples
+There are several  option examples in `JSON -> Examples`.
+
+### Server
+To play with `iframes` option you need to launch server. It also opens `build/playground.html` file. Server url - `http://localhost:8080`.
+```
+npm run server
+```
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
-For normal workflow, two internal functions are necessary:
+For normal playground workflow, a two internal functions are necessary:
 - `highlighter.flagStartElement()` in the `each` callback for next/previous buttons functionality
 - `highlighter.finish()` in the `done` callback for highlighting matches and logging results  
 They're automatically added to the internal code if their parameters and functions parameters are the same.
-
-### Custom code example
-It's a simplified hack to improve performance in the `mark()` method with the large array. It demonstrates how to use the custom code editor.  
-Note that currently, the option `cacheTextNodes` can be used without generating ranges.  
-Copy the below code, paste it into the JSON form, and press 'Import JSON' button.
-``` json
-{
-    "version": "1.0.0",
-    "library": "advanced",
-    "section": {
-        "type": "array",
-        "accuracy": "exactly",
-        "diacritics": false,
-        "cacheTextNodes": true,
-        "customCode": "// your code before\nconst ranges=[];\n<<markjsCode>> // don't remove this line\n\nfunction filter(node, term, marks, count, info) {\n  const range = {\n    start : info.offset + info.match.index + info.match[1].length,\n    length : info.match[2].length,\n  };\n  if (options.acrossElements) {\n    if (info.matchStart) {\n      range.startElement = true;\n    }\n  } else range.startElement = true;\n  ranges.push(range);\n  \n  return  false;\n}\n\nfunction done() {\n  context.markRanges(ranges, {\n    'each' : function(elem, range) {\n      if(range.startElement) {\n        elem.setAttribute('data-markjs', 'start-1');\n      }\n    },\n    done : highlighter.finish\n  });\n}",
-        "queryArray": "wordArrays.words_50",
-        "testString": {
-            "mode": "html",
-            "content": "defaultHtml"
-        }
-    }
-}
-```
-Shadow DOM example
-``` json
-{
-    "version": "1.0.0",
-    "library": "advanced",
-    "section": {
-        "type": "array",
-        "shadowDOM": "{ 'style' : \"mark[data-markjs] { color:red; }\" }",
-        "customCode": "// your code before\nconst container = tab.getTestElement();\nlet elem = container.querySelector('#shadow-dom');\nif( !elem) {\n  const div = document.createElement(\"DIV\");\n  div.innerHTML = '<b>Shadow DOM test</b><div id=\"shadow-dom\"></div>';\n  container.appendChild(div);\n  elem = container.querySelector('#shadow-dom');\n}\n\nif(elem && !elem.shadowRoot) {\n  const root2 = elem.attachShadow({ mode : 'open' });\n  root2.innerHTML = defaultHtml;\n}\n\n<<markjsCode>> // don't remove this line\n\nfunction filter(node, term, marks, count, info) {\n  return true;\n}\n\nfunction each(element, info) {}\n\nfunction done(totalMarks, totalMatches, termStats) {}",
-        "queryArray": "['wiki', 'wikipedia', 'encyclopedia']",
-        "testString": {
-            "mode": "html",
-            "content": "defaultHtml"
-        }
-    }
-}
-```
 
 ### License
 

@@ -329,7 +329,6 @@ const test = {
 		}
 	},
 
-	//runGeneratedCode : function(obj) {
 	generateAndRunCode : function(obj) {
 		let options,
 			code = codeBuilder.build(currentLibrary.jquery ? 'jq' : 'js');

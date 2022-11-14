@@ -225,6 +225,19 @@ const tab = {
 		}
 	},
 
+	buildExampleSelector : function(selector, obj) {
+		let options = '<option value="">Examples</option>';
+
+		for(const key in obj) {
+			if(key !== 'name') {
+				let title = key.replace(/^([a-z])/, (m, gr1) => gr1.toUpperCase()).replace(/([a-z])([A-Z])/, (m, gr1, gr2) => gr1 + ' ' + gr2);
+				title = title.replace(/( [A-Z])([a-z]+)/, (m, gr1, gr2) => gr1.toLowerCase() + gr2);
+				options += `<option value="${key}">${title}</option>`;
+			}
+		}
+		$(selector).html(options);
+	},
+
 	buildSelector : function(selector, obj) {
 		let options = '';
 
@@ -519,52 +532,79 @@ const tab = {
 	getInnerHTML : function() {
 		const elem = tab.getTestElement();
 
-		if(tab.isChecked('shadowDOM')) {
-			return this.collectInnerHTML(elem);
+		if(tab.isChecked('iframes') || tab.isChecked('shadowDOM')) {
+			return this.innerHTML(elem);
 		}
 		return elem.innerHTML;
 	},
 
-	collectInnerHTML : function(root) {
-		const array = [];
+	innerHTML : function(root) {
+		const array = [],
+			stack = [],
+			iframe = tab.isChecked('iframes'),
+			shadow = tab.isChecked('shadowDOM');
 
-		var loop = function(node) {
-			while(node) {
-				if(node.nodeType === Node.ELEMENT_NODE) {
-					const name = node.nodeName.toLowerCase();
-					array.push('<' + name);
+		const pushToStack = parent => {
+			if(parent.hasChildNodes()) {
+				for(let i = parent.childNodes.length - 1; i >= 0; i--) {
+					const node = parent.childNodes[i];
 
-					if(node.hasAttributes()) {
-						for(let i = 0; i < node.attributes.length; i++) {
-							const attr = node.attributes[i];
-							array.push(` ${attr.name}="${attr.value}"`);
-						}
+					if(node.nodeType === Node.ELEMENT_NODE && !util.isVoidElement(node)) {
+						stack.push({ node : null, closeTag : `</${node.nodeName.toLowerCase()}>` });
 					}
-					array.push('>');
-
-					if(node.shadowRoot && node.shadowRoot.mode === 'open') {
-						array.push('\n#shadow-root (open)\n');
-
-						if(node.shadowRoot.firstChild) {
-							loop(node.shadowRoot.firstChild);
-							array.push(`</${name}>`);
-						}
-					}
-
-				} else if(node.nodeType === Node.TEXT_NODE) {
-					array.push(node.textContent);
+					stack.push({ node : node, closeTag : null });
 				}
-
-				if(node.hasChildNodes()) {
-					loop(node.firstChild);
-					array.push(`</${node.nodeName.toLowerCase()}>`);
-				}
-				node = node.nextSibling
 			}
 		};
 
-		loop(root.firstChild);
+		const writeElement = node => {
+			array.push('<' + node.nodeName.toLowerCase());
 
+			if(node.hasAttributes()) {
+				for(let i = 0; i < node.attributes.length; i++) {
+					const attr = node.attributes[i];
+					array.push(` ${attr.name}="${attr.value}"`);
+				}
+			}
+			array.push('>');
+		};
+
+		pushToStack(root);
+
+		while(stack.length > 0) {
+			const obj = stack.pop();
+
+			if(obj.closeTag) {
+				array.push(obj.closeTag);
+				continue;
+			}
+
+			let node = obj.node;
+
+			if(node.nodeType === Node.ELEMENT_NODE) {
+				writeElement(node);
+
+				if(shadow && node.shadowRoot && node.shadowRoot.mode === 'open') {
+					array.push('\n#shadow-root (open)\n');
+					pushToStack(node.shadowRoot);
+
+				} else if(iframe && node.nodeName.toLowerCase() === 'iframe') {
+					try {
+						let body, doc = node.contentWindow.document;
+
+						if(doc && (body = doc.querySelector('body'))) {
+							pushToStack(body);
+						}
+					} catch(e) { }
+
+				} else {
+					pushToStack(node);
+				}
+
+			} else if(node.nodeType === Node.TEXT_NODE) {
+				array.push(util.entitize(node.textContent));
+			}
+		}
 		return array.join('');
 	}
 };
@@ -677,7 +717,16 @@ function setIframesTimeout(elem) {
 	tab.switchElements(elem, '.iframesTimeout');
 }
 
-// DOM 'onclick' event
+// DOM 'onchange' event
+function selectExample(elem) {
+	const str = examples[$(elem).val()];
+	if(str) {
+		jsonEditor.updateCode(str);
+		$('button.import-json').attr('disabled', false);
+	}
+}
+
+// DOM 'onchange' event
 function selectArray(elem) {
 	const info = tab.getSearchEditorInfo();
 	info.editor.updateCode($(elem).val());
@@ -798,7 +847,6 @@ const importer = {
 		if(str) {
 			const json = Json.parseJson(str);
 			if( !json) {
-				log('\nFailed to parse the JSON', true);
 				return;
 			}
 
@@ -1115,12 +1163,9 @@ const codeBuilder = {
 		const jsCode = this.buildCode('js');
 		if( !jsCode) return '';
 
-		$('.generated-code pre>code').text(jsCode);
-
 		const jqCode = this.buildCode('jq');
-		if(jqCode) {
-			$('.generated-code pre>code').append('\n\n' + jqCode);
-		}
+
+		$('.generated-code pre>code').text(jsCode + '\n\n' + jqCode);
 
 		hljs.highlightElement($('.generated-code pre>code')[0]);
 
@@ -1266,7 +1311,7 @@ const codeBuilder = {
 							} else if(option === 'wrapAllRanges') {
 								if( !(markArray() && tab.isChecked('cacheTextNodes') && across
 									|| currentType === 'regexp' && tab.isChecked('separateGroups')
-									|| currentType === 'ranges')) {
+										|| currentType === 'ranges')) {
 									value = null;
 								}
 
@@ -1516,7 +1561,7 @@ const Json = {
 							} else if(option === 'wrapAllRanges') {
 								if(markArray() && tab.isChecked('cacheTextNodes') && across
 									|| currentType === 'regexp' && tab.isChecked('separateGroups')
-									|| currentType === 'ranges') {
+										|| currentType === 'ranges') {
 									json += `,"${option}":${value}`;
 								}
 
@@ -1699,6 +1744,11 @@ function registerEvents() {
 					$('button.import-json').attr('disabled', code.trim() ? false : true);
 				});
 			}
+
+			if( !$('.json-form select#examples').html().trim()) {
+				tab.buildExampleSelector(`.json-form select#examples`, examples);
+			}
+
 			$('button.import-json').attr('disabled', jsonEditor.toString().trim() ? false : true);
 		}
 	});
@@ -1788,6 +1838,12 @@ function registerEvents() {
 }
 
 const util = {
+	voidElements : ['meta', 'link', 'br', 'col', 'hr', 'input', 'img', 'area', 'menuitem', 'wbr', 'param', 'source', 'track', 'base', 'basefont', 'embed', 'frame', 'isindex', 'keygen', 'nextid', 'nobr', 'plaintext'],
+
+	isVoidElement : function(node) {
+		return this.voidElements.indexOf(node.nodeName.toLowerCase()) !== -1;
+	},
+
 	getNumericalValue : function(option, defaultValue) {
 		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
 	},
@@ -1801,6 +1857,15 @@ const util = {
 			return '&#039;';
 		});
 		return text;
+	},
+
+	distinct : function(arr) {
+		const array = [];
+
+		for(let i = 0; i < arr.length; ++i) {
+			if(array.indexOf(arr[i]) === -1) array.push(arr[i]);
+		}
+		return array;
 	}
 };
 
@@ -1964,8 +2029,8 @@ function log(message, error, warning) {
 	} else if(warning) {
 		message = `<span style="color:#ca5500">${message}</span><br>`;
 	}
-
-	$('.results code').append(message);
+	let html = $('.results code').html();
+	$('.results code').html((html ? html + '\n' : '') + message);
 }
 
 function isNullOrUndefined(prop) {
@@ -2125,7 +2190,7 @@ function scrollIntoView(elem) {
 function switchLibrary(checked) {
 	const info = getLibrariesInfo();
 
-	if(info.jquery !== 'none' && info.javascript !== 'none') {
+	if(info.jquery && info.jquery !== 'none' && info.javascript && info.javascript !== 'none') {
 		if(checked) {
 			currentLibrary.old = false;
 			currentLibrary.jquery = info.jquery === 'advanced';
@@ -2146,7 +2211,7 @@ function switchLibrary(checked) {
 
 function detectLibrary() {
 	const info = getLibrariesInfo();
-	let both = info.jquery !== 'none' && info.javascript !== 'none' && info.jquery !== info.javascript;
+	let both = info.jquery && info.jquery !== 'none' && info.javascript && info.javascript !== 'none' && info.jquery !== info.javascript;
 
 	if(both) {
 		const lib = settings.loadValue('library');
@@ -2166,11 +2231,11 @@ function detectLibrary() {
 		}
 
 	} else {
-		if(info.javascript !== 'none') {
+		if(info.javascript && info.javascript !== 'none') {
 			currentLibrary.jquery = false;
 			currentLibrary.old = info.javascript === 'standard';
 
-		} else if(info.jquery !== 'none') {
+		} else if(info.jquery && info.jquery !== 'none') {
 			currentLibrary.jquery = true;
 			currentLibrary.old = info.jquery === 'standard';
 		}
@@ -2217,24 +2282,6 @@ function getLibrary(jquery) {
 
 function getContext(selector, jquery) {
 	return jquery ? $(selector) : new Mark(document.querySelector(selector));
-}
-
-function getTestContexts() {
-	const elem = tab.getTestElement(),
-		info = tab.getSelectorsEditorInfo(),
-		selectors = info.editor.toString().trim();
-	let elems = elem;
-
-	if(selectors) {
-		elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
-	}
-	return currentLibrary.jquery ? $(elems) : new Mark(elems);
-}
-
-function getTestContainer() {
-	const elem = tab.getTestElement();
-
-	return currentLibrary.jquery ? $(elem) : new Mark(elem);
 }
 
 

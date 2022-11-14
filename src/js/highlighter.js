@@ -18,6 +18,21 @@ const highlighter = {
 		}
 	},
 
+	markContext : function(parameter, options, settings, fn) {
+		//settings.testContainer.unmark({ 'iframes' : options.iframes, 'shadowDOM' : options.shadowDOM });
+		//time = performance.now();
+		//settings.context.mark(parameter, options);
+
+		settings.testContainer.unmark({
+			'iframes' : options.iframes,
+			'shadowDOM' : options.shadowDOM,
+			'done' : () => {
+				time = performance.now();
+				settings.context[fn](parameter, options);
+			}
+		});
+	},
+
 	markStringArray : function() {
 		const parameter = this.getSearchParameter(currentType === 'array' ? 'Array' : 'String');
 		if( !parameter) return;
@@ -33,7 +48,11 @@ const highlighter = {
 			'caseSensitive' : settings.caseSensitive,
 			'ignoreJoiners' : settings.ignoreJoiners,
 			'acrossElements' : settings.acrossElements,
+			'combinePatterns' : settings.combinePatterns,
+			'cacheTextNodes' : settings.cacheTextNodes,
 			'shadowDOM' : settings.shadowDOM,
+			'wrapAllRanges' : settings.wrapAllRanges,
+			'blockElementsBoundary' : settings.blockElementsBoundary,
 
 			'accuracy' : settings.accuracy,
 			'wildcards' : settings.wildcards,
@@ -57,23 +76,7 @@ const highlighter = {
 			'noMatch' : (t) => { noMatchTerms.push(t); }
 		};
 
-		if( !currentLibrary.old) {
-			options.combinePatterns = settings.combinePatterns;
-			options.cacheTextNodes = settings.cacheTextNodes;
-
-			if(settings.acrossElements) {
-				options.wrapAllRanges = settings.wrapAllRanges;
-				options.blockElementsBoundary = settings.blockElementsBoundary;
-			}
-		}
-
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.mark(parameter, options);
-			}
-		});
+		this.markContext(parameter, options, settings, 'mark');
 	},
 
 	markRegExp : function() {
@@ -107,13 +110,7 @@ const highlighter = {
 			'noMatch' : (reg) => { noMatchTerms.push(reg); }
 		};
 
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.markRegExp(regex, options);
-			}
-		});
+		this.markContext(regex, options, settings, 'markRegExp');
 	},
 
 	markRanges : function() {
@@ -143,13 +140,7 @@ const highlighter = {
 			'done' : hl.finish
 		};
 
-		settings.testContainer.unmark({
-			'shadowDOM' : settings.shadowDOM,
-			'done' : () => {
-				time = performance.now();
-				settings.context.markRanges(ranges, options);
-			}
-		});
+		this.markContext(ranges, options, settings, 'markRanges');
 	},
 
 	highlightRawHtml : function(elem, text) {
@@ -215,8 +206,8 @@ const highlighter = {
 			return `<mark data-markjs="${data}"${term ? ' class="mark-term"' : ''}>${util.entitize(text.substring(start, end))}</mark>`;
 		}
 
-		if(index < text.length - 1) {
-			html += util.entitize(text.substring(index, text.length - 1));
+		if(index < text.length) {
+			html += util.entitize(text.substring(index, text.length));
 		}
 
 		if(canBeNested && number !== '0') {
@@ -246,8 +237,8 @@ const highlighter = {
 
 		const obj = {};
 
-		obj.context = getTestContexts();
-		obj.testContainer = getTestContainer();
+		obj.context = this.getTestContexts();
+		obj.testContainer = this.getTestContainer();
 
 		obj.element = $(`${optionPad} .element input`).val().trim();
 		obj.className = $(`${optionPad} .className input`).val().trim();
@@ -359,7 +350,7 @@ const highlighter = {
 		return null;
 	},
 
-	getSearchParameter : function(name) {
+	getSearchParameter : function(name, selector) {
 		const info = tab.getSearchEditorInfo(),
 			parameter = info.editor.toString();
 		if( !parameter.trim()) return null;
@@ -380,6 +371,24 @@ const highlighter = {
 			}
 		}
 		return result;
+	},
+
+	getTestContexts : function() {
+		const elem = tab.getTestElement(),
+			info = tab.getSelectorsEditorInfo(),
+			selectors = info.editor.toString().trim();
+		let elems = elem;
+
+		if(selectors) {
+			elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
+		}
+		return currentLibrary.jquery ? $(elems) : new Mark(elems);
+	},
+
+	getTestContainer : function() {
+		const elem = tab.getTestElement();
+
+		return currentLibrary.jquery ? $(elem) : new Mark(elem);
 	},
 
 	getMarkElements : function() {
@@ -407,10 +416,19 @@ const highlighter = {
 					}
 
 					if(node.shadowRoot && node.shadowRoot.mode === 'open') {
-						let elem = node.shadowRoot.querySelector(':first-child');
-						if(elem) {
-							loop(elem);
+						if(node.shadowRoot.firstChild) {
+							loop(node.shadowRoot.firstChild);
 						}
+					}
+
+					if(node.nodeName.toLowerCase() === 'iframe') {
+						try {
+							let body, doc = node.contentWindow.document;
+
+							if(doc && (body = doc.querySelector('body')) && body.hasChildNodes()) {
+								loop(body.firstChild);
+							}
+						} catch(e) { }
 					}
 				}
 
@@ -431,13 +449,14 @@ const highlighter = {
 
 		let matches = totalMatches ? `totalMatches = ${totalMatches}\n` : '',
 			totalTime = (performance.now() - time) | 0,
-			array = noMatchTerms.flat(),
+			array = noMatchTerms.flat();
+		array = util.distinct(array),    // with an 'iframes' option mark.js can call 'done' callback multiple times
 			len = array.length,
 			span = '<span class="header">',
 			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
 			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
-		log(`mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}`);
+		log(`Mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}`);
 
 		marks = highlighter.getMarkElements();
 
@@ -466,3 +485,26 @@ const highlighter = {
 		tab.setEditableAttribute(true);
 	}
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

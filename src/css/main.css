@@ -123,6 +123,7 @@ header .mark-type ul li.selected { background-color: #7e7e7e; color: #fff; borde
 .json-form button.export-json,
 .json-form button.import-json { width: 90px; }
 .json-form button.import-json:disabled { opacity: 0.5; }
+.json-form select#examples {  width: 160px; margin: 0 20px 0 5px; padding: 0; background: #f0f0f0; border: #ccc 1px solid; }
 
 .file-form #file-dialog, .options-info {
 	position: absolute !important;

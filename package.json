@@ -12,6 +12,7 @@
   "dependencies": {
     "codejar": "^3.6.0",
     "copy-files-from-to": "^3.2.2",
+    "http-server": "^14.1.1",
     "jquery": "^3.6.0",
     "jquery-powertip": "^1.3.2",
     "mark.js": "^8.11.1"
@@ -20,6 +21,8 @@
     "build": "npm run copyFiles",
     "dev": "npm run copyFilesDev",
     "copyFiles": "copy-files-from-to",
-    "copyFilesDev": "copy-files-from-to --mode development"
+    "copyFilesDev": "copy-files-from-to --mode development",
+    "server": "http-server -d -c-1 -o build/playground.html",
+    "serverDev": "http-server -d -c-1 -o src/index.html"
   }
 }
