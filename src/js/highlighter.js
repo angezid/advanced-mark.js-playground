@@ -17,12 +17,8 @@ const highlighter = {
 			this.markRanges();
 		}
 	},
-
+	
 	markContext : function(parameter, options, settings, fn) {
-		//settings.testContainer.unmark({ 'iframes' : options.iframes, 'shadowDOM' : options.shadowDOM });
-		//time = performance.now();
-		//settings.context.mark(parameter, options);
-
 		settings.testContainer.unmark({
 			'iframes' : options.iframes,
 			'shadowDOM' : options.shadowDOM,
@@ -307,9 +303,7 @@ const highlighter = {
 				}
 			}
 
-			if(markArray() && tab.isChecked('cacheTextNodes') && tab.isChecked('acrossElements')
-				|| currentType === 'regexp' && tab.isChecked('separateGroups')
-				|| currentType === 'ranges') {
+			if(currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
 				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
 			}
 

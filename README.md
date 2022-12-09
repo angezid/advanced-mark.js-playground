@@ -51,6 +51,8 @@ To play with `iframes` option you need to launch server. It also opens `build/pl
 ```
 npm run server
 ```
+or run `server.bat`.
+
 ### Custom code
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.
 For normal playground workflow, a two internal functions are necessary:

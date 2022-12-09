@@ -30,8 +30,8 @@
 <div class="mark-type left">
 <ul>
 <li class="selected" data-type="string_">String</li>
-<li data-type="array">Array of strings</li>
-<li data-type="regexp">Custom RegExp</li>
+<li data-type="array">Array</li>
+<li data-type="regexp">RegExp</li>
 <li data-type="ranges">Ranges</li>
 </ul>
 </div>
@@ -41,6 +41,8 @@
 </div>
 
 <div class="button-block right">
+<select id="examples" onchange="selectExample(this)">
+</select>
 <button class="save" type="button" title="Save to local storage" onclick="save();">Save</button>
 <button class="load" type="button" title="Load from local storage" onclick="load();">Load</button>
 <button class="open-file-form" title="Open file form" type="button">File</button>
@@ -55,8 +57,6 @@
 <button class="export-json" type="button" title="Build JSON for the current tab" onclick="exportJson();">Export JSON</button>
 <button class="import-json" type="button" title="Set options from the JSON" onclick="importJson();">Import JSON</button>
 <button class="copy" type="button" title="Copy to clipboard">Copy</button>
-<select name="examples" id="examples" onchange="selectExample(this)">
-</select>
 <button class="clear" type="button" onclick="clearJsonEditor(this);"></button>
 </div>
 <p>JSON</p>
@@ -200,12 +200,8 @@
 <label for="string_-combinePatterns">Combine term patterns</label>
 </div>
 <div class="cacheTextNodes advanced dependable hide">
-<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox" onchange="setWrapAllRanges(this)">
+<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
 <label for="string_-cacheTextNodes">Cache text nodes</label>
-</div>
-<div class="wrapAllRanges advanced dependable hide">
-<input name="wrapAllRanges" id="string_-wrapAllRanges" type="checkbox">
-<label for="string_-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
 <div class="shadowDOM advanced">
 <input name="shadowDOM" id="string_-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
@@ -408,12 +404,8 @@
 <label for="array-combinePatterns">Combine term patterns</label>
 </div>
 <div class="cacheTextNodes advanced">
-<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox" onchange="setWrapAllRanges(this)">
+<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
 <label for="array-cacheTextNodes">Cache text nodes</label>
-</div>
-<div class="wrapAllRanges advanced dependable hide">
-<input name="wrapAllRanges" id="array-wrapAllRanges" type="checkbox">
-<label for="array-wrapAllRanges">Wrap nesting/overlaping</label>
 </div>
 <div class="shadowDOM advanced">
 <input name="shadowDOM" id="array-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">

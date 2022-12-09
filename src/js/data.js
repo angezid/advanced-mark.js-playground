@@ -23,21 +23,24 @@ const minHtml = `<div id="mw-page-base" class="noprint"><p>Wikipedia is the larg
 //const defaultHtml = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><h3>Iframe 3</h3><iframe width="300" height="100" src="html/iframe3.html"></iframe>';
 //const defaultHtml = '<h1>Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><h3>Iframe 3</h3><iframe width="500" height="300" src="html/nested-iframe.html"></iframe>';
 //const defaultHtml = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe>';
+//const iframes = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe>';
+const iframes = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><iframe width="500" height="300" src="html/iframe.html"></iframe>';
 
 const defaultHtml = `
 <p><b>Wikipedia</b> (<span class="rt-commentedText nowrap"><span class="IPA nopopups noexcerpt" lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>ɪ</span><span>ˈ</span><span>p</span><span>iː</span><span>d</span><span>i</span><span>ə</span></span>/</a></span> <span class="nowrap" style="font-size:85%">(<span class="unicode haudio"><span class="fn"><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#" class="internal">listen</a></span></span>)</span></span> <a href="#"><i>wik-ih-<span style="font-size:90%">PEE</span>-dee-ə</i></a> or <span class="rt-commentedText nowrap"><span class="IPA nopopups noexcerpt" lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>i</span></span>-/</a></span> <span class="nowrap" style="font-size:85%">(<span class="unicode haudio"><span class="fn"><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#" class="internal">listen</a></span></span>)</span></span> <a href="#"><i>wik-ee-</i></a>) is a <a href="#">multilingual</a> <a href="#" class="mw-redirect">free online encyclopedia</a> written and maintained by a community of <a href="#" class="mw-redirect">volunteers</a> through <a href="#">open collaboration</a> and a <a href="#">wiki</a>-based editing system. Individual contributors, also called editors, are known as <a href="#" class="mw-redirect">Wikipedians</a>. Wikipedia is the largest and most-read <a href="#">reference work</a> in history.<sup id="cite_ref-Wiki20_5-0" class="reference"><a href="#">[3]</a></sup> It is consistently one of the 10 <a href="#">most popular websites</a> ranked by the <a href="#">Similarweb</a> and former <a href="#">Alexa</a>; as of 2022,<sup class="plainlinks noexcerpt noprint asof-tag update" style="display:none;"><a class="external text pressed" href="#">[update]</a></sup> Wikipedia was ranked the 7th most popular site.<sup id="cite_ref-Wiki20_5-1" class="reference"><a href="#">[3]</a></sup><sup id="cite_ref-Alexa_siteinfo_6-0" class="reference"><a href="#">[4]</a></sup><sup id="cite_ref-Similarweb_7-0" class="reference"><a href="#">[5]</a></sup> It is hosted by the <a href="#">Wikimedia Foundation</a>, an <a href="#">American non-profit organization</a> funded mainly through donations.<sup id="cite_ref-8" class="reference"><a href="#">[6]</a></sup></p>
 <p>On January 15, 2001, <a href="#">Jimmy Wales</a><sup id="cite_ref-auto1_9-0" class="reference"><a href="#">[7]</a></sup> and <a href="#">Larry Sanger</a> launched Wikipedia.Sanger coined its name as a <a href="#">blend</a> of  "wiki" and "encyclopedia."<sup id="cite_ref-MiliardWho_10-0" class="reference"><a href="#">[8]</a></sup><sup id="cite_ref-J_Sidener_11-0" class="reference"><a href="#">[9]</a></sup>Wales was influenced by the "<a href="#">spontaneous order</a>" ideas associated with <a href="#">Friedrich Hayek</a> and the <a href="#">Austrian School</a> of economics, after being exposed to these ideas by Austrian economist and <a href="#">Mises Institute</a> Senior Fellow <a href="#">Mark Thornton</a>.<sup id="cite_ref-12" class="reference"><a href="#">[10]</a></sup> Initially available only in English, versions in other languages werequickly developed. Its combined editions comprise more than 58 millionarticles, attracting around 2<span class="nowrap">&nbsp;</span>billion unique device visits per month and more than 17 million edits per month (1.9<span class="nowrap">&nbsp;</span>edits per second) as of November&nbsp;2020<sup class="plainlinks noexcerpt noprint asof-tag update" style="display:none;"><a class="external text pressed" href="#">[update]</a></sup>.<sup id="cite_ref-small_screen_13-0" class="reference"><a href="#">[11]</a></sup><sup id="cite_ref-Wikimedia_Stats_14-0" class="reference"><a href="#">[12]</a></sup>In 2006, <i><a href="#">Time magazine</a></i> stated that the policy of allowing anyone to edit had made Wikipedia the "biggest (and perhaps best) encyclopedia in the world."<sup id="cite_ref-auto1_9-1" class="reference"><a href="#">[7]</a></sup></p>
 `;
 
-// (?<!\\)\\([^\\])   \\$1
+// exported json requires replacing backslash \ by \\
+// should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
+// for convenience in examples, which intended to work in both libraries, need to remove library property
 const examples = {
 	name : 'examples',
 	accuracyExactly : `{
         "version": "1.0.0",
-        "library": "advanced",
         "section": {
             "type": "string_",
-            "accuracy": "{ 'value': 'exactly', 'limiters': [',', '.', ';', ':', '?', '!', '/', '\\"', '\\\\'', '[', ']', '{', '}', '(', ')', '~', '@', '#', '$', '%', '^', '&', '*', '+', '=', '|', '\\\\\\\\', '-'] }",
+            "accuracy": "{ value: 'exactly', limiters: ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-'.split('') }",
             "queryString": "cafe resume expose lame mate ore pate rose",
             "testString": {
                 "mode": "html",
@@ -46,6 +49,20 @@ const examples = {
         }
     }`,
     
+	ignorePunctuation : `{
+        "version": "1.0.0",
+        "section": {
+            "type": "string_",
+            "diacritics": false,
+            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+='.split('')",
+            "queryString": "browsers resign numbers",
+            "testString": {
+                "mode": "html",
+                "content": "browser's console, number(s), re-sign, "
+            }
+        }
+    }`,
+  
 	shadowDOM : `{
 		"version": "1.0.0",
         "library": "advanced",
@@ -64,21 +81,38 @@ const examples = {
 	
 	iframes : `{
         "version": "1.0.0",
-        "library": "advanced",
         "section": {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
+            "exclude": "['#ifr2']",
             "iframes": true,
             "combinePatterns": 10,
+            "customCode": "// don't foget to launch sever (see README)\\n// dynamically loads html on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "iframe test wikipedia encyclopedia",
             "testString": {
                 "mode": "html",
-                "content": "<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"300\\"></iframe>"
+                "content": "Iframes test"
             }
         }
     }`,
     
+	markWhileTyping : `{
+        "version": "1.0.0",
+        "section": {
+            "type": "string_",
+            "diacritics": false,
+            "iframes": true,
+            "shadowDOM": true,
+            "customCode": "// adds event listener to the search editor\\ncode.setListener('keyup', runCode);\\n\\n// initiate shadow DOM\\nconst elem = tab.getTestElement().querySelector('#shadow-dom');\\nif(elem && !elem.shadowRoot) {\\n  const root = elem.attachShadow({ mode : 'open' });\\n  root.innerHTML = '<h3>Shadow DOM test</h3><p>Hello world!</p>';\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "queryString": "h",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Hello world!</p>\\n<hr><h3>Iframe test</h3>\\n<iframe height=\\"70\\" src=\\"\\" srcdoc=\\"<p>Hello world!</p>\\"></iframe>\\n<hr>\\n<div id=\\"shadow-dom\\"></div"
+            }
+        }
+    }`,
+	
 	customCodeEditor : `{
         "version": "1.0.0",
         "library": "advanced",
