@@ -269,33 +269,58 @@ function CodeJar(editor, highlight, opt = {}) {
             }
         }
     }
+    // exactly determines whether character at cursor is escaped
+    function isEscape(code) {
+        let i = code.length - 1;
+        let escaped = code.substr(i) === '\\';
+        if (escaped) {
+            while (--i >= 0 && code[i] === '\\')
+                escaped = !escaped;
+        }
+        return escaped;
+    }
     function handleSelfClosingCharacters(event) {
-        const open = `([{'"`;
-        const close = `)]}'"`;
-        const codeAfter = afterCursor();
-        const codeBefore = beforeCursor();
-        const escapeCharacter = codeBefore.substr(codeBefore.length - 1) === '\\';
-        const charAfter = codeAfter.substr(0, 1);
-        if (close.includes(event.key) && !escapeCharacter && charAfter === event.key) {
-            // We already have closing char next to cursor.
-            // Move one char to right.
-            const pos = save();
-            preventDefault(event);
-            pos.start = ++pos.end;
-            restore(pos);
+        const open = `([{`;
+        const close = `)]}`;
+        const quotes = `'"`;
+        const ch = event.key;
+        // wraps a selection in brackets or quotes, regardless of characters before/after selection
+        if ((open.includes(ch) || quotes.includes(ch)) && getSelection().toString()) {
+            if (open.includes(ch))
+                enclose(event, open, close);
+            else if (quotes.includes(ch))
+                enclose(event, quotes, quotes);
         }
-        else if (open.includes(event.key)
-            && !escapeCharacter
-            && (`"'`.includes(event.key) || ['', ' ', '\n'].includes(charAfter))) {
-            preventDefault(event);
-            const pos = save();
-            const wrapText = pos.start == pos.end ? '' : getSelection().toString();
-            const text = event.key + wrapText + close[open.indexOf(event.key)];
-            insert(text);
-            pos.start++;
-            pos.end++;
-            restore(pos);
+        else {
+            const codeAfter = afterCursor();
+            const charAfter = codeAfter.substr(0, 1);
+            const codeBefore = beforeCursor();
+            const escapeCharacter = isEscape(codeBefore);
+            const array = ['', ' ', '\t', '\n'];
+            if (!escapeCharacter) {
+                if (open.includes(ch) && (close.includes(charAfter) || array.includes(charAfter))) {
+                    enclose(event, open, close);
+                }
+                // NEEDS investigation 
+                // adds closing quote if the array contains 'charAfter'
+                //else if (quotes.includes(ch) && array.includes(charAfter)) {
+                // adds closing quote if the same quote is after the cursor or the array contains 'charAfter'
+                else if (quotes.includes(ch) && (ch === charAfter || array.includes(charAfter))) {
+                    enclose(event, quotes, quotes);
+                }
+            }
         }
+    }
+    // if text is selected, wraps selection, otherwise adds closing character
+    function enclose(event, open, close) {
+        preventDefault(event);
+        const pos = save();
+        const wrapText = pos.start == pos.end ? '' : getSelection().toString();
+        const text = event.key + wrapText + close[open.indexOf(event.key)];
+        insert(text);
+        pos.start++;
+        pos.end++;
+        restore(pos);
     }
     function handleTabCharacters(event) {
         if (event.key === 'Tab') {

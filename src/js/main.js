@@ -908,7 +908,7 @@ const importer = {
 				if(obj.editors[key]) obj.editors[key].updateCode('');
 			}
 		}
-		
+
 		const editor = types[currentType].customCodeEditor;
 		if(editor) {
 			editor.updateCode('');
@@ -2157,7 +2157,7 @@ function highlightMatch(elem) {
 	setTimeout(function() { scrollIntoView(elem); }, 100);
 }
 
-// highlight whole match using only the 'start elements' not possible with nesting/overlapping matches
+// highlight a whole match using only the 'start elements' is not possible with nesting/overlapping matches
 // using numbers as unique match identifiers can solve this problem, but only with single-pass methods - 'markRegExp' and 'markRanges'
 function highlightMatch2() {
 	marks.removeClass('current');

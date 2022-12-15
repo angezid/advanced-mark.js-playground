@@ -152,7 +152,7 @@ body.playground label[for] { cursor: pointer; }
 .actions button.clear { width: 25px; background: #eee; border-color: #bbb; }
 .actions button.clear:hover { background: #ccc; }
 .actions button.clear:before { content: '\2716'; color: #666; }
-/*274C*/
+
 button:active { font-weight: bold; }
 button.inactive { color: #888; border-color: #ccc; }
 
@@ -243,6 +243,7 @@ pre { font-family: "Lucida Sans Unicode", "Lucida Grande", monospace; padding: 6
 	article { padding: 0; }
 	header .mark-type { margin-left: 20px; }
 	header .button-block.right { margin-right: 0; }
+	header select#examples { width: 140px; } 
 	.mixed-options label { margin-right: 10px; }
 }
 

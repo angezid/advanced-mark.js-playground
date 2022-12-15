@@ -17,13 +17,6 @@ const wordArrays = {
 
 const minHtml = `<div id="mw-page-base" class="noprint"><p>Wikipedia is the largest and most-read <a href="#">reference work</a> in history.</p></div>`;
 
-//const defaultHtml = '<h1>Iframe</h1><iframe width="500" height="250" src="http://example.com/"></iframe>';
-//const defaultHtml = '<h1>Iframe</h1><iframe width="500" height="250" src="html/onload.html"></iframe>';
-//const defaultHtml = '<iframe width="500" height="120" src="html/iframe.html"></iframe><h1>Iframe</h1><iframe width="500" height="250" src="html/nested.html""></iframe>';
-//const defaultHtml = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><h3>Iframe 3</h3><iframe width="300" height="100" src="html/iframe3.html"></iframe>';
-//const defaultHtml = '<h1>Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><h3>Iframe 3</h3><iframe width="500" height="300" src="html/nested-iframe.html"></iframe>';
-//const defaultHtml = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe>';
-//const iframes = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe>';
 const iframes = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><iframe width="500" height="300" src="html/iframe.html"></iframe>';
 
 const defaultHtml = `
@@ -130,6 +123,22 @@ const examples = {
         }
     }`,
     
+	markSeparateGroups : `{
+        "version": "1.0.0",
+        "library": "advanced",
+        "section": {
+            "type": "regexp",
+            "acrossElements": true,
+            "separateGroups": true,
+            "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match.length === 4 && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
+            "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/g",
+            "testString": {
+                "mode": "html",
+                "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n\\nIt demonstrates requirement of a group 2 to correctly highlight groups without 'd' flag.\\nIf the parenthesis of the group 2 are removed, the wrong 'BC' is highlighted.\\nWith 'd' flag it's highlighted correctly."
+            }
+        }
+    }`,
+	
 	overlappedMatches : `{
         "version": "1.0.0",
         "library": "advanced",
