@@ -107,7 +107,8 @@ const test = {
 				if(obj = Json.parseJson(json)) {
 					this.addTestString(obj);
 					importer.setOptions(obj);
-
+					tab.updateCustomCode(codeBuilder.snippet);
+					
 					const options = internal ? runCode() : highlighter.getCurrentSettings();
 					this.checkSetOptions(options, obj, internal);
 				}
@@ -169,7 +170,7 @@ const test = {
 
 	checkSetOptions : function(options, obj, internal) {
 		if( !options) {
-			console.error(`Failed to get current options for ${currentType}`);
+			console.error(`Failed to get current options for ${currentType}, ${internal ? 'internal test' : ''}`);
 			return;
 		}
 		// contains properties which are not mark.js options
@@ -234,6 +235,7 @@ const test = {
 				if(obj = Json.parseJson(o.json)) {
 					this.addTestString(obj);
 					importer.setOptions(obj);
+					tab.updateCustomCode(codeBuilder.snippet);
 
 					const options = internal ? runCode() : highlighter.getCurrentSettings();
 					this.checkDependableOptions(obj, o.options, internal);

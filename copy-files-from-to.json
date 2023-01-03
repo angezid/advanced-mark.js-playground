@@ -99,11 +99,14 @@
       }
     },
     {
-      "from": "https://raw.githubusercontent.com/angezid/mark.js/master/dist/jquery.mark.js",
+      "from": "node_modules/advanced-mark.js/dist/jquery.mark.js",
       "to": {
         "default":"build/js3/jquery.mark.js",
         "development": "src/js3/jquery.mark.js"
       }
     }
-  ]
+  ],
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
+  }
 }
