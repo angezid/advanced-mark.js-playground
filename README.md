@@ -38,13 +38,14 @@ There are two test content modes - Text and Html . If you want to add HTML conte
 An `object` option was added to the Accuracy selector, just to enable an `accuracy` object editor. This option is not part of the mark.js library.  
 If you enable the custom code editor, the program evaluates the whole internal code (see 'Internal code' which appears below the 'Results').
 Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.  
+Tooltips can be called by pressing `Ctrl/Cmd` key and cursor over an item. Note that the tooltip system is still under development.
 
 Note:
 - due to limitations of the `mark.js` library, the next/previous buttons functionality with `acrossElements` option may not work as expected.
 - in test container editors, due limitation of `contenteditable` attribute, the undo won't works.
 
 ### Option examples
-There are several  option examples in `JSON -> Examples`.
+There are several option examples in `JSON -> Examples`.
 
 ### Server
 To play with `iframes` option, you need to launch the server. It also opens `build/playground.html` file. Server url - `http://localhost:8080`.

@@ -1,7 +1,7 @@
 {
   "name": "Markjs-playground",
   "version": "1.0.1",
-  "description": "Help to get familiar with Mark.js, generate code, write and test custom code, experiment with real HTML. ",
+  "description": "Help to get familiar with advanced-mark.js, generate code, write and test custom code, experiment with custom HTML. ",
   "keywords": [
     "playground",
     "mark.js",
@@ -11,11 +11,10 @@
   "license": "MIT",
   "dependencies": {
     "codejar": "^3.6.0",
-    "copy-files-from-to": "^3.2.2",
     "http-server": "^14.1.1",
     "jquery": "^3.6.0",
     "jquery-powertip": "^1.3.2",
-    "advanced-mark.js": "^1.0.2",
+    "advanced-mark.js": "^1.1.0",
     "mark.js": "^8.11.1"
   },
   "scripts": {
@@ -25,5 +24,8 @@
     "copyFilesDev": "copy-files-from-to --mode development",
     "server": "http-server -d -c-1 -o build/playground.html",
     "serverDev": "http-server -d -c-1 -o src/index.html"
+  },
+  "devDependencies": {
+    "copy-files-from-to": "^3.2.2",
   }
 }

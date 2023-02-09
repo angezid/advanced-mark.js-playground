@@ -300,7 +300,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
+<p>Custom block elements e.g. { tagNames : ['my-tag'], /* extend : true */ }</p>
 <div class="editor" name="blockElements">
 </div>
 </div>
@@ -504,7 +504,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
+<p>Custom block elements e.g. { tagNames : ['my-tag'], /* extend : true */ }</p>
 <div class="editor" name="blockElements">
 </div>
 </div>
@@ -647,7 +647,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Custom block elements e.g. { tagNames : ['div', 'p'], /* char : '.' */ }</p>
+<p>Custom block elements e.g. { tagNames : ['my-tag'], /* extend : true */ }</p>
 <div class="editor" name="blockElements">
 </div>
 </div>
@@ -835,14 +835,52 @@
 
 <article class="options-info">
 
-<div id="accuracyObject">
-<span class="accuracy-complementary hide">The default chars are`!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¿`</span>
-<span class="accuracy-exactly hide"></span>
+<div id="accuracy">
+<ul>
+  <li><code>partially</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
+  <li><code>exactly</code> This option is actually forced to use an accuracy object, because the default word boundaries are white-space characters and start/end of a text node (with <code>acrossElements</code> option - start/end of a context).
+  </li>
+  <li><code>complementary</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'. The default word boundaries are: white-space and <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code> characters.
+  </li>
+</ul>
+TODO accuracy object
 </div>
 
-<div id="blockElements">
-If you supply an array of <code>tagNames</code>, the only elements with those tagNames will be working as a boundary.<br>
-The default <code>char</code> property value is '\x01'.
+<div id="wildcards">
+Two characters <code>?</code> and <code>*</code> used as wildcards.
+<ul>
+  <li><code>disabled</code> The character <code>?</code> and <code>*</code> match itself</li>
+  <li><code>enabled</code>
+    <ul>
+	  <li>The character <code>?</code> match of any non-white-space character zero or one time.</li>
+	  <li>The character <code>*</code> match of any non-white-space character zero or more time.</li>
+	</ul>
+  </li>
+  <li><code>withSpaces</code>
+    <ul>
+	  <li>The character <code>?</code> match of any character zero or one time.</li>
+	  <li>The character <code>*</code> match of any character zero or more time.</li>
+	</ul>
+  </li>
+</ul>
+</div>
+
+<div id="synonyms">
+An object with synonyms, e.g. { 'one': '1' } - '1' be synonym for 'one' and vice versa.
+</div>
+
+<div id="ignorePunctuation">
+An array of punctuation characters, e.g. ":;.,-–—‒_(){}[]!'\"+=".split('');
+</div>
+
+<div id="exclude">
+A<span class="advanced hide"> string or a</span>n array of selectors. Text nodes which are child nodes of those elements are excluded from being processed.
+</div>
+
+<div id="accuracyObject">
+TODO
+<span class="accuracy-complementary hide">The default chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span>
+<span class="accuracy-exactly hide"><code></code></span>
 </div>
 
 <div id="shadowStyle">
@@ -855,46 +893,57 @@ It prevents matches from crossing the boundary of block elements.<br>
 It makes <code>acrossElements</code> option act like 'across inline elements'.
 </div>
 
-<div id="combinePatterns">
+<div id="blockElements">
+If you supply an array of <code>tagNames</code>:
+<ul>
+  <li>when <code>extend: true</code> the custom elements extend the default boundary elements</li>
+  <li>otherwise only the custom elements will have boundaries</li>
+</ul>
+The default <code>char</code> property value is '\x01'.
+</div>
 
+<div id="combinePatterns">
+Combines given numbers of RegExp patterns into a single pattern. Any number bigger than the array length or <code>Infinity</code> creates a single combined pattern.
 </div>
 
 <div id="cacheTextNodes">
 This option will improve performance when marking a (especially)large array or string with <code>separateWordSearch</code> option.<br>
-With <code>acrossElements</code> option, it also requires <code>wrapAllRanges</code> option.
 </div>
 
 <div id="stringArrayCustomCode">
 <div class="stringArrayFilter">
-A callback to filter or limit matches. It will be called for each match and receives the following parameters:
-<!-- A callback to filter or limit matches. It will be called for each <span class="acrossElements">text node</span><span class="not-acrossElements">match</span> with the following parameters: -->
+<code>filter : (textNode, term, marksSoFar, termMarksSoFar, filterInfo) => {}</code>
+<p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
+Parameters:
 <ol>
 <li>The text node which includes<span class="acrossElements"> or is part of</span> the match</li>
 <li>The current term</li>
-<li>A counter indicating the total number of all marks at the time of the function call</li>
-<li>A counter indicating the number of marks for the current term</li>
+<li>A number of all mark elements so far</li>
+<li>A number of mark elements (with <code>combinePatterns</code> option - a number of matches) for the current term so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
-    <li>the <code>match</code> object is result of RegExp exec() method</li>
-    <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
-    <li>the <code>execution</code> object with a boolean <code>abort</code> property</li>
-    <li>the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
+    <li>the <code>match</code> - result of RegExp exec() method</li>
+    <li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
+    <li>the <code>execution</code> - object with a boolean <code>abort</code> property</li>
+    <li>the <code>offset</code> - numerical property which can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
   </ol>
 </li>
 </ol>
-<p>The function must return false if the mark should be stopped, otherwise true.</p>
+<p>The function must return <code>false</code> if the mark should be stopped, otherwise <code>true</code>.</p>
 </div>
 <hr>
 <div class="stringArrayEach">
+<code>each : (markElement, eachInfo) => {}</code>
 <p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
 <div class="advanced">
+Parameters:
 <ol>
   <li>The marked DOM element</li>
   <li>An object containing the match information:
   <ol>
-	<li>the <code>match</code> object is result of RegExp exec() method</li>
-	<li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
-	<li>the <code>count</code> property indicating a current number of matches</li>
+	<li>the <code>match</code> - result of RegExp exec() method</li>
+	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
+	<li>the <code>count</code> - number of matches so far</li>
   </ol>
 </li>
 </ol>
@@ -902,13 +951,14 @@ A callback to filter or limit matches. It will be called for each match and rece
 </div>
 <hr>
 <div class="stringArrayDone">
+<code>done : (totalMarks, totalMatches, termStats) => {}</code>
 <p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
 <div class="advanced">
-Receives
+Parameters:
 <ol>
-  <li>the total number of marks</li>
-  <li>the exact number of total matches</li>
-  <li>the object containing terms statistics</li>
+  <li>The total number of marks</li>
+  <li>The total number of matches</li>
+  <li>The object containing terms statistics</li>
 </ol>
 </div>
 </div>
@@ -916,37 +966,46 @@ Receives
 
 <div id="regexpCustomCode">
 <div class="regexpFilter">
-A callback to filter or limit matches. It will be called for each match and receives the following parameters:
+<code>filter : (textNode, term, marksSoFar, filterInfo) => {}</code>
+<p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
+Parameters:
 <ol>
-<li>The text node which includes the match</li>
-<li>The term that has been found</li>
-<li>A counter indicating the total number of all marks at the time of the function call</li>
-<li>A counter indicating the number of marks for the term</li>
+<li>The text node which includes<span class="acrossElements"> or is part of</span> the match</li>
+<li>The matching string:
+<ol>
+   <li>without <code>ignoreGroups</code> and <code>separateGroups</code> options - the whole match</li>
+   <li>with <code>ignoreGroups</code> - the match[ignoreGroups+1] group matching string</li>
+   <li>with <code>separateGroups</code> option - the current group matching string</li>
+</ol>
+</li>
+<li>A counter indicating the number of all marks so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
-    <li>the <code>match</code> object is result of RegExp exec() method</li>
-    <li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
-    <li class="separateGroups">the <code>groupIndex</code> is index of match group</li>
-    <li>the <code>execution</code> object with a boolean <code>abort</code> property</li>
-    <li class="acrossElements">the <code>offset</code> numerical property can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
+    <li>the <code>match</code> - result of RegExp exec() method</li>
+    <li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
+    <li class="separateGroups">the <code>groupIndex</code> - index of the current capturing group</li>
+    <li>the <code>execution</code> - object with a boolean <code>abort</code> property</li>
+    <li class="acrossElements">the <code>offset</code> - numerical property which can be used to translate the local text node indexes to the absolute ones, e.g build ranges.</li>
   </ol>
 </li>
 </ol>
-<p>The function must return false if the mark should be stopped, otherwise true.</p>
+<p>The function must return <code>false</code> if the mark should be stopped, otherwise <code>true</code>.</p>
 </div>
 <hr>
 <div class="regexpEach">
+<code>each : (markElement, eachInfo) => {}</code>
 <p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
 <div class="advanced">
+Parameters:
 <ol>
   <li>The marked DOM element</li>
   <li>An object containing the match information:
   <ol>
-	<li>the <code>match</code> object is result of RegExp exec() method</li>
-	<li class="acrossElements">the <code>matchStart</code> is a boolean property indicating the start of the match</li>
-	<li class="separateGroups">the <code>groupIndex</code> is index of match group</li>
-	<li class="acrossElements separateGroups">the <code>groupStart</code> - indicates the start of group</li>
-	<li>the <code>count</code> property indicating a current number of matches</li>
+	<li>the <code>match</code> is result of RegExp exec() method</li>
+	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
+	<li class="separateGroups">the <code>groupIndex</code> - index of the current capturing group</li>
+	<li class="acrossElements separateGroups">the <code>groupStart</code> - boolean property indicating the start of group</li>
+	<li>the <code>count</code> - number of matches so far</li>
   </ol>
 </li>
 </ol>
@@ -954,26 +1013,58 @@ A callback to filter or limit matches. It will be called for each match and rece
 </div>
 <hr>
 <div class="regexpDone">
+<code>done : (totalMarks, totalMatches) => {}</code>
 <p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
 <div class="advanced">
-Receives
+Parameters:
 <ol>
-  <li>the total number of marks</li>
-  <li>the exact number of total matches</li>
+  <li>The total number of marks</li>
+  <li>The total number of matches</li>
 </ol>
 </div>
 </div>
 </div>
 
 <div id="rangesCustomCode">
+<div class="rangesFilter">
+<code>filter : (textNode, range, match, index) => {}</code>
+<p>A callback to filter or limit matches. It calls for each range (if a range is located across several elements, it calls for each text node which is part of the range).</p>
+Parameters:
+<ol>
+  <li>The text node which includes the range or is part of the range</li>
+  <li>The current range object</li>
+  <li>The string which range is covered</li>
+  <li>The current range index</li>
+</ol>
+<p>The function must return <code>false</code> if the mark should be stopped, otherwise <code>true</code>.</p>
+</div>
+<hr>
+<div class="rangesEach">
+<code>each : (markElement, range, rangeInfo) => {}</code>
+<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
+<div class="advanced">
+Parameters:
+<ol>
+  <li>The marked DOM element</li>
+  <li>The current range object</li>
+  <li>An object containing the match information:
+    <ol>
+	   <li>the <code>matchStart</code> - boolean property indicating the start of the range</li>
+	   <li>the <code>count</code> - number of ranges so far</li>
+    </ol>
+  </li>
+</ol>
+</div>
+</div>
 <hr>
 <div class="rangesDone">
+<code>done : (totalMarks, totalRanges) => {}</code>
 <p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
 <div class="advanced">
-Receives
+Parameters:
 <ol>
-  <li>the total number of marks</li>
-  <li>the exact number of total matches</li>
+  <li>The total number of marks</li>
+  <li>The total number of ranges</li>
 </ol>
 </div>
 </div>

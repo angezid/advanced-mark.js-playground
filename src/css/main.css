@@ -207,6 +207,8 @@ button.inactive { color: #888; border-color: #ccc; }
 .right-column .edit-options .accuracyObject,
 .right-column .edit-options .customCode { margin: 15px 0 15px 0; }
 
+.right-column .edit-options .editor { height: auto; min-height: 1.5em; max-height: 5em; padding: 3px 10px; }
+
 .left-column .queryString,
 .left-column .queryArray,
 .left-column .queryRegExp,

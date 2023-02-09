@@ -15,8 +15,6 @@ const wordArrays = {
     words_150 : ['consider','either','library','likely','nature','fact','line','product','care','group','idea','risk','several','someone','temperature','united','word','fat','force','key','light','simply','today','training','until','major','name','personal','school','top','current','generally','historical','investment','left','national','amount','level','order','practice','research','sense','service','area','cut','hot','instead','least','natural','physical','piece','show','society','try','check','choose','develop','second','useful','web','activity','boss','short','story','call','industry','last','media','mental','move','pay','sport','thing','actually','against','far','fun','house','let','page','remember','term','test','within','along','answer','increase','oven','quite','scared','single','sound','again','community','definition','focus','individual','matter','safety','turn','everything','kind','quality','soil','ask','board','buy','development','guard','hold','language','later','main','offer','oil','picture','potential','professional','rather','access','additional','almost','especially','garden','international','lower','management','open','player','range','rate','reason','travel','variety','video','week','above','according','cook','determine','future','site','alternative','demand','ever','exercise','following','image','quickly','special'],
 };
 
-const minHtml = `<div id="mw-page-base" class="noprint"><p>Wikipedia is the largest and most-read <a href="#">reference work</a> in history.</p></div>`;
-
 const iframes = '<h1>Iframe Iframe</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="400" height="100" src="html/iframe2.html"></iframe><iframe width="500" height="300" src="html/iframe.html"></iframe>';
 
 const defaultHtml = `
@@ -26,7 +24,7 @@ const defaultHtml = `
 
 // exported json requires replacing backslash \ by \\
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
-// for convenience in examples, which intended to work in both libraries, need to remove library property
+// also, there is need to delete a library property in examples, which intended to work in both libraries
 const examples = {
 	name : 'examples',
 	accuracyExactly : `{
@@ -41,7 +39,7 @@ const examples = {
             }
         }
     }`,
-    
+
 	ignorePunctuation : `{
         "version": "1.0.0",
         "section": {
@@ -55,7 +53,7 @@ const examples = {
             }
         }
     }`,
-  
+
 	shadowDOM : `{
 		"version": "1.0.0",
         "library": "advanced",
@@ -63,7 +61,7 @@ const examples = {
             "type": "array",
             "diacritics": false,
             "shadowDOM": "{ 'style' : \\"mark[data-markjs] { color:red; }\\" }",
-            "customCode": "// your code before\\nconst container = tab.getTestElement();\\nlet elem = container.querySelector('#shadow-dom');\\nif( !elem) {\\n  const div = document.createElement(\\"div\\");\\n  div.id = 's2';\\n  div.innerHTML = '<b>Shadow DOM test</b><div id=\\"shadow-dom\\"></div>';\\n  container.appendChild(div);\\n  elem = container.querySelector('#shadow-dom');\\n}\\n\\nif(elem && !elem.shadowRoot) {\\n  const root2 = elem.attachShadow({ mode : 'open' });\\n  root2.innerHTML = defaultHtml;\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "customCode": "// your code before\\nconst container = tab.getTestElement();\\nlet elem = container.querySelector('#shadow-dom');\\nif ( !elem) {\\n  const div = document.createElement(\\"div\\");\\n  div.id = 's2';\\n  div.innerHTML = '<b>Shadow DOM test</b><div id=\\"shadow-dom\\"></div>';\\n  container.appendChild(div);\\n  elem = container.querySelector('#shadow-dom');\\n}\\n\\nif (elem && !elem.shadowRoot) {\\n  const root2 = elem.attachShadow({ mode : 'open' });\\n  root2.innerHTML = defaultHtml;\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryArray": "['wiki', 'wikipedia', 'encyclopedia']",
             "testString": {
                 "mode": "html",
@@ -71,7 +69,7 @@ const examples = {
             }
         }
 	}`,
-	
+
 	iframes : `{
         "version": "1.0.0",
         "section": {
@@ -89,7 +87,7 @@ const examples = {
             }
         }
     }`,
-    
+
 	markWhileTyping : `{
         "version": "1.0.0",
         "section": {
@@ -97,7 +95,7 @@ const examples = {
             "diacritics": false,
             "iframes": true,
             "shadowDOM": true,
-            "customCode": "// adds event listener to the search editor\\ncode.setListener('keyup', runCode);\\n\\n// initiate shadow DOM\\nconst elem = tab.getTestElement().querySelector('#shadow-dom');\\nif(elem && !elem.shadowRoot) {\\n  const root = elem.attachShadow({ mode : 'open' });\\n  root.innerHTML = '<h3>Shadow DOM test</h3><p>Hello world!</p>';\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "customCode": "// adds event listener to the search editor\\ncode.setListener('keyup', runCode);\\n\\n// initiate shadow DOM\\nconst elem = tab.getTestElement().querySelector('#shadow-dom');\\nif (elem && !elem.shadowRoot) {\\n  const root = elem.attachShadow({ mode : 'open' });\\n  root.innerHTML = '<h3>Shadow DOM test</h3><p>Hello world!</p>';\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "h",
             "testString": {
                 "mode": "html",
@@ -105,7 +103,7 @@ const examples = {
             }
         }
     }`,
-	
+
 	customCodeEditor : `{
         "version": "1.0.0",
         "library": "advanced",
@@ -114,7 +112,7 @@ const examples = {
             "accuracy": "exactly",
             "diacritics": false,
             "cacheTextNodes": true,
-            "customCode": "// Note that the option 'cacheTextNodes' can be used without generating ranges.\\n// It just demonstrates how to use the custom code editor.\\n// your code before\\nconst ranges=[];\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  const range = {\\n    start : info.offset + info.match.index + info.match[1].length,\\n    length : info.match[2].length,\\n  };\\n  if (options.acrossElements) {\\n    if (info.matchStart) {\\n      range.startElement = true;\\n    }\\n  } else range.startElement = true;\\n  ranges.push(range);\\n  \\n  // it should only build ranges\\n  return  false;\\n}\\n\\nfunction done() {\\n  context.markRanges(ranges, {\\n    'each' : function(elem, range) {\\n      if(range.startElement) {\\n        elem.setAttribute('data-markjs', 'start-1');\\n      }\\n    },\\n    done : highlighter.finish\\n  });\\n}",
+            "customCode": "// Note that the option 'cacheTextNodes' can be used without generating ranges.\\n// It just demonstrates how to use the custom code editor.\\n// your code before\\nconst ranges=[];\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  const range = {\\n    start : info.offset + info.match.index + info.match[1].length,\\n    length : info.match[2].length,\\n  };\\n  if (options.acrossElements) {\\n    if (info.matchStart) {\\n      range.startElement = true;\\n    }\\n  } else range.startElement = true;\\n  ranges.push(range);\\n  \\n  // it should only build ranges\\n  return  false;\\n}\\n\\nfunction done() {\\n  context.markRanges(ranges, {\\n    'each' : function(elem, range) {\\n      if (range.startElement) {\\n        elem.setAttribute('data-markjs', 'start-1');\\n      }\\n    },\\n    done : highlighter.finish\\n  });\\n}",
             "queryArray": "wordArrays.words_50",
             "testString": {
                 "mode": "html",
@@ -122,7 +120,7 @@ const examples = {
             }
         }
     }`,
-    
+
 	markSeparateGroups : `{
         "version": "1.0.0",
         "library": "advanced",
@@ -138,7 +136,25 @@ const examples = {
             }
         }
     }`,
-	
+
+	blockElementsBoundary : `{
+        "version": "1.0.0",
+        "library": "advanced",
+        "section": {
+            "type": "string_",
+            "separateWordSearch": false,
+            "accuracy": "exactly",
+            "diacritics": false,
+            "acrossElements": true,
+            "blockElementsBoundary": "{ tagNames : ['s', 'my-tag'], extend : true }",
+            "queryString": "lorem ipsum dolor",
+            "testString": {
+                "mode": "html",
+                "content": "<h2><b>Lorem ipsum</b></h2>dolor\\n<p>Lorem ipsum dolor</p>\\n<p>Lorem ipsum<br>dolor</p>\\n<p>Lorem <s>ipsum</s> dolor</p>\\n<p>Lorem ipsum <my-tag>dolor</my-tag></p>\\n<p>// Removing 'extend : true' switch to 'only custom elements have boundaries' mode</p>"
+            }
+        }
+	}`,
+
 	overlappedMatches : `{
         "version": "1.0.0",
         "library": "advanced",
@@ -154,7 +170,7 @@ const examples = {
             }
         }
     }`,
-	
+
 	overlappedGroups : `{
         "version": "1.0.0",
         "library": "advanced",
@@ -170,7 +186,7 @@ const examples = {
             }
         }
     }`,
-	
+
 	randomGroups : `{
         "version": "1.0.0",
         "library": "advanced",
