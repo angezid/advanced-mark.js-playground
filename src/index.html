@@ -835,6 +835,10 @@
 
 <article class="options-info">
 
+<div id="ignoreJoiners">
+Highlight matches that include soft hyphen, zero-width space, zero-width non-joiner, and zero-width joiner - \u00ad, \u200b, \u200c, \u200d.
+</div>
+
 <div id="accuracy">
 <ul>
   <li><code>partially</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
@@ -849,17 +853,17 @@ TODO accuracy object
 <div id="wildcards">
 Two characters <code>?</code> and <code>*</code> used as wildcards.
 <ul>
-  <li><code>disabled</code> The character <code>?</code> and <code>*</code> match itself</li>
+  <li><code>disabled</code> The characters <code>?</code> and <code>*</code> match itself</li>
   <li><code>enabled</code>
     <ul>
-	  <li>The character <code>?</code> match of any non-white-space character zero or one time.</li>
-	  <li>The character <code>*</code> match of any non-white-space character zero or more time.</li>
+	  <li>The character <code>?</code> match any non-white-space character zero or one time.</li>
+	  <li>The character <code>*</code> match any non-white-space character zero or more time.</li>
 	</ul>
   </li>
   <li><code>withSpaces</code>
     <ul>
-	  <li>The character <code>?</code> match of any character zero or one time.</li>
-	  <li>The character <code>*</code> match of any character zero or more time.</li>
+	  <li>The character <code>?</code> match any character zero or one time.</li>
+	  <li>The character <code>*</code> match any character zero or more time, but as few times as possible.</li>
 	</ul>
   </li>
 </ul>
@@ -867,10 +871,11 @@ Two characters <code>?</code> and <code>*</code> used as wildcards.
 
 <div id="synonyms">
 An object with synonyms, e.g. { 'one': '1' } - '1' be synonym for 'one' and vice versa.
+An array of synonyms { 'be' : ['am', 'is', 'are', 'were', 'was', 'being', 'been'] }.
 </div>
 
 <div id="ignorePunctuation">
-An array of punctuation characters, e.g. ":;.,-–—‒_(){}[]!'\"+=".split('');
+The punctuation characters can be between any characters in any number. An array of punctuation characters, e.g. <code>":;.,-–—‒_(){}[]!'\"+=".split('');</code>.
 </div>
 
 <div id="exclude">

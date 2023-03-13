@@ -92,7 +92,7 @@ const defaultOptions = {
 
 $(document).ready(function() {
 	let t0 = performance.now();
-
+	
 	detectLibrary();
 
 	try { new RegExp('\\w', 'd'); } catch (e) { dFlagSupport = false; }
@@ -1448,7 +1448,7 @@ const codeBuilder = {
 	getFilterParameters : function() {
 		if (currentType === 'string_' || currentType === 'array') {
 			let name = 'termMarksSoFar';
-			if( !currentLibrary.old && tab.isChecked('combinePatterns')) {
+			if ( !currentLibrary.old && tab.isChecked('combinePatterns')) {
 				name = 'termMatchesSoFar';
 			}
 			return `(textNode, term, marksSoFar, ${name}${currentLibrary.old ? '' : ', info'})`;
@@ -1683,6 +1683,14 @@ function registerEvents() {
 			e.returnValue = '';
 			return '';
 		}
+	});
+
+	$('main').on('click', function(e) {
+		$('.setting-form, .file-form').each((i, form) => {
+			if ($(form).css('display') === 'block' && !form.contains(e.target)) {
+				$(form).css('display', 'none');
+			}
+		});
 	});
 
 	$(document).on('mouseup', function() {

@@ -233,7 +233,7 @@ const highlighter = {
 		tab.setEditableAttribute(false);
 
 		const obj = {};
-
+		
 		obj.context = this.getTestContexts();
 		obj.testContainer = this.getTestContainer();
 
@@ -258,7 +258,7 @@ const highlighter = {
 			obj.wildcards = $(`${optionPad} .wildcards select`).val();
 
 			obj.synonyms = this.tryToEvaluate('synonyms', 8) || {};
-			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 4) || [];
+			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 3) || [];
 
 			if (obj.accuracy === 'exactly' || obj.accuracy === 'complementary') {
 				const accuracy = this.tryToEvaluate('accuracyObject', 30);
@@ -373,7 +373,7 @@ const highlighter = {
 			info = tab.getSelectorsEditorInfo(),
 			selectors = info.editor.toString().trim();
 		let elems = elem;
-
+		
 		if (selectors) {
 			elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
 		}
