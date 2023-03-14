@@ -15,7 +15,7 @@
 <script src="js3/jquery.js"></script>
 <script src="js3/jquery.powertip.js"></script>
 
-<script src="js3/jquery.mark.js"></script>
+<!-- <script src="js3/jquery.mark.js"></script> -->
 <script src="js3/mark.js"></script>
 <!-- /build -->
 
@@ -82,13 +82,6 @@
 
 <div class="setting-form">
 <div class="close"></div>
-
-<div class="row">
-<div class="switch-library">
-<input id="library" type="checkbox" onchange="settings.changed(this);">
-<label for="library" title="Switch Mark library if both standard and advanced libraries are present">Mark library</label>
-</div>
-</div>
 
 <div class="row">
 <div class="load-default">
@@ -939,8 +932,7 @@ Parameters:
 <hr>
 <div class="stringArrayEach">
 <code>each : (markElement, eachInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -953,19 +945,16 @@ Parameters:
 </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="stringArrayDone">
 <code>done : (totalMarks, totalMatches, termStats) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
   <li>The total number of matches</li>
   <li>The object containing terms statistics</li>
 </ol>
-</div>
 </div>
 </div>
 
@@ -999,8 +988,7 @@ Parameters:
 <hr>
 <div class="regexpEach">
 <code>each : (markElement, eachInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -1015,18 +1003,15 @@ Parameters:
 </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="regexpDone">
 <code>done : (totalMarks, totalMatches) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
   <li>The total number of matches</li>
 </ol>
-</div>
 </div>
 </div>
 
@@ -1046,8 +1031,7 @@ Parameters:
 <hr>
 <div class="rangesEach">
 <code>each : (markElement, range, rangeInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -1060,18 +1044,15 @@ Parameters:
   </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="rangesDone">
 <code>done : (totalMarks, totalRanges) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
   <li>The total number of ranges</li>
 </ol>
-</div>
 </div>
 </div>
 

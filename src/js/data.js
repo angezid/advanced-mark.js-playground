@@ -28,10 +28,11 @@ const defaultHtml = `
 const examples = {
 	name : 'examples',
 	accuracyExactly : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
-            "accuracy": "{ value: 'exactly', limiters: ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-'.split('') }",
+            "accuracy": "{ value: 'exactly', limiters: ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
             "queryString": "cafe resume expose lame mate ore pate rose",
             "testString": {
                 "mode": "html",
@@ -41,11 +42,12 @@ const examples = {
     }`,
 
 	ignorePunctuation : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "diacritics": false,
-            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+='.split('')",
+            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+=',
             "queryString": "browsers resign numbers",
             "testString": {
                 "mode": "html",
@@ -55,7 +57,7 @@ const examples = {
     }`,
 
 	shadowDOM : `{
-		"version": "1.0.0",
+		"version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
@@ -71,12 +73,13 @@ const examples = {
 	}`,
 
 	iframes : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
-            "exclude": "['#ifr2']",
+            "exclude": '#ifr2',
             "iframes": true,
             "combinePatterns": 10,
             "customCode": "// don't foget to launch sever (see README)\\n// dynamically loads html on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
@@ -89,7 +92,8 @@ const examples = {
     }`,
 
 	markWhileTyping : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -105,14 +109,14 @@ const examples = {
     }`,
 
 	customCodeEditor : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
             "accuracy": "exactly",
             "diacritics": false,
             "cacheTextNodes": true,
-            "customCode": "// Note that the option 'cacheTextNodes' can be used without generating ranges.\\n// It just demonstrates how to use the custom code editor.\\n// your code before\\nconst ranges=[];\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  const range = {\\n    start : info.offset + info.match.index + info.match[1].length,\\n    length : info.match[2].length,\\n  };\\n  if (options.acrossElements) {\\n    if (info.matchStart) {\\n      range.startElement = true;\\n    }\\n  } else range.startElement = true;\\n  ranges.push(range);\\n  \\n  // it should only build ranges\\n  return  false;\\n}\\n\\nfunction done() {\\n  context.markRanges(ranges, {\\n    'each' : function(elem, range) {\\n      if (range.startElement) {\\n        elem.setAttribute('data-markjs', 'start-1');\\n      }\\n    },\\n    done : highlighter.finish\\n  });\\n}",
+            "customCode": "// Note that the option 'cacheTextNodes' can be used without generating ranges.\\n// It just demonstrates how to use the custom code editor.\\n// your code before\\nconst ranges=[];\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  const range = {\\n    start : info.offset + info.match.index + info.match[1].length,\\n    length : info.match[2].length,\\n  };\\n  if (options.acrossElements) {\\n    if (info.matchStart) {\\n      range.startElement = true;\\n    }\\n  } else range.startElement = true;\\n  ranges.push(range);\\n  \\n  // it should only build ranges\\n  return  false;\\n}\\n\\nfunction done() {\\n  instance.markRanges(ranges, {\\n    'each' : function(elem, range) {\\n      if (range.startElement) {\\n        elem.setAttribute('data-markjs', 'start-1');\\n      }\\n    },\\n    done : highlighter.finish\\n  });\\n}",
             "queryArray": "wordArrays.words_50",
             "testString": {
                 "mode": "html",
@@ -122,7 +126,7 @@ const examples = {
     }`,
 
 	markSeparateGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -138,7 +142,7 @@ const examples = {
     }`,
 
 	blockElementsBoundary : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "string_",
@@ -156,7 +160,7 @@ const examples = {
 	}`,
 
 	overlappedMatches : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -172,7 +176,7 @@ const examples = {
     }`,
 
 	overlappedGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -188,7 +192,7 @@ const examples = {
     }`,
 
 	randomGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",

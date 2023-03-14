@@ -233,7 +233,7 @@ const highlighter = {
 		tab.setEditableAttribute(false);
 
 		const obj = {};
-		
+
 		obj.context = this.getTestContexts();
 		obj.testContainer = this.getTestContainer();
 
@@ -279,42 +279,40 @@ const highlighter = {
 			obj.acrossElements = tab.isChecked('acrossElements');
 		}
 
-		if ( !currentLibrary.old) {
-			const shadowDOM = tab.isChecked('shadowDOM');
-			if (shadowDOM) {
-				const styleObj = this.tryToEvaluate('shadowStyle', 16);
-				if (styleObj) {
-					obj.shadowDOM = styleObj;
+		const shadowDOM = tab.isChecked('shadowDOM');
+		if (shadowDOM) {
+			const styleObj = this.tryToEvaluate('shadowStyle', 16);
+			if (styleObj) {
+				obj.shadowDOM = styleObj;
+
+			} else {
+				obj.shadowDOM = true;
+			}
+		}
+
+		if (obj.acrossElements && currentType !== 'ranges') {
+			const boundary = tab.isChecked('blockElementsBoundary');
+			if (boundary) {
+				const blockElements = this.tryToEvaluate('blockElements', 5);
+				if (blockElements) {
+					obj.blockElementsBoundary = blockElements;
 
 				} else {
-					obj.shadowDOM = true;
+					obj.blockElementsBoundary = true;
 				}
 			}
+		}
 
-			if (obj.acrossElements && currentType !== 'ranges') {
-				const boundary = tab.isChecked('blockElementsBoundary');
-				if (boundary) {
-					const blockElements = this.tryToEvaluate('blockElements', 5);
-					if (blockElements) {
-						obj.blockElementsBoundary = blockElements;
+		if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
+			obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
+		}
 
-					} else {
-						obj.blockElementsBoundary = true;
-					}
-				}
-			}
+		if (markArray()) {
+			obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
 
-			if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
-				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
-			}
-
-			if (markArray()) {
-				obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
-
-				const combine = tab.isChecked('combinePatterns');
-				if (combine) {
-					obj.combinePatterns = util.getNumericalValue('combineNumber', 10);
-				}
+			const combine = tab.isChecked('combinePatterns');
+			if (combine) {
+				obj.combinePatterns = util.getNumericalValue('combineNumber', 10);
 			}
 		}
 
@@ -373,7 +371,7 @@ const highlighter = {
 			info = tab.getSelectorsEditorInfo(),
 			selectors = info.editor.toString().trim();
 		let elems = elem;
-		
+
 		if (selectors) {
 			elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
 		}

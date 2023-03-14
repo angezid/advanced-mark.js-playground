@@ -1,9 +1,10 @@
 {
   "name": "Markjs-playground",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Help to get familiar with advanced-mark.js, generate code, write and test custom code, experiment with custom HTML. ",
   "keywords": [
     "playground",
+    "advanced",
     "mark.js",
     "markjs",
     "highlight"
@@ -14,8 +15,7 @@
     "http-server": "^14.1.1",
     "jquery": "^3.6.0",
     "jquery-powertip": "^1.3.2",
-    "advanced-mark.js": "^1.1.0",
-    "mark.js": "^8.11.1"
+    "advanced-mark.js": "^2.0.0"
   },
   "scripts": {
     "build": "npm run copyFiles",

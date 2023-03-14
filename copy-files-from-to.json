@@ -85,13 +85,6 @@
       }
     },
     {
-      "from": "node_modules/mark.js/dist/mark.js",
-      "to": {
-        "default": "build/js3/mark.js",
-        "development": "src/js3/mark.js"
-      }
-    },
-    {
       "from": "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js",
       "to": {
         "default":"build/js3/highlight.js",
@@ -99,10 +92,10 @@
       }
     },
     {
-      "from": "node_modules/advanced-mark.js/dist/jquery.mark.js",
+      "from": "node_modules/advanced-mark.js/dist/mark.js",
       "to": {
-        "default":"build/js3/jquery.mark.js",
-        "development": "src/js3/jquery.mark.js"
+        "default":"build/js3/mark.js",
+        "development": "src/js3/mark.js"
       }
     }
   ],
