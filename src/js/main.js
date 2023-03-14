@@ -92,7 +92,7 @@ const defaultOptions = {
 
 $(document).ready(function() {
 	let t0 = performance.now();
-
+	
 	detectLibrary();
 
 	try { new RegExp('\\w', 'd'); } catch (e) { dFlagSupport = false; }
@@ -1193,15 +1193,20 @@ const codeBuilder = {
 	},
 
 	buildCode : function(kind) {
-		const info = tab.getSearchEditorInfo();
-
-		const unmark = kind === 'internal' || $('.unmark-method input').prop('checked'),
-			unmarkOpt = (tab.isChecked('iframes') ? 'iframes : true,\n  ' : '') + (tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : ''),
+		const info = tab.getSearchEditorInfo(),
+			unmark = kind === 'internal' || $('.unmark-method input').prop('checked'),
 			optionCode = this.buildOptions(kind, unmark);
-
-		let code = '',
+		
+		let unmarkOpt = '', 
+			code = '',
 			str = '',
 			text;
+		
+		const name = $(`${optionPad} .element input`).val().trim();
+		if (name && name.toLowerCase() !== 'mark') {
+			unmarkOpt = `element :  '${name}',\n  `;
+		}
+		unmarkOpt += (tab.isChecked('iframes') ? 'iframes : true,\n  ' : '') + (tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '');
 
 		if (kind === 'jq') {
 			code = `$('selector')` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    $('selector')` : '');
@@ -1214,7 +1219,7 @@ const codeBuilder = {
 			code = `let options;\n`;
 
 			if (currentLibrary.jquery) {
-				code += `const context = $(tab.getTestElement());\ncontext.unmark({\n  ${unmarkOpt}done : () => {${time}\n    context`;
+				code += `const instance = $(tab.getTestElement());\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
 
 			} else {
 				code += `const instance = new Mark(tab.getTestElement());\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
@@ -1448,7 +1453,7 @@ const codeBuilder = {
 	getFilterParameters : function() {
 		if (currentType === 'string_' || currentType === 'array') {
 			let name = 'termMarksSoFar';
-			if( !currentLibrary.old && tab.isChecked('combinePatterns')) {
+			if ( !currentLibrary.old && tab.isChecked('combinePatterns')) {
 				name = 'termMatchesSoFar';
 			}
 			return `(textNode, term, marksSoFar, ${name}${currentLibrary.old ? '' : ', info'})`;
@@ -1683,6 +1688,14 @@ function registerEvents() {
 			e.returnValue = '';
 			return '';
 		}
+	});
+
+	$('main').on('click', function(e) {
+		$('.setting-form, .file-form').each((i, form) => {
+			if ($(form).css('display') === 'block' && !form.contains(e.target)) {
+				$(form).css('display', 'none');
+			}
+		});
 	});
 
 	$(document).on('mouseup', function() {

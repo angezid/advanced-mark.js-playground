@@ -269,14 +269,12 @@ function CodeJar(editor, highlight, opt = {}) {
             }
         }
     }
-    // exactly determines whether character at cursor is escaped
+    // correctly determines whether character before the cursor is escaped
     function isEscape(code) {
-        let i = code.length - 1;
-        let escaped = code.substr(i) === '\\';
-        if (escaped) {
-            while (--i >= 0 && code[i] === '\\')
-                escaped = !escaped;
-        }
+        let i = code.length;
+        let escaped = false;
+        while (--i >= 0 && code[i] === '\\')
+            escaped = !escaped;
         return escaped;
     }
     function handleSelfClosingCharacters(event) {
@@ -284,28 +282,31 @@ function CodeJar(editor, highlight, opt = {}) {
         const close = `)]}`;
         const quotes = `'"`;
         const ch = event.key;
+        const openIncludes = open.includes(ch);
         // wraps a selection in brackets or quotes, regardless of characters before/after selection
-        if ((open.includes(ch) || quotes.includes(ch)) && getSelection().toString()) {
-            if (open.includes(ch))
+        if ((openIncludes || quotes.includes(ch)) && getSelection().toString()) {
+            if (openIncludes)
                 enclose(event, open, close);
-            else if (quotes.includes(ch))
+            else
                 enclose(event, quotes, quotes);
         }
         else {
-            const codeAfter = afterCursor();
-            const charAfter = codeAfter.substr(0, 1);
+            const charAfter = afterCursor().charAt(0);
             const codeBefore = beforeCursor();
-            const escapeCharacter = isEscape(codeBefore);
             const array = ['', ' ', '\t', '\n'];
-            if (!escapeCharacter) {
-                if (open.includes(ch) && (close.includes(charAfter) || array.includes(charAfter))) {
+            if (openIncludes) {
+                if (!isEscape(codeBefore) && (close.includes(charAfter) || array.includes(charAfter))) {
                     enclose(event, open, close);
                 }
-                // NEEDS investigation 
+            }
+            // regex checks whether the last character is non-white-space
+            // prevents adding second quote if there is non-white-space character before cursor
+            else if (!/\S$/.test(codeBefore)) {
+                // NEEDS investigation
                 // adds closing quote if the array contains 'charAfter'
                 //else if (quotes.includes(ch) && array.includes(charAfter)) {
                 // adds closing quote if the same quote is after the cursor or the array contains 'charAfter'
-                else if (quotes.includes(ch) && (ch === charAfter || array.includes(charAfter))) {
+                if (quotes.includes(ch) && (ch === charAfter || array.includes(charAfter))) {
                     enclose(event, quotes, quotes);
                 }
             }
@@ -430,7 +431,8 @@ function CodeJar(editor, highlight, opt = {}) {
         const tabReg = /\t/g, indentReg = /(?:^|\n)[ \t]+/g;
         let tabSize = 0;
         if (options.tab === '\t') {
-            tabSize = parseInt(editor.style.tabSize);
+            const style = window.getComputedStyle(editor);
+            tabSize = parseInt(style.tabSize);
             if (tabSize > 0) {
                 //indentation may contain a mix of tabs and spaces, so first it normalizes spaces by replacing tabs and then replaces spaces by tabs
                 const regex = new RegExp(` {${tabSize}}`, 'g'), spaces = ' '.repeat(tabSize);

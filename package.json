@@ -1,9 +1,11 @@
 {
   "name": "Markjs-playground",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Help to get familiar with advanced-mark.js, generate code, write and test custom code, experiment with custom HTML. ",
   "keywords": [
     "playground",
+    "advanced",
+    "advanced-mark.js",
     "mark.js",
     "markjs",
     "highlight"
