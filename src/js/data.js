@@ -27,6 +27,7 @@ const defaultHtml = `
 // also, there is need to delete a library property in examples, which intended to work in both libraries
 const examples = {
 	name : 'examples',
+	
 	accuracyExactly : `{
         "version": "1.0.0",
         "section": {
@@ -36,6 +37,20 @@ const examples = {
             "testString": {
                 "mode": "html",
                 "content": "cafe resume expose lame mate ore pate rose café résumé resumé exposé lamé maté öre øre pâté rosé (cafe) [resume] {expose} 'lame' \\"mate\\" ore, pate. rose% café- @résumé resumé, exposé. lamé? maté! $öre|øre pâté* rosé;"
+            }
+        }
+    }`,
+    
+	exclude : `{
+        "version": "1.0.0",
+        "section": {
+            "type": "array",
+            "exclude": "'.exclude, .exclude *'",
+            "diacritics": false,
+            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
             }
         }
     }`,
