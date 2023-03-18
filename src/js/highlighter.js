@@ -240,7 +240,7 @@ const highlighter = {
 		obj.element = $(`${optionPad} .element input`).val().trim();
 		obj.className = $(`${optionPad} .className input`).val().trim();
 
-		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
+		obj.exclude = this.tryToEvaluate('exclude', 3) || [];
 		obj.debug = tab.isChecked('debug');
 
 		obj.iframes = tab.isChecked('iframes');

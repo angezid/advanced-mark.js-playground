@@ -148,8 +148,8 @@
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
 <button class="next" type="button" onclick="nextMatch();"></button>
-<button class="html" type="button" onclick="setHtmlMode()">Html</button>
-<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
+<button class="text" type="button" onclick="setTextMode(event)">Text</button>
 <button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -352,8 +352,8 @@
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
 <button class="next" type="button" onclick="nextMatch();"></button>
-<button class="html" type="button" onclick="setHtmlMode()">Html</button>
-<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
+<button class="text" type="button" onclick="setTextMode(event)">Text</button>
 <button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -554,8 +554,8 @@
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
 <button class="next" type="button" onclick="nextMatch();"></button>
-<button class="html" type="button" onclick="setHtmlMode()">Html</button>
-<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
+<button class="text" type="button" onclick="setTextMode(event)">Text</button>
 <button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -697,8 +697,8 @@
 <div class="actions right">
 <button class="previous" type="button" onclick="previousMatch();"></button>
 <button class="next" type="button" onclick="nextMatch();"></button>
-<button class="html" type="button" onclick="setHtmlMode()">Html</button>
-<button class="text" type="button" onclick="setTextMode()">Text</button>
+<button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
+<button class="text" type="button" onclick="setTextMode(event)">Text</button>
 <button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
@@ -863,8 +863,7 @@ Two characters <code>?</code> and <code>*</code> used as wildcards.
 </div>
 
 <div id="synonyms">
-An object with synonyms, e.g. { 'one': '1' } - '1' be synonym for 'one' and vice versa.
-An array of synonyms { 'be' : ['am', 'is', 'are', 'were', 'was', 'being', 'been'] }.
+An object with synonyms, e.g. { 'one': '1' } - '1' be synonym for 'one' and vice versa. A value can be an array of synonyms { 'be' : ['am', 'is', 'are'] }.
 </div>
 
 <div id="ignorePunctuation">
@@ -872,7 +871,7 @@ The punctuation characters can be between any characters in any number. An array
 </div>
 
 <div id="exclude">
-A<span class="advanced hide"> string or a</span>n array of selectors. Text nodes which are child nodes of those elements are excluded from being processed.
+A string or an array of selectors. Text nodes which are child nodes of those elements are excluded from being processed.
 </div>
 
 <div id="accuracyObject">

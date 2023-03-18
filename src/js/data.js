@@ -27,16 +27,31 @@ const defaultHtml = `
 // also, there is need to delete a library property in examples, which intended to work in both libraries
 const examples = {
 	name : 'examples',
+	
 	accuracyExactly : `{
         "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "string_",
-            "accuracy": "{ value: 'exactly', limiters: ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
+            "accuracy": "{ value: 'exactly', limiters : ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
             "queryString": "cafe resume expose lame mate ore pate rose",
             "testString": {
                 "mode": "html",
                 "content": "cafe resume expose lame mate ore pate rose café résumé resumé exposé lamé maté öre øre pâté rosé (cafe) [resume] {expose} 'lame' \\"mate\\" ore, pate. rose% café- @résumé resumé, exposé. lamé? maté! $öre|øre pâté* rosé;"
+            }
+        }
+    }`,
+
+	exclude : `{
+        "version": "2.0.0",
+        "section": {
+            "type": "array",
+            "exclude": "'.exclude, .exclude *'",
+            "diacritics": false,
+            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
             }
         }
     }`,
@@ -47,7 +62,7 @@ const examples = {
         "section": {
             "type": "string_",
             "diacritics": false,
-            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+=',
+            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+='",
             "queryString": "browsers resign numbers",
             "testString": {
                 "mode": "html",
@@ -79,7 +94,7 @@ const examples = {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
-            "exclude": '#ifr2',
+            "exclude": "'#ifr2'",
             "iframes": true,
             "combinePatterns": 10,
             "customCode": "// don't foget to launch sever (see README)\\n// dynamically loads html on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",

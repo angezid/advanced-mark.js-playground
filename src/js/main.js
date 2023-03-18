@@ -120,10 +120,15 @@ const code = {
 	},
 
 	// code.setListener('keyup', runCode);
+	// allows adding several events to the search editor.
 	setListener : function(event, fn) {
-		const elem = document.querySelector(tab.getSearchEditorInfo().selector);
-		elem.removeEventListener(event, fn);
-		elem.addEventListener(event, fn);
+		const elem = document.querySelector(tab.getSearchEditorInfo().selector),
+			data = elem.getAttribute('data-event');
+
+		if( !data || !data.split(' ').includes(event)) {
+			elem.addEventListener(event, fn);
+			elem.setAttribute('data-event', (data === null ? '' : data + ' ') + event);
+		}
 	},
 
 	setSelectors : function(selectors, all = false) {
@@ -300,7 +305,7 @@ const tab = {
 		}
 	},
 
-	setHtmlMode : function(content, highlight = true) {
+	setHtmlMode : function(content, highlight, removeMarks = false) {
 		if (types[currentType].testEditorMode === 'html' && !content) return;
 
 		types[currentType].testEditorMode = 'html';
@@ -310,6 +315,10 @@ const tab = {
 		if (html) {
 			const div = this.destroyTestEditor();
 			if ( !div) return;
+			
+			if(removeMarks) {
+				html = util.removeMarks(html);
+			}
 
 			if (highlight) {
 				highlighter.highlightRawHtml(div, html);
@@ -344,7 +353,7 @@ const tab = {
 			if (highlight) {
 				runCode();
 			}
-
+			
 		} else {
 			this.getTestEditor().updateCode('');
 		}
@@ -442,7 +451,7 @@ const tab = {
 	updateTestEditor : function(code, event) {
 		if (event.type === 'paste' || event.type === 'drop') {
 			if (types[currentType].testEditorMode === 'html') {
-				this.setHtmlMode(importer.sanitizeHtml(code));
+				this.setHtmlMode(importer.sanitizeHtml(code), true);
 			}
 		}
 		this.setDirty(true);
@@ -716,13 +725,14 @@ function selectArray(elem) {
 }
 
 // DOM 'onclick' event
-function setTextMode() {
-	tab.setTextMode(null, true);
+function setTextMode(e) {
+	tab.setTextMode(null, !(e.ctrlKey || e.metaKey));
 }
 
 // DOM 'onclick' event
-function setHtmlMode() {
-	tab.setHtmlMode(null, true);
+function setHtmlMode(e) {
+	const keyPress = e.ctrlKey || e.metaKey;
+	tab.setHtmlMode(null, !keyPress, keyPress);
 }
 
 // DOM 'onclick' event
@@ -1159,18 +1169,18 @@ const codeBuilder = {
 		const info = tab.getSearchEditorInfo(),
 			unmark = kind === 'internal' || $('.unmark-method input').prop('checked'),
 			optionCode = this.buildOptions(kind, unmark);
-		
-		let unmarkOpt = '', 
+
+		let unmarkOpt = '',
 			code = '',
 			str = '',
 			text;
-		
+
 		const name = $(`${optionPad} .element input`).val().trim();
 		if (name && name.toLowerCase() !== 'mark') {
 			unmarkOpt = `element :  '${name}',\n  `;
 		}
 		unmarkOpt += (tab.isChecked('iframes') ? 'iframes : true,\n  ' : '') + (tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '');
-		
+
 		if (kind === 'jq') {
 			code = `$('selector')` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    $('selector')` : '');
 
@@ -1187,7 +1197,7 @@ const codeBuilder = {
 			} else {
 				code += `const instance = new Mark(tab.getTestElement());\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
 			}
-		} 
+		}
 
 		if (text = info.editor.toString().trim()) {
 			switch (currentType) {
@@ -1472,13 +1482,7 @@ const Json = {
 			const mode = types[currentType].testEditorMode;
 
 			if (mode === 'html') {
-				// removes all mark elements from the text
-				const regex = new RegExp(`<${markElement} data-markjs=[^>]+>((?:(?!</${markElement}>)[^])+)</${markElement}>`, 'g');
-				let max = 20;    // just to be on the safe side
-
-				while (--max > 0 && regex.test(text)) {
-					text = text.replace(regex, '$1');
-				}
+				text = util.removeMarks(text);
 			}
 			json += `,"testString":{"mode":"${mode}","content":${JSON.stringify(text)}}`;
 		}
@@ -1839,6 +1843,17 @@ const util = {
 			if (array.indexOf(arr[i]) === -1) array.push(arr[i]);
 		}
 		return array;
+	},
+	
+	removeMarks : function(text) {
+		// removes all mark elements from the text
+		const regex = new RegExp(`<${markElement} data-markjs=[^>]+>((?:(?!</${markElement}>)[^])+)</${markElement}>`, 'g');
+		let max = 20;    // just to be on the safe side
+
+		while (--max > 0 && regex.test(text)) {
+			text = text.replace(regex, '$1');
+		}
+		return text; 
 	}
 };
 
