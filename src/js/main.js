@@ -1,8 +1,8 @@
 
 'use strict';
 
-let version = '2.0.0',
-	currentTabId = '',
+const version = '2.0.0';
+let currentTabId = '',
 	time = 0,
 	matchCount = 0,
 	currentIndex = 0,
@@ -125,7 +125,7 @@ const code = {
 		const elem = document.querySelector(tab.getSearchEditorInfo().selector),
 			data = elem.getAttribute('data-event');
 
-		if( !data || !data.split(' ').includes(event)) {
+		if ( !data || !data.split(' ').includes(event)) {
 			elem.addEventListener(event, fn);
 			elem.setAttribute('data-event', (data === null ? '' : data + ' ') + event);
 		}
@@ -244,7 +244,7 @@ const tab = {
 
 		for (const key in obj) {
 			if (key !== 'name') {
-				let title = key.replace(/^([a-z])/, (m, gr1) => gr1.toUpperCase()).replace(/([a-z])([A-Z])/g, (m, gr1, gr2) => gr1 + ' ' + gr2);
+				let title = key.replace(/^[a-z]/, m => m.toUpperCase()).replace(/[a-z](?=[A-Z])/g, '$& ');
 				title = title.replace(/( [A-Z])([a-z]+)/g, (m, gr1, gr2) => gr1.toLowerCase() + gr2);
 				options += `<option value="${key}">${title}</option>`;
 			}
@@ -315,8 +315,8 @@ const tab = {
 		if (html) {
 			const div = this.destroyTestEditor();
 			if ( !div) return;
-			
-			if(removeMarks) {
+
+			if (removeMarks) {
 				html = util.removeMarks(html);
 			}
 
@@ -353,7 +353,7 @@ const tab = {
 			if (highlight) {
 				runCode();
 			}
-			
+
 		} else {
 			this.getTestEditor().updateCode('');
 		}
@@ -689,14 +689,18 @@ function setAccuracy(elem) {
 	const div = $(`${optionPad} .accuracyObject`).addClass('hide'),
 		exactly = $(`${optionPad} .accuracyObject .accuracy-exactly`).addClass('hide'),
 		complementary = $(`${optionPad} .accuracyObject .accuracy-complementary`).addClass('hide');
+	
+	$('article.options-info .accuracy-complementary, article.options-info .accuracy-exactly').addClass('hide');
 
 	if (elem.value === 'exactly') {
 		div.removeClass('hide');
 		exactly.removeClass('hide');
+		$('article.options-info .accuracy-exactly').removeClass('hide');
 
 	} else if (elem.value === 'complementary') {
 		div.removeClass('hide');
 		complementary.removeClass('hide');
+		$('article.options-info .accuracy-complementary').removeClass('hide');
 	}
 }
 
@@ -1844,7 +1848,7 @@ const util = {
 		}
 		return array;
 	},
-	
+
 	removeMarks : function(text) {
 		// removes all mark elements from the text
 		const regex = new RegExp(`<${markElement} data-markjs=[^>]+>((?:(?!</${markElement}>)[^])+)</${markElement}>`, 'g');
@@ -1853,7 +1857,7 @@ const util = {
 		while (--max > 0 && regex.test(text)) {
 			text = text.replace(regex, '$1');
 		}
-		return text; 
+		return text;
 	}
 };
 
@@ -1948,7 +1952,7 @@ function getFileName() {
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-
+	
 	elem.data('powertiptarget', id).powerTip({
 		manual : true,
 		intentPollInterval : 300,
@@ -1966,7 +1970,7 @@ function showHideInfo(id) {
 		info = $('article.options-info #' + id),
 		elemsAE = info.find('.acrossElements').addClass('hide'),
 		elemsSG = info.find('.separateGroups').addClass('hide');
-
+	
 	if (acrossElements) {
 		elemsAE.each(function() {
 			if ($(this).hasClass('separateGroups')) {

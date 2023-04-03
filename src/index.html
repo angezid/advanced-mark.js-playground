@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Playground</title>
-<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
-<link rel="icon" type="image/png" href="img/logo.png" />
-<link rel="stylesheet" href="css/main.css" />
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="stylesheet" href="css/main.css">
 
 <!-- build:[src] js/ -->
 <script src="js3/codejar.js"></script>
@@ -118,7 +118,7 @@
 
 <main class="playground-main">
 <article id="playground-article">
-<h1 class="title">Mark.js playground</h1>
+<h1 class="title">advanced-mark.js playground</h1>
 
 <section class="string_ row">
 <div class="left-column">
@@ -827,76 +827,132 @@
 </article>
 
 <article class="options-info">
+<div class="options">
+<div id="element"><span><code>element</code></span><span><em class="type">string</em></span><span> <code>mark</code></span><div>A custom mark element e.g. <code>span</code>. </div></div>
 
-<div id="ignoreJoiners">
-Highlight matches that include soft hyphen, zero-width space, zero-width non-joiner, and zero-width joiner - \u00ad, \u200b, \u200c, \u200d.
-</div>
+<div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A class to be added to mark elements. </div></div>
 
-<div id="accuracy">
+<div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Defines DOM elements that should be excluded from searching. </div></div>
+
+<div id="separateWordSearch"><span><code>separateWordSearch</code></span><span><em class="type">boolean</em></span><span> <code>true</code></span><div>Whether to break term into separate words and search for each individual word </div></div>
+
+<div id="diacritics"><span><code>diacritics</code></span><span><em class="type">boolean</em></span><span> <code>true</code></span><div>Whether to match diacritic characters </div></div>
+
+<div id="caseSensitive"><span><code>caseSensitive</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search case sensitive </div></div>
+
+<div id="accuracy"><span><code>accuracy</code></span><span><em class="type">string <span class="or">or</span> object</em></span><span> <code>'partially'</code></span><div>  
 <ul>
-  <li><code>partially</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
-  <li><code>exactly</code> This option is actually forced to use an accuracy object, because the default word boundaries are white-space characters and start/end of a text node (with <code>acrossElements</code> option - start/end of a context).
-  </li>
-  <li><code>complementary</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'. The default word boundaries are: white-space and <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code> characters.
-  </li>
-</ul>
-TODO accuracy object
-</div>
-
-<div id="wildcards">
-Two characters <code>?</code> and <code>*</code> used as wildcards.
+<li>Either one of the following string value:
 <ul>
-  <li><code>disabled</code> The characters <code>?</code> and <code>*</code> match itself</li>
-  <li><code>enabled</code>
-    <ul>
-	  <li>The character <code>?</code> match any non-white-space character zero or one time.</li>
-	  <li>The character <code>*</code> match any non-white-space character zero or more time.</li>
-	</ul>
-  </li>
-  <li><code>withSpaces</code>
-    <ul>
-	  <li>The character <code>?</code> match any character zero or one time.</li>
-	  <li>The character <code>*</code> match any character zero or more time, but as few times as possible.</li>
-	</ul>
-  </li>
+<li><code>'partially'</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
+<li><code>'exactly'</code> This option is actually forced to use an accuracy object, because the default word boundaries are white-space characters and start/end of a text node (with <code>acrossElements</code> option - start/end of a context).</li>
+<li><code>'complementary'</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'. The default word boundaries are: whitespaces and <code>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_{|}~¡¿</code> characters.</li>
 </ul>
+</li>
+<li>Or an bject with two properties:
+<ul>
+<li><code>value</code>: 'exactly' or 'complementary'</li>
+<li><code>limiters</code>: a string or an array of custom word boundary characters, e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></li>
+</ul>
+</li>
+</ul>
+</div></div>
+
+<div id="wildcards"><span><code>wildcards</code></span><span><em class="type">string</em></span><span> <code>disabled</code></span><div>Two characters `?` and `*` used as wildcards 
+<ul>
+<li><code>disabled</code>: The characters <code>?</code> and <code>*</code> match itself</li>
+<li><code>enabled</code>:
+<ul>
+<li>The character <code>?</code> match any non-white-space character zero or one time.</li>
+<li>The character <code>*</code> match any non-white-space character zero or more time.</li>
+</ul>
+</li>
+<li><code>withSpaces</code>:
+<ul>
+<li>The character <code>?</code> match any character zero or one time.</li>
+<li>The character <code>*</code> match any character zero or more time, but as few times as possible.</ul></ul></div></div>
+
+<div id="ignoreJoiners"><span><code>ignoreJoiners</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to find matches that contain soft hyphen, zero width space, zero width non-joiner and zero width joiner </div></div>
+
+<div id="ignorePunctuation"><span><code>ignorePunctuation</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of punctuation characters </div></div>
+
+<div id="synonyms"><span><code>synonyms</code></span><span><em class="type">object</em></span><span> <code>{}</code></span><div>An object with synonyms  
+<p>e.g. <code>{ 'one': '1' }</code> - '1' is synonym for 'one' and vice versa. Value can be an array <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
+</div></div>
+
+<div id="acrossElements"><span><code>acrossElements</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search for matches across elements </div></div>
+
+<div id="combinePatterns"><span><code>combinePatterns</code></span><span><em class="type">number <span class="or">or</span> boolean</em></span><span> <code>10</code></span><div>Combine a specified number of individual term patterns into one 
+<p>See <a href="performance.html#ways-to-boost-performance">Performance</a> for more details.</div></div>
+
+<div id="cacheTextNodes"><span><code>cacheTextNodes</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Caching information to improve performance 
+<p>See <a href="performance.html#ways-to-boost-performance">Performance</a> for more details.</div></div>
+
+<div id="blockElementsBoundary"><span><code>blockElementsBoundary</code></span><span><em class="type">boolean <span class="or">or</span> object</em></span><span> <code>undefined</code></span><div>Whether to limit matches within default HTML block elements and/or custom elements 
+<p>See <a href="elements-boundaries.html">Elements boundaries</a> for more details.</p>
+<ul>
+<li><code>tagNames</code> <em class="type">string[]</em> - An array of custom HTML tag names</li>
+<li><code>extend</code> <em class="type">boolean</em> - <code>true</code> extends default boundary elements by the custom elements
+otherwise only the custom elements do have boundaries</li>
+<li><code>char</code> <em class="type">string</em> - A custom boundary character. The default is <code>\x01</code>.</li>
+</ul>
+</div></div>
+
+<div id="shadowDOM"><span><code>shadowDOM</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Whether to mark inside shadow DOMs 
+<p>See <a href="shadow-dom.html">Highlighting in shadow DOM</a> for more details.</div></div>
+
+<div id="iframes"><span><code>iframes</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to mark inside iframes </div></div>
+
+<div id="iframesTimeout"><span><code>iframesTimeout</code></span><span><em class="type">number</em></span><span> <code>5000</code> ms</span><div>The max time to wait for iframe(s) to load before skipping </div></div>
+
+<div id="debug"><span><code>debug</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to log messages </div></div>
+
+<div id="log"><span><code>log</code></span><span><em class="type">object</em></span><span> <code>console</code></span><div>Log messages to a specific object 
+</div></div>
+
+<div id="noMatch"><span><code>noMatch</code></span><span><em class="type">function</em></span><span> </span><div>A callback that is called when a term has no match at all 
+<br><b>noMatch : (term) => {}</b>
+<ul>
+<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is array when <code>combinePatterns</code> option is used</ul></div></div>
+
+<div id="wrapAllRanges"><span><code>wrapAllRanges</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Mark nesting/overlapping capturing groups  
+<p>See <a href="nesting-overlapping.html">Marking nesting and overlapping ranges and match groups</a> for more details.</p>
+</div></div>
+
+<div id="ignoreGroups"><span><code>ignoreGroups</code></span><span><em class="type">number</em></span><span> <code>0</code></span><div>The number of contiguous capturing groups that should be ignored from the start of RegExp 
+<p>e.g. <code>/(\w+)(\.)(\w+)(?!\2)/g</code>, <code>ignoreGroups : 2</code> - mark the group 3</div></div>
+
+<div id="separateGroups"><span><code>separateGroups</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to mark RegExp capturing groups instead of whole match 
+<p>See <a href="separate-groups.html">Highlighting separate groups</a> for more details.</div></div>
 </div>
 
-<div id="synonyms">
-An object with synonyms, e.g. { 'one': '1' } - '1' be synonym for 'one' and vice versa. A value can be an array of synonyms { 'be' : ['am', 'is', 'are'] }.
-</div>
-
-<div id="ignorePunctuation">
-The punctuation characters can be between any characters in any number. An array of punctuation characters, e.g. <code>":;.,-–—‒_(){}[]!'\"+=".split('');</code>.
-</div>
-
-<div id="exclude">
-A string or an array of selectors. Text nodes which are child nodes of those elements are excluded from being processed.
-</div>
 
 <div id="accuracyObject">
-TODO
-<span class="accuracy-complementary hide">The default chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span>
-<span class="accuracy-exactly hide"><code></code></span>
+<ul>
+<li><code>value</code> <em class="type">string</em> 'exactly' or 'complementary'</li>
+<li><code>limiters</code> <em class="type">object</em> : a string or an array of custom word boundary characters, e.g. <span class="accuracy-exactly hide"><code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></span><span class="accuracy-complementary hide"><code>{ value : &quot;complementary&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code><br>The default word boundary chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span></li>
+</ul>
 </div>
 
 <div id="shadowStyle">
-If you supply an object with property name <code>style</code>, the style element with the object value will be created and added to every shadowRoot.<br>
-</div>
-
-<div id="blockElementsBoundary">
-This option only make sense when highlighting phrases or RegExp separate groups.<br>
-It prevents matches from crossing the boundary of block elements.<br>
-It makes <code>acrossElements</code> option act like 'across inline elements'.
+If you provided an object with property <code>style</code>, the style element with the object value will be created and added to every shadowRoot.
+<p>See <a href="shadow-dom.html">Highlighting in shadow DOM</a> for more details.
 </div>
 
 <div id="blockElements">
-If you supply an array of <code>tagNames</code>:
+<code>blockElementsBoundary</code> <em class="type">object</em> <code>undefined</code>
+<ul>
+<li><code>tagNames</code> <em class="type">string[]</em> <code>undefined</code> An array of custom HTML tag names
+</li>
+<li><code>extend</code> <em class="type">boolean</em> <code>undefined</code> If an array of <code>tagNames</code> is provided:
 <ul>
   <li>when <code>extend: true</code> the custom elements extend the default boundary elements</li>
   <li>otherwise only the custom elements will have boundaries</li>
 </ul>
-The default <code>char</code> property value is '\x01'.
+</li>
+<li><code>char</code> <em class="type">string</em> <code>\x01</code> A custom boundary character
+</li>
+</ul>
 </div>
 
 <div id="combinePatterns">
@@ -909,14 +965,14 @@ This option will improve performance when marking a (especially)large array or s
 
 <div id="stringArrayCustomCode">
 <div class="stringArrayFilter">
-<code>filter : (textNode, term, marksSoFar, termMarksSoFar, filterInfo) => {}</code>
+<code>filter : (textNode, term, matchesSoFar, termMatchesSoFar, filterInfo) => {}</code>
 <p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
 Parameters:
 <ol>
 <li>The text node which includes<span class="acrossElements"> or is part of</span> the match</li>
 <li>The current term</li>
-<li>A number of all mark elements so far</li>
-<li>A number of mark elements (with <code>combinePatterns</code> option - a number of matches) for the current term so far</li>
+<li>A number of all matches so far</li>
+<li>A number of wrapped matches of the current term so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
     <li>the <code>match</code> - result of RegExp exec() method</li>
@@ -939,7 +995,7 @@ Parameters:
   <ol>
 	<li>the <code>match</code> - result of RegExp exec() method</li>
 	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
-	<li>the <code>count</code> - number of matches so far</li>
+	<li>the <code>count</code> - number of wrapped matches so far</li>
   </ol>
 </li>
 </ol>
@@ -959,7 +1015,7 @@ Parameters:
 
 <div id="regexpCustomCode">
 <div class="regexpFilter">
-<code>filter : (textNode, term, marksSoFar, filterInfo) => {}</code>
+<code>filter : (textNode, term, matchesSoFar, filterInfo) => {}</code>
 <p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
 Parameters:
 <ol>
@@ -971,7 +1027,7 @@ Parameters:
    <li>with <code>separateGroups</code> option - the current group matching string</li>
 </ol>
 </li>
-<li>A counter indicating the number of all marks so far</li>
+<li>The number of all matches so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
     <li>the <code>match</code> - result of RegExp exec() method</li>
@@ -997,7 +1053,7 @@ Parameters:
 	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
 	<li class="separateGroups">the <code>groupIndex</code> - index of the current capturing group</li>
 	<li class="acrossElements separateGroups">the <code>groupStart</code> - boolean property indicating the start of group</li>
-	<li>the <code>count</code> - number of matches so far</li>
+	<li>the <code>count</code> - number of wrapped matches so far</li>
   </ol>
 </li>
 </ol>
