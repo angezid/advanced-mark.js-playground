@@ -641,6 +641,7 @@ function setAcrossElementsDependable(elem) {
 	setBlockElementsBoundary(elem);
 }
 
+// also DOM 'onchange' event
 function setBlockElementsBoundary(elem) {
 	$(`${optionPad} .blockElementsBoundary`).addClass('hide');
 	$(`${optionPad} .blockElements`).addClass('hide');
@@ -650,10 +651,6 @@ function setBlockElementsBoundary(elem) {
 	if (tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
 		setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
 	}
-}
-
-function markArray() {
-	return currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch');
 }
 
 // DOM 'onchange' event
@@ -1085,6 +1082,10 @@ const importer = {
 		return html;
 	}
 };
+
+function markArray() {
+	return currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch');
+}
 
 function setVariables() {
 	matchCount = 0;
@@ -1926,16 +1927,6 @@ const settings = {
 	}
 };
 
-function writeTermStats(obj, title) {
-	let array = [];
-	for (let key in obj) {
-		if (obj[key] !== 0) {
-			array.push(`${key} = ${obj[key]}`);
-		}
-	}
-	return array.length ? title + array.join('<b>,</b> ') : '';
-}
-
 function toText(obj, title, msg) {
 	let text = '';
 	for (let key in obj) {
@@ -2019,6 +2010,7 @@ function testContainerScrolled() {
 	isScrolled = true;
 }
 
+// DOM 'onclick' event
 function previousMatch() {
 	if (canBeNested) {
 		if (--currentIndex <= 0) currentIndex = 0;
@@ -2032,6 +2024,7 @@ function previousMatch() {
 	}
 }
 
+// DOM 'onclick' event
 function nextMatch() {
 	if (canBeNested) {
 		if (++currentIndex > matchCount - 1) currentIndex = matchCount - 1;

@@ -1,57 +1,30 @@
 {
   "copyFiles": [
     {
-      "from": "src/js/main.js",
+      "from": ["src/js/*"],
       "to": {
         "development": {
           "skip": true
         },
-        "default": "build/js/main.js"
+        "default": "build/js/"
       }
     },
     {
-      "from": "src/js/highlighter.js",
+      "from": ["src/css/*"],
       "to": {
         "development": {
           "skip": true
         },
-        "default": "build/js/highlighter.js"
+        "default": "build/css/"
       }
     },
     {
-      "from": "src/js/tests.js",
+      "from": ["src/html/*"],
       "to": {
         "development": {
           "skip": true
         },
-        "default": "build/js/tests.js"
-      }
-    },
-    {
-      "from": "src/js/data.js",
-      "to": {
-        "development": {
-          "skip": true
-        },
-        "default": "build/js/data.js"
-      }
-    },
-    {
-      "from": "src/css/main.css",
-      "to": {
-        "development": {
-          "skip": true
-        },
-        "default": "build/css/main.css"
-      }
-    },
-    {
-      "from": "src/css/shadow-dom.css",
-      "to": {
-        "development": {
-          "skip": true
-        },
-        "default": "build/css/shadow-dom.css"
+        "default": "build/html/"
       }
     },
     {
@@ -60,7 +33,7 @@
         "development": {
           "skip": true
         },
-        "default": "build/playground.html"
+        "default": "build/index.html"
       }
     },
     {

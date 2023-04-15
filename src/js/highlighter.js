@@ -240,7 +240,7 @@ const highlighter = {
 		obj.element = $(`${optionPad} .element input`).val().trim();
 		obj.className = $(`${optionPad} .className input`).val().trim();
 
-		obj.exclude = this.tryToEvaluate('exclude', 3) || [];
+		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
 		obj.debug = tab.isChecked('debug');
 
 		obj.iframes = tab.isChecked('iframes');
@@ -279,40 +279,42 @@ const highlighter = {
 			obj.acrossElements = tab.isChecked('acrossElements');
 		}
 
-		const shadowDOM = tab.isChecked('shadowDOM');
-		if (shadowDOM) {
-			const styleObj = this.tryToEvaluate('shadowStyle', 16);
-			if (styleObj) {
-				obj.shadowDOM = styleObj;
-
-			} else {
-				obj.shadowDOM = true;
-			}
-		}
-
-		if (obj.acrossElements && currentType !== 'ranges') {
-			const boundary = tab.isChecked('blockElementsBoundary');
-			if (boundary) {
-				const blockElements = this.tryToEvaluate('blockElements', 5);
-				if (blockElements) {
-					obj.blockElementsBoundary = blockElements;
+		if ( !currentLibrary.old) {
+			const shadowDOM = tab.isChecked('shadowDOM');
+			if (shadowDOM) {
+				const styleObj = this.tryToEvaluate('shadowStyle', 16);
+				if (styleObj) {
+					obj.shadowDOM = styleObj;
 
 				} else {
-					obj.blockElementsBoundary = true;
+					obj.shadowDOM = true;
 				}
 			}
-		}
 
-		if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
-			obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
-		}
+			if (obj.acrossElements && currentType !== 'ranges') {
+				const boundary = tab.isChecked('blockElementsBoundary');
+				if (boundary) {
+					const blockElements = this.tryToEvaluate('blockElements', 5);
+					if (blockElements) {
+						obj.blockElementsBoundary = blockElements;
 
-		if (markArray()) {
-			obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
+					} else {
+						obj.blockElementsBoundary = true;
+					}
+				}
+			}
 
-			const combine = tab.isChecked('combinePatterns');
-			if (combine) {
-				obj.combinePatterns = util.getNumericalValue('combineNumber', 10);
+			if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
+				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
+			}
+
+			if (markArray()) {
+				obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
+
+				const combine = tab.isChecked('combinePatterns');
+				if (combine) {
+					obj.combinePatterns = util.getNumericalValue('combineNumber', 10);
+				}
 			}
 		}
 
@@ -446,7 +448,7 @@ const highlighter = {
 			len = array.length,
 			span = '<span class="header">',
 			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
-			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
+			stats = termStats ? highlighter.writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
 		log(`Mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}\n${'--'.repeat(10)}`);
 
@@ -475,6 +477,16 @@ const highlighter = {
 
 		// restore contenteditable attribute
 		tab.setEditableAttribute(true);
+	},
+
+	writeTermStats : function(obj, title) {
+		let array = [];
+		for (let key in obj) {
+			if (obj[key] !== 0) {
+				array.push(`${key} = ${obj[key]}`);
+			}
+		}
+		return array.length ? title + array.join('<b>,</b> ') : '';
 	}
 };
 
