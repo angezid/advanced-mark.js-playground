@@ -1,8 +1,8 @@
 
 'use strict';
 
-let version = '1.0.0',
-	currentTabId = '',
+const version = '2.0.0';
+let currentTabId = '',
 	time = 0,
 	matchCount = 0,
 	currentIndex = 0,
@@ -22,7 +22,7 @@ let version = '1.0.0',
 	previousButton = $(`.previous`),
 	nextButton = $(`.next`);
 
-const currentLibrary = { old : false, jquery : false };
+const currentLibrary = { jquery : false };
 
 const types = {
 	string_ : {
@@ -125,13 +125,13 @@ const code = {
 		const elem = document.querySelector(tab.getSearchEditorInfo().selector),
 			data = elem.getAttribute('data-event');
 
-		if( !data || !data.split(' ').includes(event)) {
+		if ( !data || !data.split(' ').includes(event)) {
 			elem.addEventListener(event, fn);
 			elem.setAttribute('data-event', (data === null ? '' : data + ' ') + event);
 		}
 	},
 
-	setSelectors : function(selectors, all = false) { // ???
+	setSelectors : function(selectors, all = false) {
 		const info = tab.getSelectorsEditorInfo();
 		if (info.editor) {
 			info.editor.updateCode(selectors);
@@ -186,7 +186,7 @@ const tab = {
 
 		settings.load();
 
-		currentTabId = `${settings.library}_section_${currentType}`;
+		currentTabId = `advanced_section_${currentType}`;
 
 		$('.file-form .file-name').val(getFileName());
 		$('header .save').toggleClass('dirty', types[currentType].isDirty);
@@ -201,19 +201,9 @@ const tab = {
 
 	setVisibility : function() {
 		$(`${currentSection} .dependable`).addClass('hide');
+		$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
 
-		if (currentLibrary.old) {
-			$(`${currentSection} .advanced`).addClass('hide');
-			$(`${currentSection} .standard`).removeClass('hide');
-
-		} else {
-			$(`${currentSection} .standard`).addClass('hide');
-			$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
-		}
-
-		$('.switch-library input').prop('checked', !currentLibrary.old);
-		$('.switch-library label').text((currentLibrary.old ? 'standard' : 'advanced') + ' library' + (currentLibrary.jquery ? ' (jquery)' : ''));
-		$('button.open-setting-form').css('color', currentLibrary.old ? '#000' : '#f80');
+		$('button.open-setting-form').css('color', '#f80');
 
 		setIframesTimeout($(`${optionPad} .iframes input`)[0]);
 
@@ -221,9 +211,7 @@ const tab = {
 		$(currentSection).removeClass('hide');
 		$('.internal-code').addClass('hide');
 
-		if ( !currentLibrary.old) {
-			setShadowDOMStyle($(`${optionPad} .shadowDOM>input`)[0]);
-		}
+		setShadowDOMStyle($(`${optionPad} .shadowDOM>input`)[0]);
 
 		toggleTestButton($(`.setting-form .show-test-btn>input`)[0]);
 
@@ -231,26 +219,20 @@ const tab = {
 			case 'string_' :
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
 
-				if ( !currentLibrary.old) {
-					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
-					setCacheAndCombine($(`${optionPad} .separateWordSearch input`)[0]);
-				}
+				setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
+				setCacheAndCombine($(`${optionPad} .separateWordSearch input`)[0]);
 				break;
 
 			case 'array' :
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
 
-				if ( !currentLibrary.old) {
-					setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
-					setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
-				}
+				setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
+				setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
 				break;
 
 			case 'regexp' :
-				if ( !currentLibrary.old) {
-					setBlockElementsBoundary($(`${optionPad} .acrossElements input`)[0]);
-					setSeparateGroupsDependable($(`${optionPad} .separateGroups input`)[0]);
-				}
+				setBlockElementsBoundary($(`${optionPad} .acrossElements input`)[0]);
+				setSeparateGroupsDependable($(`${optionPad} .separateGroups input`)[0]);
 				break;
 
 			default : break;
@@ -262,7 +244,7 @@ const tab = {
 
 		for (const key in obj) {
 			if (key !== 'name') {
-				let title = key.replace(/^([a-z])/, (m, gr1) => gr1.toUpperCase()).replace(/([a-z])([A-Z])/g, (m, gr1, gr2) => gr1 + ' ' + gr2);
+				let title = key.replace(/^[a-z]/, m => m.toUpperCase()).replace(/[a-z](?=[A-Z])/g, '$& ');
 				title = title.replace(/( [A-Z])([a-z]+)/g, (m, gr1, gr2) => gr1.toLowerCase() + gr2);
 				options += `<option value="${key}">${title}</option>`;
 			}
@@ -334,7 +316,7 @@ const tab = {
 			const div = this.destroyTestEditor();
 			if ( !div) return;
 
-			if(removeMarks) {
+			if (removeMarks) {
 				html = util.removeMarks(html);
 			}
 
@@ -469,7 +451,7 @@ const tab = {
 	updateTestEditor : function(code, event) {
 		if (event.type === 'paste' || event.type === 'drop') {
 			if (types[currentType].testEditorMode === 'html') {
-				this.setHtmlMode(importer.sanitizeHtml(code));
+				this.setHtmlMode(importer.sanitizeHtml(code), true);
 			}
 		}
 		this.setDirty(true);
@@ -649,9 +631,7 @@ const tab = {
 function setSeparateGroupsDependable(elem) {
 	tab.switchElements(elem, '.ignoreGroups', true);
 
-	if ( !currentLibrary.old) {
-		tab.switchElements(elem, '.wrapAllRanges');
-	}
+	tab.switchElements(elem, '.wrapAllRanges');
 }
 
 // also DOM 'onchange' event
@@ -661,21 +641,16 @@ function setAcrossElementsDependable(elem) {
 	setBlockElementsBoundary(elem);
 }
 
+// also DOM 'onchange' event
 function setBlockElementsBoundary(elem) {
 	$(`${optionPad} .blockElementsBoundary`).addClass('hide');
 	$(`${optionPad} .blockElements`).addClass('hide');
 
-	if ( !currentLibrary.old) {
-		tab.switchElements(elem, '.blockElementsBoundary');
+	tab.switchElements(elem, '.blockElementsBoundary');
 
-		if (tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
-			setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
-		}
+	if (tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
+		setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
 	}
-}
-
-function markArray() {
-	return currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch');
 }
 
 // DOM 'onchange' event
@@ -688,17 +663,11 @@ function setCacheAndCombine(elem) {
 	$(`${optionPad} .combineNumber`).addClass('hide');
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
 
-	if (currentLibrary.old) {
-		$(`${optionPad} .combinePatterns`).addClass('hide');
-		$(`${optionPad} .cacheTextNodes`).addClass('hide');
+	tab.switchElements(elem, '.combinePatterns');
+	tab.switchElements(elem, '.cacheTextNodes');
 
-	} else {
-		tab.switchElements(elem, '.combinePatterns');
-		tab.switchElements(elem, '.cacheTextNodes');
-
-		if ( !$(`${optionPad} .combinePatterns`).hasClass('hide')) {
-			setCombineNumber($('#string_-combinePatterns')[0]);
-		}
+	if ( !$(`${optionPad} .combinePatterns`).hasClass('hide')) {
+		setCombineNumber($('#string_-combinePatterns')[0]);
 	}
 }
 
@@ -717,14 +686,18 @@ function setAccuracy(elem) {
 	const div = $(`${optionPad} .accuracyObject`).addClass('hide'),
 		exactly = $(`${optionPad} .accuracyObject .accuracy-exactly`).addClass('hide'),
 		complementary = $(`${optionPad} .accuracyObject .accuracy-complementary`).addClass('hide');
+	
+	$('article.options-info .accuracy-complementary, article.options-info .accuracy-exactly').addClass('hide');
 
 	if (elem.value === 'exactly') {
 		div.removeClass('hide');
 		exactly.removeClass('hide');
+		$('article.options-info .accuracy-exactly').removeClass('hide');
 
 	} else if (elem.value === 'complementary') {
 		div.removeClass('hide');
 		complementary.removeClass('hide');
+		$('article.options-info .accuracy-complementary').removeClass('hide');
 	}
 }
 
@@ -932,19 +905,10 @@ const importer = {
 			across = tab.isChecked('acrossElements'),
 			textMode = obj.testEditorMode === 'text';
 
-		let editor,
-			saved = json.library;
-
-		if ( !isNullOrUndefined(saved)) {
-			$('#library').prop('checked', saved === 'advanced');
-			settings.changed($('#library')[0]);
-		}
-
+		let editor, saved;
 		this.resetOptions();
 
 		obj.options.every(option => {
-			if (currentLibrary.old && newOptions.includes(option)) return true;
-
 			const selector = `${optionPad} .${option}`,
 				opt = defaultOptions[option];
 
@@ -1119,11 +1083,15 @@ const importer = {
 	}
 };
 
+function markArray() {
+	return currentType === 'array' || currentType === 'string_' && tab.isChecked('separateWordSearch');
+}
+
 function setVariables() {
 	matchCount = 0;
 	noMatchTerms = [];
-	canBeNested = !currentLibrary.old && (currentType === 'regexp' || currentType === 'ranges') && tab.isChecked('wrapAllRanges');
-	flagEveryElement = currentLibrary.old || currentType !== 'ranges' && !tab.isChecked('acrossElements');
+	canBeNested = (currentType === 'regexp' || currentType === 'ranges') && tab.isChecked('wrapAllRanges');
+	flagEveryElement = currentType !== 'ranges' && !tab.isChecked('acrossElements');
 
 	const className = $(`${optionPad} .className input`).val().trim();
 	markElement = $(`${optionPad} .element input`).val().trim().toLowerCase() || 'mark';
@@ -1286,7 +1254,7 @@ const codeBuilder = {
 		if (editor && (text = editor.toString()) && /<<markjsCode>>/.test(text)) {
 			if (kind === 'internal') {
 				// necessary for the next/previous buttons functionality
-				const fn = `highlighter.flagStartElement(element, ${currentLibrary.old ? null : 'info'})`,
+				const fn = `highlighter.flagStartElement(element, info)`,
 					eachParam = this.getEachParameters(),
 					doneParam = this.getDoneParameters();
 
@@ -1316,8 +1284,6 @@ const codeBuilder = {
 		let value, text, code = '';
 
 		obj.options.every(option => {
-			if (currentLibrary.old && newOptions.includes(option)) return true;
-
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
 				opt = defaultOptions[option];
@@ -1462,33 +1428,24 @@ const codeBuilder = {
 
 	getFilterParameters : function() {
 		if (currentType === 'string_' || currentType === 'array') {
-			let name = 'termMarksSoFar';
-			if ( !currentLibrary.old && tab.isChecked('combinePatterns')) {
-				name = 'termMatchesSoFar';
-			}
-			return `(textNode, term, marksSoFar, ${name}${currentLibrary.old ? '' : ', info'})`;
+			return `(textNode, term, matchesSoFar, termMatchesSoFar, info)`;
 
 		} else if (currentType === 'regexp') {
-			return `(textNode, matchString, count${currentLibrary.old ? '' : ', info'})`;
+			return `(textNode, matchString, matchesSoFar, info)`;
 		}
 		return `(textNode, range, matchString, index)`;
 	},
 
 	getEachParameters : function() {
 		if (currentType === 'ranges') {
-			return `(element, range${currentLibrary.old ? '' : ', info'})`;
+			return `(element, range, info)`;
 		}
-		return `(element${currentLibrary.old ? '' : ', info'})`;
+		return `(element, info)`;
 	},
 
 	getDoneParameters : function() {
-		if (currentLibrary.old) {
-			return `(totalMarks)`;
-
-		} else {
-			const stats = currentType === 'string_' || currentType === 'array';
-			return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
-		}
+		const stats = currentType === 'string_' || currentType === 'array';
+		return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
 	},
 
 	initCodeSnippet : function() {
@@ -1509,7 +1466,7 @@ const Json = {
 			textMode = true;
 		}
 
-		let json = this.serialiseOptions(`{"version":"${version}","library":"${settings.library}","section":{`),
+		let json = this.serialiseOptions(`{"version":"${version}","library":"advanced","section":{`),
 			text;
 
 		json += this.serialiseCustomCode();
@@ -1530,7 +1487,7 @@ const Json = {
 			const mode = types[currentType].testEditorMode;
 
 			if (mode === 'html') {
-				html = util.removeMarks(html);
+				text = util.removeMarks(text);
 			}
 			json += `,"testString":{"mode":"${mode}","content":${JSON.stringify(text)}}`;
 		}
@@ -1558,8 +1515,6 @@ const Json = {
 		json += `"type":"${currentType}"`;
 
 		obj.options.every(option => {
-			if (currentLibrary.old && newOptions.includes(option)) return true;
-
 			const selector = `${optionPad} .${option}`,
 				input = selector + ' input',
 				opt = defaultOptions[option];
@@ -1908,7 +1863,6 @@ const util = {
 };
 
 const settings = {
-	library : 'advanced',
 	loadDefault : true,
 	showTooltips : false,
 	showWarning : true,
@@ -1923,10 +1877,6 @@ const settings = {
 		if (str) {
 			const json = Json.parseJson(str);
 			if (json) {
-				if (json.library) {
-					this.library = json.library;
-				}
-
 				if ( !isNullOrUndefined(json.loadDefault)) {
 					this.loadDefault = json.loadDefault;
 				}
@@ -1941,22 +1891,15 @@ const settings = {
 				this.setCheckboxes();
 			}
 		}
-		switchLibrary(this.library === 'advanced');
 	},
 
 	setCheckboxes : function() {
-		$('#library').prop('checked', this.library === 'advanced');
 		$('#load-default').prop('checked', this.loadDefault);
 		$('#show-tooltips').prop('checked', this.showTooltips);
 		$('#unsaved').prop('checked', this.showWarning);
 	},
 
 	changed : function(elem) {
-		if (elem.id === 'library') {
-			const checked = $(elem).prop('checked');
-			this.library = checked ? 'advanced' : 'standard';
-			switchLibrary(checked);
-		}
 		this.loadDefault = $('#load-default').prop('checked');
 		this.showTooltips = $('#show-tooltips').prop('checked');
 		this.showWarning = $('#unsaved').prop('checked');
@@ -1984,16 +1927,6 @@ const settings = {
 	}
 };
 
-function writeTermStats(obj, title) {
-	let array = [];
-	for (let key in obj) {
-		if (obj[key] !== 0) {
-			array.push(`${key} = ${obj[key]}`);
-		}
-	}
-	return array.length ? title + array.join('<b>,</b> ') : '';
-}
-
 function toText(obj, title, msg) {
 	let text = '';
 	for (let key in obj) {
@@ -2005,12 +1938,12 @@ function toText(obj, title, msg) {
 function getFileName() {
 	let name = settings.loadValue(currentType + '-fileName');
 
-	return name || `${(currentType === 'string_' ? 'string' : currentType)}-${settings.library}-lib.json`;
+	return name || `${(currentType === 'string_' ? 'string' : currentType)}-advanced-lib.json`;
 }
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-
+	
 	elem.data('powertiptarget', id).powerTip({
 		manual : true,
 		intentPollInterval : 300,
@@ -2028,7 +1961,7 @@ function showHideInfo(id) {
 		info = $('article.options-info #' + id),
 		elemsAE = info.find('.acrossElements').addClass('hide'),
 		elemsSG = info.find('.separateGroups').addClass('hide');
-
+	
 	if (acrossElements) {
 		elemsAE.each(function() {
 			if ($(this).hasClass('separateGroups')) {
@@ -2045,15 +1978,6 @@ function showHideInfo(id) {
 
 			} else $(this).removeClass('hide');
 		});
-	}
-
-	if (currentLibrary.old) {
-		$(`.options-info .advanced`).addClass('hide');
-		$(`.options-info .standard`).removeClass('hide');
-
-	} else {
-		$(`.options-info .standard`).addClass('hide');
-		$(`.options-info .advanced`).removeClass('hide');
 	}
 }
 
@@ -2086,6 +2010,7 @@ function testContainerScrolled() {
 	isScrolled = true;
 }
 
+// DOM 'onclick' event
 function previousMatch() {
 	if (canBeNested) {
 		if (--currentIndex <= 0) currentIndex = 0;
@@ -2099,6 +2024,7 @@ function previousMatch() {
 	}
 }
 
+// DOM 'onclick' event
 function nextMatch() {
 	if (canBeNested) {
 		if (++currentIndex > matchCount - 1) currentIndex = matchCount - 1;
@@ -2225,97 +2151,12 @@ function scrollIntoView(elem) {
 	}
 }
 
-function switchLibrary(checked) {
-	const info = getLibrariesInfo();
-
-	if (info.jquery && info.jquery !== 'none' && info.javascript && info.javascript !== 'none') {
-		if (checked) {
-			currentLibrary.old = false;
-			currentLibrary.jquery = info.jquery === 'advanced';
-
-		} else {
-			currentLibrary.old = true;
-			currentLibrary.jquery = info.jquery === 'standard';
-		}
-	}
-
-	tab.setVisibility();
-	codeBuilder.initCodeSnippet();
-
-	currentTabId = `${settings.library}_section_${currentType}`;
-	tab.setLoadButton();
-	$('.file-form .file-name').val(getFileName());
-}
-
 function detectLibrary() {
-	const info = getLibrariesInfo();
-	let both = info.jquery && info.jquery !== 'none' && info.javascript && info.javascript !== 'none' && info.jquery !== info.javascript;
+	let jq = true;
 
-	if (both) {
-		const lib = settings.loadValue('library');
-		if (lib) {
-			if (lib === 'standard') {
-				currentLibrary.jquery = info.jquery === 'standard';
-				currentLibrary.old = true;
+	try { $().mark('a'); } catch (e) { jq = false; }
 
-			} else if (lib === 'advanced') {
-				currentLibrary.jquery = info.jquery === 'advanced';
-				currentLibrary.old = false;
-			}
-
-		} else {
-			currentLibrary.jquery = info.jquery === 'advanced';
-			currentLibrary.old = false;
-		}
-
-	} else {
-		if (info.javascript && info.javascript !== 'none') {
-			currentLibrary.jquery = false;
-			currentLibrary.old = info.javascript === 'standard';
-
-		} else if (info.jquery && info.jquery !== 'none') {
-			currentLibrary.jquery = true;
-			currentLibrary.old = info.jquery === 'standard';
-		}
-	}
-
-	if ( !both) {
-		$('.switch-library input').attr('disabled', true);
-		$('.switch-library label').css('opacity', .4);
-	}
-}
-
-function getLibrariesInfo() {
-	const info = {};
-	let jq = false, js = false;
-
-	$('head script[src]').each(function(i, elem) {
-		const src = elem.getAttribute('src');
-		if (/\/jquery\.mark\./i.test(src)) jq = true;
-		if (/\/mark\./i.test(src)) js = true;
-	});
-
-	if (jq) {
-		info.jquery = getLibrary(true);
-	}
-	if (js) {
-		info.javascript = getLibrary(false);
-	}
-	return info;
-}
-
-function getLibrary(jquery) {
-	let library = 'advanced';
-	try {
-		getContext('#playground-article h1', jquery).markRegExp(/^\s*\w/g, {
-			'filter' : (n, m, t, info) => {
-				if ( !info) library = 'standard';
-				return false;
-			}
-		});
-	} catch (e) { return 'none'; }
-
-	return library;
+	currentLibrary.jquery = jq;
 }
 
 function getContext(selector, jquery) {

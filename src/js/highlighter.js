@@ -448,7 +448,7 @@ const highlighter = {
 			len = array.length,
 			span = '<span class="header">',
 			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
-			stats = termStats ? writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
+			stats = termStats ? highlighter.writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
 		log(`Mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}\n${'--'.repeat(10)}`);
 
@@ -477,6 +477,16 @@ const highlighter = {
 
 		// restore contenteditable attribute
 		tab.setEditableAttribute(true);
+	},
+
+	writeTermStats : function(obj, title) {
+		let array = [];
+		for (let key in obj) {
+			if (obj[key] !== 0) {
+				array.push(`${key} = ${obj[key]}`);
+			}
+		}
+		return array.length ? title + array.join('<b>,</b> ') : '';
 	}
 };
 

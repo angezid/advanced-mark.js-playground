@@ -29,10 +29,11 @@ const examples = {
 	name : 'examples',
 	
 	accuracyExactly : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
-            "accuracy": "{ value: 'exactly', limiters: ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-'.split('') }",
+            "accuracy": "{ value: 'exactly', limiters : ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
             "queryString": "cafe resume expose lame mate ore pate rose",
             "testString": {
                 "mode": "html",
@@ -55,12 +56,27 @@ const examples = {
         }
     }`,
 
+	exclude : `{
+        "version": "2.0.0",
+        "section": {
+            "type": "array",
+            "exclude": "'.exclude, .exclude *'",
+            "diacritics": false,
+            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
+            }
+        }
+    }`,
+
 	ignorePunctuation : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "diacritics": false,
-            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+='.split('')",
+            "ignorePunctuation": "':;.,-–—‒-_(){}[]!\\\\'\\"+='",
             "queryString": "browsers resign numbers",
             "testString": {
                 "mode": "html",
@@ -70,7 +86,7 @@ const examples = {
     }`,
 
 	shadowDOM : `{
-		"version": "1.0.0",
+		"version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
@@ -86,12 +102,13 @@ const examples = {
 	}`,
 
 	iframes : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
-            "exclude": "['#ifr2']",
+            "exclude": "'#ifr2'",
             "iframes": true,
             "combinePatterns": 10,
             "customCode": "// don't foget to launch sever (see README)\\n// dynamically loads html on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
@@ -104,7 +121,8 @@ const examples = {
     }`,
 
 	markWhileTyping : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "library": "advanced",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -120,7 +138,7 @@ const examples = {
     }`,
 
 	customCodeEditor : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
@@ -137,7 +155,7 @@ const examples = {
     }`,
 
 	markSeparateGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -153,7 +171,7 @@ const examples = {
     }`,
 
 	blockElementsBoundary : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "string_",
@@ -171,7 +189,7 @@ const examples = {
 	}`,
 
 	overlappedMatches : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -187,7 +205,7 @@ const examples = {
     }`,
 
 	overlappedGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",
@@ -203,7 +221,7 @@ const examples = {
     }`,
 
 	randomGroups : `{
-        "version": "1.0.0",
+        "version": "2.0.0",
         "library": "advanced",
         "section": {
             "type": "regexp",

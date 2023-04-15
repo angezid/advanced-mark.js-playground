@@ -15,7 +15,7 @@
 <script src="js3/jquery.js"></script>
 <script src="js3/jquery.powertip.js"></script>
 
-<script src="js3/jquery.mark.js"></script>
+<!-- <script src="js3/jquery.mark.js"></script> -->
 <script src="js3/mark.js"></script>
 <!-- /build -->
 
@@ -84,13 +84,6 @@
 <div class="close"></div>
 
 <div class="row">
-<div class="switch-library">
-<input id="library" type="checkbox" onchange="settings.changed(this);">
-<label for="library" title="Switch Mark library if both standard and advanced libraries are present">Mark library</label>
-</div>
-</div>
-
-<div class="row">
 <div class="load-default">
 <input id="load-default" type="checkbox" onchange="settings.changed(this);">
 <label for="load-default" title="If checks load default tab, unchecked - if there is a saved tab, loads saved one, otherwise load default">Load default</label>
@@ -125,7 +118,7 @@
 
 <main class="playground-main">
 <article id="playground-article">
-<h1 class="title">mark.js playground</h1>
+<h1 class="title">mark.js playground</h1> 
 
 <section class="string_ row">
 <div class="left-column">
@@ -834,11 +827,10 @@
 </article>
 
 <article class="options-info">
-
 <div class="options">
 <div id="element"><span><code>element</code></span><span><em class="type">string</em></span><span> <code>mark</code></span><div>A custom mark element e.g. <code>span</code>. </div></div>
 
-<div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div> A class to be added to mark elements. </div></div>
+<div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A class to be added to mark elements. </div></div>
 
 <div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Defines DOM elements that should be excluded from searching. </div></div>
 
@@ -860,13 +852,13 @@
 <li>Or an bject with two properties:
 <ul>
 <li><code>value</code>: 'exactly' or 'complementary'</li>
-<li><code>limiters</code>: an array of custom word boundary characters, e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot;.split() }</code></li>
+<li><code>limiters</code>: a string or an array of custom word boundary characters, e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></li>
 </ul>
 </li>
 </ul>
 </div></div>
 
-<div id="wildcards"><span><code>wildcards</code></span><span><em class="type">string</em></span><span> <code>disabled</code></span><div>Two characters `?` and `*` used as wildcards unless thay are escaped 
+<div id="wildcards"><span><code>wildcards</code></span><span><em class="type">string</em></span><span> <code>disabled</code></span><div>Two characters `?` and `*` used as wildcards 
 <ul>
 <li><code>disabled</code>: The characters <code>?</code> and <code>*</code> match itself</li>
 <li><code>enabled</code>:
@@ -878,15 +870,11 @@
 <li><code>withSpaces</code>:
 <ul>
 <li>The character <code>?</code> match any character zero or one time.</li>
-<li>The character <code>*</code> match any character zero or more time, but as few times as possible.</li>
-</ul>
-</li>
-</ul>
-</div></div>
+<li>The character <code>*</code> match any character zero or more time, but as few times as possible.</ul></ul></div></div>
 
 <div id="ignoreJoiners"><span><code>ignoreJoiners</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to find matches that contain soft hyphen, zero width space, zero width non-joiner and zero width joiner </div></div>
 
-<div id="ignorePunctuation"><span><code>ignorePunctuation</code></span><span><em class="type">string[]</em></span><span> <code>[]</code></span><div>An array of punctuation characters </div></div>
+<div id="ignorePunctuation"><span><code>ignorePunctuation</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of punctuation characters </div></div>
 
 <div id="synonyms"><span><code>synonyms</code></span><span><em class="type">object</em></span><span> <code>{}</code></span><div>An object with synonyms  
 <p>e.g. <code>{ 'one': '1' }</code> - '1' is synonym for 'one' and vice versa. Value can be an array <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
@@ -938,6 +926,14 @@ otherwise only the custom elements do have boundaries</li>
 <p>See <a href="separate-groups.html">Highlighting separate groups</a> for more details.</div></div>
 </div>
 
+
+<div id="accuracyObject">
+<ul>
+<li><code>value</code> <em class="type">string</em> 'exactly' or 'complementary'</li>
+<li><code>limiters</code> <em class="type">object</em> : a string or an array of custom word boundary characters, e.g. <span class="accuracy-exactly hide"><code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></span><span class="accuracy-complementary hide"><code>{ value : &quot;complementary&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code><br>The default word boundary chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span></li>
+</ul>
+</div>
+
 <div id="shadowStyle">
 If you provided an object with property <code>style</code>, the style element with the object value will be created and added to every shadowRoot.
 <p>See <a href="shadow-dom.html">Highlighting in shadow DOM</a> for more details.
@@ -969,14 +965,14 @@ This option will improve performance when marking a (especially)large array or s
 
 <div id="stringArrayCustomCode">
 <div class="stringArrayFilter">
-<code>filter : (textNode, term, marksSoFar, termMarksSoFar, filterInfo) => {}</code>
+<code>filter : (textNode, term, matchesSoFar, termMatchesSoFar, filterInfo) => {}</code>
 <p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
 Parameters:
 <ol>
 <li>The text node which includes<span class="acrossElements"> or is part of</span> the match</li>
 <li>The current term</li>
-<li>A number of all mark elements so far</li>
-<li>A number of mark elements (with <code>combinePatterns</code> option - a number of matches) for the current term so far</li>
+<li>A number of all matches so far</li>
+<li>A number of wrapped matches of the current term so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
     <li>the <code>match</code> - result of RegExp exec() method</li>
@@ -991,8 +987,7 @@ Parameters:
 <hr>
 <div class="stringArrayEach">
 <code>each : (markElement, eachInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -1000,17 +995,15 @@ Parameters:
   <ol>
 	<li>the <code>match</code> - result of RegExp exec() method</li>
 	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
-	<li>the <code>count</code> - number of matches so far</li>
+	<li>the <code>count</code> - number of wrapped matches so far</li>
   </ol>
 </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="stringArrayDone">
 <code>done : (totalMarks, totalMatches, termStats) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
@@ -1019,11 +1012,10 @@ Parameters:
 </ol>
 </div>
 </div>
-</div>
 
 <div id="regexpCustomCode">
 <div class="regexpFilter">
-<code>filter : (textNode, term, marksSoFar, filterInfo) => {}</code>
+<code>filter : (textNode, term, matchesSoFar, filterInfo) => {}</code>
 <p>A callback to filter or limit matches. It calls for each match (with <code>acrossElements</code> option, if a match is located across several elements, it calls for each text node which is part of the match).</p>
 Parameters:
 <ol>
@@ -1035,7 +1027,7 @@ Parameters:
    <li>with <code>separateGroups</code> option - the current group matching string</li>
 </ol>
 </li>
-<li>A counter indicating the number of all marks so far</li>
+<li>The number of all matches so far</li>
 <li class="advanced">An object containing the match information:
   <ol>
     <li>the <code>match</code> - result of RegExp exec() method</li>
@@ -1051,8 +1043,7 @@ Parameters:
 <hr>
 <div class="regexpEach">
 <code>each : (markElement, eachInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -1062,23 +1053,20 @@ Parameters:
 	<li class="acrossElements">the <code>matchStart</code> - boolean property indicating the start of the match</li>
 	<li class="separateGroups">the <code>groupIndex</code> - index of the current capturing group</li>
 	<li class="acrossElements separateGroups">the <code>groupStart</code> - boolean property indicating the start of group</li>
-	<li>the <code>count</code> - number of matches so far</li>
+	<li>the <code>count</code> - number of wrapped matches so far</li>
   </ol>
 </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="regexpDone">
 <code>done : (totalMarks, totalMatches) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
   <li>The total number of matches</li>
 </ol>
-</div>
 </div>
 </div>
 
@@ -1098,8 +1086,7 @@ Parameters:
 <hr>
 <div class="rangesEach">
 <code>each : (markElement, range, rangeInfo) => {}</code>
-<p>A callback for each marked element.<span class="standard hide"><br>Receives the marked DOM element as a parameter.</span></p>
-<div class="advanced">
+<p>A callback for each marked element.</p>
 Parameters:
 <ol>
   <li>The marked DOM element</li>
@@ -1112,12 +1099,10 @@ Parameters:
   </li>
 </ol>
 </div>
-</div>
 <hr>
 <div class="rangesDone">
 <code>done : (totalMarks, totalRanges) => {}</code>
-<p>A callback function after all marks are done.<span class="standard hide"><br>Receives the total number of marks as a parameter.</span></p>
-<div class="advanced">
+<p>A callback function after all marks are done.</p>
 Parameters:
 <ol>
   <li>The total number of marks</li>
@@ -1125,13 +1110,12 @@ Parameters:
 </ol>
 </div>
 </div>
-</div>
 
 </article>
 
 </main>
 <footer><div class="info">
-<p>advanced-mark.js playground v1.0.3</p>
+<p>advanced-mark.js playground v2</p>
 </div></footer>
 <br><br>
 </body></html>
