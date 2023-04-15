@@ -49,7 +49,6 @@ To play with `iframes` option, you need to launch the server. It also opens `bui
 ```
 npm run server
 ```
-or run `server.bat`.
 
 ### Custom code editor
 When `Custom code editor` is activated, a minimal code with all callbacks is generated.

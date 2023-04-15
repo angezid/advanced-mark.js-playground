@@ -282,10 +282,12 @@ function CodeJar(editor, highlight, opt = {}) {
         const close = `)]}`;
         const quotes = `'"`;
         const ch = event.key;
-        const openIncludes = open.includes(ch);
-        // wraps a selection in brackets or quotes, regardless of characters before/after selection
-        if ((openIncludes || quotes.includes(ch)) && getSelection().toString()) {
-            if (openIncludes)
+        const openBracket = open.includes(ch);
+        if (!openBracket && !quotes.includes(ch))
+            return;
+        if (getSelection().toString()) {
+            // wraps a selection in brackets or quotes, regardless of characters before/after selection
+            if (openBracket)
                 enclose(event, open, close);
             else
                 enclose(event, quotes, quotes);
@@ -294,21 +296,16 @@ function CodeJar(editor, highlight, opt = {}) {
             const charAfter = afterCursor().charAt(0);
             const codeBefore = beforeCursor();
             const array = ['', ' ', '\t', '\n'];
-            if (openIncludes) {
+            if (openBracket) {
+                // adds close bracket if there is any close bracket or white-space character after the open bracket or at the end
                 if (!isEscape(codeBefore) && (close.includes(charAfter) || array.includes(charAfter))) {
                     enclose(event, open, close);
                 }
             }
             // regex checks whether the last character is non-white-space
-            // prevents adding second quote if there is non-white-space character before cursor
-            else if (!/\S$/.test(codeBefore)) {
-                // NEEDS investigation
-                // adds closing quote if the array contains 'charAfter'
-                //else if (quotes.includes(ch) && array.includes(charAfter)) {
-                // adds closing quote if the same quote is after the cursor or the array contains 'charAfter'
-                if (quotes.includes(ch) && (ch === charAfter || array.includes(charAfter))) {
-                    enclose(event, quotes, quotes);
-                }
+            // a close quote is added only if there is no non-white-space character before/after the typed quote
+            else if (!/\S$/.test(codeBefore) && array.includes(charAfter)) {
+                enclose(event, quotes, quotes);
             }
         }
     }
