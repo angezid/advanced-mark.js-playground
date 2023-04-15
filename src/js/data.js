@@ -41,6 +41,20 @@ const examples = {
             }
         }
     }`,
+    
+	exclude : `{
+        "version": "1.0.0",
+        "section": {
+            "type": "array",
+            "exclude": "'.exclude, .exclude *'",
+            "diacritics": false,
+            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
+            }
+        }
+    }`,
 
 	exclude : `{
         "version": "2.0.0",
