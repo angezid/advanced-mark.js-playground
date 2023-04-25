@@ -200,6 +200,8 @@ const tab = {
 	},
 
 	setVisibility : function() {
+		showInstructions(false);
+		
 		$(`${currentSection} .dependable`).addClass('hide');
 		$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
 
@@ -744,6 +746,18 @@ function loadDefaultHtml() {
 // DOM 'onchange' event
 function toggleTestButton(elem) {
 	elem.parentNode.querySelector('button').classList.toggle('hide', !$(elem).prop('checked'));
+}
+
+// also DOM 'onclick' event
+function showInstructions(instr) {
+	const elem = $('#playground-instructions');
+	instr = instr && elem.css('display') === 'block' ? !instr : instr;
+	
+	const article = instr ? 'none' : 'block',
+		instructions = instr ? 'block' : 'none';
+	
+	$('article#playground-article').css('display', article);
+	elem.css('display', instructions);
 }
 
 // DOM 'onclick' event

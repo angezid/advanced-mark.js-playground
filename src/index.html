@@ -48,6 +48,7 @@
 <button class="open-file-form" title="Open file form" type="button">File</button>
 <button class="open-json-form" title="Open JSON form" type="button">JSON</button>
 <button class="open-setting-form" title="Open setting form" type="button">&#x2600;</button>
+<button class="show-instructions" type="button" onclick="showInstructions(true);"><b>?</b></button>
 </div>
 </header>
 
@@ -1110,12 +1111,45 @@ Parameters:
 </ol>
 </div>
 </div>
-
 </article>
+
+<article class="instructions">
+<div id="playground-instructions">
+<h1 id="advance-mark.js-playground">advance-mark.js-playground</h1>
+
+<p>There are two test content modes - Text and Html. If you want to add HTML content, you need to switch to the Html mode.</p>
+<p>When you paste a HTML content into the Html editor or load/import, the content runs through the HTML sanitizer, which removes head, script, style, link, and meta elements and comments. It also removes attributes containing <code>javascript:</code> or having name start with <code>on</code>. The values of <code>href, src, srcset</code> attributes are replaced by <code>#</code> (except iframe's <code>src</code> attribute).</p>
+<p>The sanitized content is added to a Html container by `innerHTML`.</p>
+<p>Note that the Html containers is Shadow DOMs and require special access (cannot be accessed by <code>document.querySelector</code>).</p>
+</br>
+<p>If you enable a <b>Custom code editor</b>, the program evaluates the whole internal code (see 'Internal code' which appears below the 'Results').</p>
+<p>Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.</p>
+<p>Tooltips can be called by pressing <code>Ctrl/Cmd</code> key and cursor over an item.</p>
+<p>The <code>Ctrl/Cmd</code> key also can be used to prevent highlighting when switching mode in Html/Text editor.</p>
+<p>In Html/Text editors the undo won't work (only while typing).</p>
+<p>The performance is around two times slower than on the real browser page.</p>
+
+<h3 id="custom-code">Custom code</h3>
+<p>When the <b>Custom code editor</b> is activated, a minimal code with all callbacks is generated. For normal playground workflow, a two internal functions are necessary:</p>
+<ul>
+<li><code>highlighter.flagStartElement()</code> in the <code>each</code> callback for next/previous buttons functionality</li>
+<li><code>highlighter.finish()</code> in the <code>done</code> callback for highlighting matches and logging results</li>
+</ul>
+They're automatically added to the internal code if their parameters and functions parameters are the same.
+<p>There are several function which can be used in custom code editor:</p>
+<ul>
+<li><code>code.setHtml(text)</code> - dynamically sets HTML string in the HTML editor. See <code>Iframes</code> example.</li>
+<li><code>code.setText(text)</code> - dynamically sets text string in the Text editor</li>
+<li><code>code.setListener(even, function)</code> - sets action on event in the search editor. See <code>Mark while typing</code> example.</li>
+</ul>
+
+<p><b>Warning:</b> 100% security is still under the question.</p>
+<p>Note: be reasonable, do not export big HTML test content. For security reasons, nobody will dare import your export (only those who trust you).   Locate and leave only problematic area(s) which can be easily visually examine.</p>
+</div></article>
 
 </main>
 <footer><div class="info">
-<p>advanced-mark.js playground v2</p>
+<span>advanced-mark.js playground v2</span>
 </div></footer>
 <br><br>
 </body></html>
