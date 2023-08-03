@@ -135,7 +135,7 @@ const highlighter = {
 
 			'debug' : settings.debug,
 			'done' : hl.finish,
-			'noMatch' : (o) => { noMatchTerms.push(o); }
+			'noMatch' : (o) => { noMatchTerms.push(JSON.stringify(o)); }
 		};
 
 		this.markContext(ranges, options, settings, 'markRanges');
@@ -452,7 +452,8 @@ const highlighter = {
 			array = util.distinct(noMatchTerms.flat()),    // with an 'iframes' option mark.js can call 'done' callback multiple times
 			len = array.length,
 			span = '<span class="header">',
-			noMatch = len ? `\n\n${span}${currentType === 'regexp' ? 'No match' : `Not found term${len > 1 ? 's' : ''}`} : </span>${array.join('<b>,</b> ')}` : '',
+			text = currentType === 'regexp' ? 'No match' : (currentType === 'ranges' ? 'Not valid range' : 'Not found term') + (len > 1 ? 's' : '');
+			noMatch = len ? `\n\n${span}${text} : </span>${array.join('<b>,</b> ')}` : '',
 			stats = termStats ? highlighter.writeTermStats(termStats, `\n\n${span}Terms stats : </span>`) : '';
 
 		log(`Mark time = ${totalTime} ms\n${matches}totalMarks = ${totalMarks}${stats}${noMatch}\n${'--'.repeat(10)}`);

@@ -187,6 +187,22 @@ const examples = {
             }
         }
 	}`,
+	
+	markLineRanges : `{
+        "version": "2.0.0",
+        "library": "advanced",
+        "section": {
+            "type": "ranges",
+            "wrapAllRanges": true,
+            "markLines": true,
+            "debug": true,
+            "queryRanges": "[{ start: 2, length: 3 }, { start: 3, length: 1 }, { start: 6, length: 2 }, { start: 7, length: 3 }]",
+            "testString": {
+                "mode": "html",
+                "content": "<div class=\\"mark-lines-pre\\"><pre>one<br>two\\nthree\\n\\nfive\\nsix<br>seven<br>\\nnine\\nten\\n</pre></div>"
+            }
+        }
+    }`,
 
 	overlappedMatches : `{
         "version": "2.0.0",
