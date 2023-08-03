@@ -121,6 +121,7 @@ const highlighter = {
 			'className' : settings.className,
 			'wrapAllRanges' : settings.wrapAllRanges,
 			'shadowDOM' : settings.shadowDOM,
+			'markLines' : settings.markLines,
 			'exclude' : settings.exclude,
 			'iframes' : settings.iframes,
 			'iframesTimeout' : settings.iframesTimeout,
@@ -306,6 +307,10 @@ const highlighter = {
 
 			if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
 				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
+			}
+			
+			if (currentType === 'ranges') {
+				obj.markLines = tab.isChecked('markLines');
 			}
 
 			if (markArray()) {
