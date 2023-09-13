@@ -195,7 +195,6 @@ const examples = {
             "type": "ranges",
             "wrapAllRanges": true,
             "markLines": true,
-            "debug": true,
             "queryRanges": "[{ start: 2, length: 3 }, { start: 3, length: 1 }, { start: 6, length: 2 }, { start: 7, length: 3 }]",
             "testString": {
                 "mode": "html",
