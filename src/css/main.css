@@ -193,7 +193,7 @@ button.inactive { color: #888; border-color: #ccc; }
 	line-height: 20px;
 	margin: 0;
 	padding: 5px 10px;
-	tab-size: 4;
+	tab-size: 2;
 }
 
 .right-column .mixed-options .element,
