@@ -87,21 +87,21 @@
 <div class="row">
 <div class="load-default">
 <input id="load-default" type="checkbox" onchange="settings.changed(this);">
-<label for="load-default" title="If checks load default tab, unchecked - if there is a saved tab, loads saved one, otherwise load default">Load default</label>
+<label for="load-default" title="When disabled - if there is a saved tab, loads the saved one, otherwise load default tab">Load default</label>
 </div>
 </div>
 
 <div class="row">
 <div class="show-tooltips">
 <input id="show-tooltips" type="checkbox" onchange="settings.changed(this);">
-<label for="show-tooltips" title="Currently, the tooltips have rudimentary implementation">Show tooltips</label>
+<label for="show-tooltips" title="When disabled, tooltips can be called by pressing Ctrl/Cmd key">Show tooltips</label>
 </div>
 </div>
 
 <div class="row">
 <div class="unsaved">
 <input id="unsaved" type="checkbox" onchange="settings.changed(this);">
-<label for="unsaved" title="Show a confirmation message before leaving this page if it has unsaved data">Alert on unsaved data</label>
+<label for="unsaved" title="Show a confirmation message before leaving a page if it has an unsaved data">Alert on unsaved data</label>
 </div>
 </div>
 
@@ -837,7 +837,7 @@
 
 <div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A class to be added to mark elements. </div></div>
 
-<div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Defines DOM elements that should be excluded from searching. </div></div>
+<div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Specifies DOM elements that should be excluded from searching. </div></div>
 
 <div id="separateWordSearch"><span><code>separateWordSearch</code></span><span><em class="type">boolean</em></span><span> <code>true</code></span><div>Whether to break term into separate words and search for each individual word </div></div>
 
@@ -847,23 +847,25 @@
 
 <div id="accuracy"><span><code>accuracy</code></span><span><em class="type">string <span class="or">or</span> object</em></span><span> <code>'partially'</code></span><div>  
 <ul>
-<li>Either one of the following string value:
+<li>Either one of the following <b>string</b> value:
 <ul>
 <li><code>'partially'</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
 <li><code>'exactly'</code> This option is actually forced to use an accuracy object, because the default word boundaries are white-space characters and start/end of a text node (with <code>acrossElements</code> option - start/end of a context).</li>
-<li><code>'complementary'</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'. The default word boundaries are: whitespaces and <code>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_{|}~¡¿</code> characters.</li>
+<li><code>'complementary'</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'.<br>
+The default word boundaries are: white spaces and <code>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_{|}~¡¿</code> characters.</li>
 </ul>
 </li>
-<li>Or an bject with two properties:
+<li>Or an <b>object</b> with two properties:
 <ul>
 <li><code>value</code>: 'exactly' or 'complementary'</li>
-<li><code>limiters</code>: a string or an array of custom word boundary characters, e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></li>
+<li><code>limiters</code>: a string or an array of custom word boundary characters,<br>
+e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'&quot;&quot; }</code></li>
 </ul>
 </li>
 </ul>
 </div></div>
 
-<div id="wildcards"><span><code>wildcards</code></span><span><em class="type">string</em></span><span> <code>disabled</code></span><div>Two characters `?` and `*` used as wildcards 
+<div id="wildcards"><span><code>wildcards</code></span><span><em class="type">string</em></span><span> <code>disabled</code></span><div>Two characters <code>?</code> and <code>*</code> used as wildcards unless they are escaped 
 <ul>
 <li><code>disabled</code>: The characters <code>?</code> and <code>*</code> match itself</li>
 <li><code>enabled</code>:
@@ -882,7 +884,8 @@
 <div id="ignorePunctuation"><span><code>ignorePunctuation</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of punctuation characters </div></div>
 
 <div id="synonyms"><span><code>synonyms</code></span><span><em class="type">object</em></span><span> <code>{}</code></span><div>An object with synonyms  
-<p>e.g. <code>{ 'one': '1' }</code> - '1' is synonym for 'one' and vice versa. Value can be an array <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
+<p>e.g. <code>{ 'one': '1' }</code> - '1' is synonym for 'one' and vice versa.<br>
+The value can be an array, e.g. <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
 </div></div>
 
 <div id="acrossElements"><span><code>acrossElements</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search for matches across elements </div></div>
@@ -918,14 +921,17 @@ otherwise only the custom elements do have boundaries</li>
 <div id="noMatch"><span><code>noMatch</code></span><span><em class="type">function</em></span><span> </span><div>A callback that is called when a term has no match at all 
 <br><b>noMatch : (term) => {}</b>
 <ul>
-<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is array when <code>combinePatterns</code> option is used</ul></div></div>
+<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is an array when <code>combinePatterns</code> option is used</ul></div></div>
 
-<div id="wrapAllRanges"><span><code>wrapAllRanges</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Mark nesting/overlapping capturing groups  
+<div id="wrapAllRanges"><span><code>wrapAllRanges</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Mark nesting/overlapping capturing groups 
 <p>See <a href="nesting-overlapping.html">Marking nesting and overlapping ranges and match groups</a> for more details.</p>
 </div></div>
 
-<div id="ignoreGroups"><span><code>ignoreGroups</code></span><span><em class="type">number</em></span><span> <code>0</code></span><div>The number of contiguous capturing groups that should be ignored from the start of RegExp 
-<p>e.g. <code>/(\w+)(\.)(\w+)(?!\2)/g</code>, <code>ignoreGroups : 2</code> - mark the group 3</div></div>
+<div id="markLines"><span><code>markLines</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Whether to mark ranges of lines instead of ranges of texts 
+<p>See <a href="mark-lines.html">Highlighting line ranges</a> for more details.</div></div>
+
+<div id="ignoreGroups"><span><code>ignoreGroups</code></span><span><em class="type">number</em></span><span> <code>0</code></span><div>The number of adjacent capturing groups that should be ignored from the start of RegExp 
+<p>e.g. <code>/(\w+)(.)(\w+)(?!\2)/g</code>, <code>ignoreGroups : 2</code> - mark the group 3</div></div>
 
 <div id="separateGroups"><span><code>separateGroups</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to mark RegExp capturing groups instead of whole match 
 <p>See <a href="separate-groups.html">Highlighting separate groups</a> for more details.</div></div>
@@ -1122,32 +1128,31 @@ Parameters:
 <h1 id="advance-mark.js-playground">advance-mark.js-playground</h1>
 
 <p>There are two test content modes - Text and Html. If you want to add HTML content, you need to switch to the Html mode.</p>
-<p>When you paste a HTML content into the Html editor or load/import, the content runs through the HTML sanitizer, which removes head, script, style, link, and meta elements and comments. It also removes attributes containing <code>javascript:</code> or having name start with <code>on</code>. The values of <code>href, src, srcset</code> attributes are replaced by <code>#</code> (except iframe's <code>src</code> attribute).</p>
-<p>The sanitized content is added to a Html container by `innerHTML`.</p>
-<p>Note that the Html containers is Shadow DOMs and require special access (cannot be accessed by <code>document.querySelector</code>).</p>
-</br>
+<p>When you paste a HTML content into the Html editor or load/import, the content runs through the HTML sanitizer, which removes <code>head</code>, <code>script</code>, <code>style</code>, <code>link</code>, and <code>meta</code> elements and comments. It also removes attributes containing <code>javascript:</code> or having name start with <code>on</code>. <br>The values of <code>href</code>, <code>src</code>, <code>srcset</code> attributes are replaced by <code>#</code> (except iframe's <code>src</code> attribute).</p>
+<p>The sanitized content is added to a Html container by <code>innerHTML</code> (i.e. it safe enough to paste a raw HTML page).</p>
+<p>Note that the Html containers are Shadow DOMs and require special access (cannot be accessed by, e.g. <code>document.querySelector</code>).</p>
+<br>
 <p>If you enable a <b>Custom code editor</b>, the program evaluates the whole internal code (see 'Internal code' which appears below the 'Results').</p>
-<p>Otherwise, only the options that accept Objects, Arrays or RegExp are evaluated.</p>
+<p>Otherwise, only the options that accept <code>Object</code>, <code>Array</code> or <code>RegExp</code> are evaluated.</p>
 <p>Tooltips can be called by pressing <code>Ctrl/Cmd</code> key and cursor over an item.</p>
 <p>The <code>Ctrl/Cmd</code> key also can be used to prevent highlighting when switching mode in Html/Text editor.</p>
-<p>In Html/Text editors the undo won't work (only while typing).</p>
+<p>In Html/Text editors undo/redo won't work (only while typing).</p>
 <p>The performance is around two times slower than on the real browser page.</p>
 
-<h3 id="custom-code">Custom code</h3>
+<details class="instructions"><summary><b>Using custom code</b></summary>
 <p>When the <b>Custom code editor</b> is activated, a minimal code with all callbacks is generated. For normal playground workflow, a two internal functions are necessary:</p>
 <ul>
 <li><code>highlighter.flagStartElement()</code> in the <code>each</code> callback for next/previous buttons functionality</li>
 <li><code>highlighter.finish()</code> in the <code>done</code> callback for highlighting matches and logging results</li>
-</ul>
-They're automatically added to the internal code if their parameters and functions parameters are the same.
-<p>There are several function which can be used in custom code editor:</p>
+</ul>They're automatically added to the internal code if their parameters and functions parameters are the same.<p>There are several function which can be used in custom code editor:</p>
 <ul>
 <li><code>code.setHtml(text)</code> - dynamically sets HTML string in the HTML editor. See <code>Iframes</code> example.</li>
 <li><code>code.setText(text)</code> - dynamically sets text string in the Text editor</li>
 <li><code>code.setListener(even, function)</code> - sets action on event in the search editor. See <code>Mark while typing</code> example.</li>
 </ul>
-
-<p>Note: be reasonable, do not export a big HTML test content. For security reasons, nobody will dare import your export (only those who trust you). Locate and leave only problematic area(s) which can be easily visually examine.</p>
+</details>
+<p><b>Warning:</b> for the security reasons, do not import JSON from unknown origin without examination.</p>
+<p>Saving tab state to the browser local storage isn't reliable. Save to file important tabs.</p>
 </div></article>
 
 </main>

@@ -206,8 +206,6 @@ const tab = {
 		$(`${currentSection} .dependable`).addClass('hide');
 		$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
 
-		$('button.open-setting-form').css('color', '#f80');
-
 		setIframesTimeout($(`${optionPad} .iframes input`)[0]);
 
 		$('body.playground>main>article>section').addClass('hide');
@@ -712,12 +710,17 @@ function setIframesTimeout(elem) {
 
 // DOM 'onchange' event
 function selectExample(elem) {
-	const str = examples[$(elem).val()];
+	const title = $(elem).val();
+	let str = examples[title];
+	
 	if (str) {
 		if (settings.showWarning && types[currentType].isDirty) {
 			if ( !window.confirm("Are you sure you want to load the example and lose the changes made in the tab?")) {
 				return;
 			}
+		}
+		if(title ==='iframes' && !/^https?:\/+/.test(location.href)) {
+			str = str.replace(/"customCode": *"/, '$&// Note that iframes example can only be run on a sever.\\n');
 		}
 		importer.loadJson(str);
 	}
