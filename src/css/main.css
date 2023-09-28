@@ -194,6 +194,7 @@ button.open-setting-form:hover { color: #666; }
 
 .right-column .mixed-options .element,
 .right-column .mixed-options .className,
+.right-column .mixed-options .separateWordValue,
 .right-column .mixed-options .accuracy,
 .right-column .mixed-options .ignoreGroups,
 .right-column .mixed-options .combineNumber,

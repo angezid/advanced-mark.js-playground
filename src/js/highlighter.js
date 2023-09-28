@@ -251,6 +251,9 @@ const highlighter = {
 
 		if (currentType === 'string_' || currentType === 'array') {
 			obj.separateWordSearch = tab.isChecked('separateWordSearch');
+			if (obj.separateWordSearch) {
+				obj.separateWordSearch = $(`${optionPad} .separateWordValue select`).val();
+			}
 			obj.diacritics = tab.isChecked('diacritics');
 			obj.caseSensitive = tab.isChecked('caseSensitive');
 			obj.ignoreJoiners = tab.isChecked('ignoreJoiners');
@@ -308,7 +311,7 @@ const highlighter = {
 			if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
 				obj.wrapAllRanges = tab.isChecked('wrapAllRanges');
 			}
-			
+
 			if (currentType === 'ranges') {
 				obj.markLines = tab.isChecked('markLines');
 			}

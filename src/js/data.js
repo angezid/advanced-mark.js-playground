@@ -42,20 +42,22 @@ const examples = {
         }
     }`,
     
-	exclude : `{
-        "version": "1.0.0",
+	preserveTerms : ` {
+		"version": "2.0.1",
+        "library": "advanced",
         "section": {
-            "type": "array",
-            "exclude": "'.exclude, .exclude *'",
+            "type": "string_",
+            "separateWordSearch": "preserveTerms",
             "diacritics": false,
-            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "combinePatterns": 10,
+            "queryString": "word \\"preserve term\\" \\"\\"quoted term\\"\\"",
             "testString": {
                 "mode": "html",
-                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
+                "content": "<p>separate word preserve term \\"quoted term\\"</p>"
             }
         }
-    }`,
-
+	}`, 
+	
 	exclude : `{
         "version": "2.0.0",
         "section": {
