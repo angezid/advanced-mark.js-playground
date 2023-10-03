@@ -119,7 +119,7 @@
 
 <main class="playground-main">
 <article id="playground-article">
-<h1 class="title">mark.js playground</h1> 
+<h1 class="title">mark.js playground</h1>
 
 <section class="string_ row">
 <div class="left-column">
@@ -236,6 +236,7 @@
 <select name="accuracy" id="string_-accuracy" onchange="setAccuracy(this)">
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
+<option value="startsWith" selected>startsWith</option>
 <option value="complementary">complementary</option>
 </select>
 </div>
@@ -293,7 +294,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-startsWith">'startsWith'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': ',.;:!?"()[]{}' }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -448,6 +449,7 @@
 <select name="accuracy" id="array-accuracy" onchange="setAccuracy(this)">
 <option value="exactly">exactly</option>
 <option value="partially" selected>partially</option>
+<option value="startsWith" selected>startsWith</option>
 <option value="complementary">complementary</option>
 </select>
 </div>
@@ -505,7 +507,7 @@
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': [',', '.'] }</p>
+<p>Accuracy object e.g. { 'value': <span class="accuracy-exactly">'exactly'</span><span class="accuracy-startsWith">'startsWith'</span><span class="accuracy-complementary hide">'complementary'</span>, 'limiters': ',.;:!?"()[]{}' }</p>
 <div class="editor" name="accuracyObject">
 </div>
 </div>
@@ -851,12 +853,14 @@
 <div class="options">
 <div id="element"><span><code>element</code></span><span><em class="type">string</em></span><span> <code>mark</code></span><div>A custom mark element e.g. <code>span</code>. </div></div>
 
-<div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A class to be added to mark elements. </div></div>
+<div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A custom class to be added to mark elements. </div></div>
 
-<div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Specifies DOM elements that should be excluded from searching. </div></div>
+<div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Specifies DOM elements that should be excluded from searching. 
+<p>See <a href="options.html#exclude-option">exclude</a> for more details.</div></div>
 
-<div id="separateWordSearch"><span><code>separateWordSearch</code></span><span><em class="type">boolean <span class="or">or</span> string</em></span><span> <code>true</code></span><div>A boolean value <code>true</code> specifies to break term(s) into separate words and search for each individual word. 
-<p>A string value <code>'preserveTerms'</code> preserved term(s) surrounding by double quotes from breaking into separate words.</div></div>
+<div id="separateWordSearch"><span><code>separateWordSearch</code></span><span><em class="type">boolean <span class="or">or</span> string</em></span><span> <code>true</code></span><div>A <b>boolean</b> value <code>true</code> specifies to break term(s) into separate words and search for each individual word. 
+<p>A <b>string</b> value <code>'preserveTerms'</code> preserved term(s) surrounding by double quotes from breaking into separate words.
+See <a href="options.html#separatewordsearch-option">separateWordSearch</a> for more details.</div></div>
 
 <div id="diacritics"><span><code>diacritics</code></span><span><em class="type">boolean</em></span><span> <code>true</code></span><div>Whether to match diacritic characters </div></div>
 
@@ -864,19 +868,21 @@
 
 <div id="accuracy"><span><code>accuracy</code></span><span><em class="type">string <span class="or">or</span> object</em></span><span> <code>'partially'</code></span><div>  
 <ul>
-<li>Either one of the following <b>string</b> value:
+<li><p>Either one of the following <b>string</b> value:</p>
 <ul>
 <li><code>'partially'</code> e.g. searching 'a' mark 'a' in words 'and', 'back', and 'visa'.</li>
-<li><code>'exactly'</code> This option is actually forced to use an accuracy object, because the default word boundaries are white-space characters and start/end of a text node (with <code>acrossElements</code> option - start/end of a context).</li>
-<li><code>'complementary'</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'.<br>
-The default word boundaries are: white spaces and <code>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_{|}~¡¿</code> characters.</li>
+<li><code>'exactly'</code> This option is actually forced to use an accuracy object, because the default word boundaries are white spaces and start/end of a node text content (with <code>acrossElements</code> option - start/end of a context).</li>
+<li><code>'startsWith'</code> e.g. searching 'pre' mark the whole words 'prefix', 'predict', and 'prefab'.</li>
+<li><code>'complementary'</code> e.g. searching 'a' mark the whole words 'and', 'back', and 'visa'.</li>
 </ul>
+<p>The <b>built-in</b> boundaries for values <code>startsWith</code> and <code>complementary</code> are:<br>
+white spaces and <code>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_{|}~¡¿</code> characters.</p>
 </li>
-<li>Or an <b>object</b> with two properties:
+<li><p>Or an <b>object</b> with two properties:</p>
 <ul>
-<li><code>value</code>: 'exactly' or 'complementary'</li>
+<li><code>value</code>: <code>'exactly'</code> or <code>'startsWith'</code> or <code>'complementary'</code></li>
 <li><code>limiters</code>: a string or an array of custom word boundary characters,<br>
-e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'&quot;&quot; }</code></li>
+e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'&quot;()&quot; }</code></li>
 </ul>
 </li>
 </ul>

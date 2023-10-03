@@ -26,7 +26,7 @@ const currentLibrary = { jquery : false };
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch',  'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
@@ -35,7 +35,7 @@ const types = {
 	},
 
 	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch',  'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
@@ -692,22 +692,50 @@ function setShadowDOMStyle(elem) {
 
 // also DOM 'onchange' event
 function setAccuracy(elem) {
-	const div = $(`${optionPad} .accuracyObject`).addClass('hide'),
+	const article = 'article.options-info',
+		div = $(`${optionPad} .accuracyObject`).addClass('hide'),
 		exactly = $(`${optionPad} .accuracyObject .accuracy-exactly`).addClass('hide'),
+		startsWith = $(`${optionPad} .accuracyObject .accuracy-startsWith`).addClass('hide'),
 		complementary = $(`${optionPad} .accuracyObject .accuracy-complementary`).addClass('hide');
 
-	$('article.options-info .accuracy-complementary, article.options-info .accuracy-exactly').addClass('hide');
+	$(`${article} .accuracy-exactly, ${article} .accuracy-startsWith, ${article} .accuracy-complementary`).addClass('hide');
+
+	if (isAccuracyValue(elem.value)) {
+		div.removeClass('hide');
+
+		const editor = tab.getOptionEditor('accuracyObject');
+		let text = editor.toString();
+
+		if(text.trim()) {
+			const value = getSetAccuracyValue(text);
+			if(value !== elem.value) {
+				text = getSetAccuracyValue(text, elem.value);
+				editor.updateCode(text);
+			}
+		}
+	}
 
 	if (elem.value === 'exactly') {
-		div.removeClass('hide');
 		exactly.removeClass('hide');
-		$('article.options-info .accuracy-exactly').removeClass('hide');
+		$(`${article} .accuracy-exactly`).removeClass('hide');
+
+	} else if (elem.value === 'startsWith') {
+		startsWith.removeClass('hide');
+		$(`${article} .accuracy-startsWith`).removeClass('hide');
 
 	} else if (elem.value === 'complementary') {
-		div.removeClass('hide');
 		complementary.removeClass('hide');
-		$('article.options-info .accuracy-complementary').removeClass('hide');
+		$(`${article} .accuracy-complementary`).removeClass('hide');
 	}
+}
+
+function getSetAccuracyValue(text, accuracy) {
+	const reg = /(^\s*\{\s*[^:]+:\s*(['"`]))([^'"`]+)(\2.+)/;
+	return text.replace(reg, accuracy ? '$1' + accuracy + '$4' : '$3');
+}
+
+function isAccuracyValue(value) {
+	return value === 'exactly' || value === 'complementary' || value === 'startsWith';
 }
 
 // also DOM 'onchange' event
@@ -726,7 +754,7 @@ function selectExample(elem) {
 				return;
 			}
 		}
-		if(title ==='iframes' && !/^https?:\/+/.test(location.href)) {
+		if (title === 'iframes' && !/^https?:\/+/.test(location.href)) {
 			str = str.replace(/"customCode": *"/, '$&// Note that iframes example can only be run on a sever.\\n');
 		}
 		importer.loadJson(str);
@@ -738,7 +766,7 @@ function selectArray(elem) {
 	const info = tab.getSearchEditorInfo();
 	info.editor.updateCode($(elem).val());
 }
- 
+
 // DOM 'onclick' event
 function setTextMode(e) {
 	tab.setTextMode(null, !(e.ctrlKey || e.metaKey));
@@ -948,11 +976,11 @@ const importer = {
 				switch (opt.type) {
 					case 'checkbox' :
 						const notBoolean = saved !== true && saved !== false;
-						
+
 						if (option === 'separateWordSearch' && notBoolean) {
 							$(`${optionPad} .separateWordValue>select`).val(saved ? saved : true);
 							saved = true;
-							
+
 						} else if (option === 'combinePatterns') {
 							$(`${optionPad} .combineNumber input`).val(parseInt(saved) || 10);
 							saved = !isNullOrUndefined(json.section[option]);
@@ -979,12 +1007,12 @@ const importer = {
 						break;
 
 					case 'select' :
-						if (option === 'accuracy' && (saved !== 'exactly' && saved !== 'complementary' && saved !== 'partially')) {
+						if (option === 'accuracy' && saved !== 'partially' && !isAccuracyValue(saved)) {
 							const editor = tab.getOptionEditor('accuracyObject');
 							editor.updateCode(saved);
 
-							const value = saved.replace(/^\{\s*[^:]+:\s*['"]([^'"]+)['"].+/, '$1');
-							saved = value === 'exactly' || value === 'complementary' ? value : 'partially';
+							const value = getSetAccuracyValue(saved);
+							saved = isAccuracyValue(value) ? value : 'partially';
 						}
 						$(selector + ' select').val(saved);
 						break;
@@ -1324,11 +1352,11 @@ const codeBuilder = {
 				switch (opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
-						
+
 						if (option === 'separateWordSearch' && value === opt.value) {
 							const selectValue = $(`${optionPad} .separateWordValue select`).val();
-							
-							if(selectValue && selectValue != 'true') {
+
+							if (selectValue && selectValue != 'true') {
 								code += `${indent}${option} : '${selectValue}',\n`;
 								break;
 							}
@@ -1391,11 +1419,11 @@ const codeBuilder = {
 
 					case 'select' :
 						value = $(selector + ' select').val();
-						
+
 						if (value !== opt.value) {
 							code += `${indent}${option} : `;
 
-							if (option === 'accuracy' && (value === 'exactly' || value === 'complementary')) {
+							if (option === 'accuracy' && isAccuracyValue(value)) {
 								const editor = tab.getOptionEditor('accuracyObject');
 								code += editor && (text = editor.toString().trim()) ? `${text},\n` : `'${value}',\n`;
 
@@ -1564,11 +1592,11 @@ const Json = {
 				switch (opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
-						
+
 						if (option === 'separateWordSearch' && value === opt.value) {
 							const selectValue = $(`${optionPad} .separateWordValue select`).val();
-							
-							if(selectValue && selectValue != 'true') {
+
+							if (selectValue && selectValue != 'true') {
 								json += `,"${option}":"${selectValue}"`;
 								break;
 							}
@@ -1638,9 +1666,9 @@ const Json = {
 
 					case 'select' :
 						value = $(selector + ' select').val();
-						
+
 						if (value !== opt.value) {
-							if (option === 'accuracy' && (value === 'exactly' || value === 'complementary')) {
+							if (option === 'accuracy' && isAccuracyValue(value)) {
 								const editor = tab.getOptionEditor('accuracyObject');
 								json += editor && (text = editor.toString().trim()) ? `,"${option}":${JSON.stringify(text)}` : `,"${option}":"${value}"`;
 
@@ -2202,7 +2230,6 @@ function detectLibrary() {
 function getContext(selector, jquery) {
 	return jquery ? $(selector) : new Mark(document.querySelector(selector));
 }
-
 
 
 

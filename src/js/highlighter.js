@@ -264,7 +264,7 @@ const highlighter = {
 			obj.synonyms = this.tryToEvaluate('synonyms', 8) || {};
 			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 3) || [];
 
-			if (obj.accuracy === 'exactly' || obj.accuracy === 'complementary') {
+			if(isAccuracyValue(obj.accuracy)) {
 				const accuracy = this.tryToEvaluate('accuracyObject', 30);
 				if (accuracy) {
 					obj.accuracy = accuracy;
