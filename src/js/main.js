@@ -1,7 +1,7 @@
 
 'use strict';
 
-const version = '2.0.1';
+const version = '2.2.0';
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -62,7 +62,7 @@ const types = {
 	}
 };
 
-const newOptions = [ 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM' ];
+const newOptions = ['blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'markLines'];
 
 const defaultOptions = {
 	element : { value : 'mark', type : 'text' },
@@ -922,6 +922,9 @@ const importer = {
 			if (opt) {
 				switch (opt.type) {
 					case 'checkbox' :
+						if (option === 'separateWordSearch') {
+							$(`${optionPad} .separateWordValue>select`).val('true');
+						}
 						$(selector + ' input').prop('checked', opt.value);
 						break;
 
@@ -978,7 +981,7 @@ const importer = {
 						const notBoolean = saved !== true && saved !== false;
 
 						if (option === 'separateWordSearch' && notBoolean) {
-							$(`${optionPad} .separateWordValue>select`).val(saved ? saved : true);
+							$(`${optionPad} .separateWordValue>select`).val(saved ? saved : 'true');
 							saved = true;
 
 						} else if (option === 'combinePatterns') {

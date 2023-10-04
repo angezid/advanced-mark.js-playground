@@ -252,7 +252,8 @@ const highlighter = {
 		if (currentType === 'string_' || currentType === 'array') {
 			obj.separateWordSearch = tab.isChecked('separateWordSearch');
 			if (obj.separateWordSearch) {
-				obj.separateWordSearch = $(`${optionPad} .separateWordValue select`).val();
+				const val = $(`${optionPad} .separateWordValue select`).val();
+				obj.separateWordSearch = val === 'preserveTerms' ? val : true;
 			}
 			obj.diacritics = tab.isChecked('diacritics');
 			obj.caseSensitive = tab.isChecked('caseSensitive');

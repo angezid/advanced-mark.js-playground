@@ -27,7 +27,7 @@ const defaultHtml = `
 // also, there is need to delete a library property in examples, which intended to work in both libraries
 const examples = {
 	name : 'examples',
-	
+
 	accuracyExactly : `{
         "version": "2.0.0",
         "library": "advanced",
@@ -41,9 +41,26 @@ const examples = {
             }
         }
     }`,
-    
+
+	accuracyStartsWith : `{
+        "version": "2.2.0",
+        "library": "advanced",
+        "section": {
+            "type": "string_",
+            "separateWordSearch": "preserveTerms",
+            "accuracy": "startsWith",
+            "diacritics": false,
+            "combinePatterns": 10,
+            "queryString": "acc opt \\"st w val\\"",
+            "testString": {
+                "mode": "html",
+                "content": "<p>accuracy option with starts with value</p>\\n<p> Accuracy example which uses built-in word boundary characters.\\nIt also demonstrate \`separateWordSearch: 'preserveTerms'\` option.</p>"
+            }
+        }
+    }`,
+
 	preserveTerms : ` {
-		"version": "2.0.1",
+		"version": "2.1.0",
         "library": "advanced",
         "section": {
             "type": "string_",
@@ -56,8 +73,8 @@ const examples = {
                 "content": "<p>separate word preserve term \\"quoted term\\"</p>"
             }
         }
-	}`, 
-	
+	}`,
+
 	exclude : `{
         "version": "2.0.0",
         "section": {
@@ -189,7 +206,7 @@ const examples = {
             }
         }
 	}`,
-	
+
 	markLineRanges : `{
         "version": "2.0.0",
         "library": "advanced",

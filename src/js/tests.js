@@ -26,7 +26,7 @@ const test = {
 			`{"section":{"type":"ranges","iframes":true,"wrapAllRanges":true,"shadowDOM":true,"queryRanges":"[{'start':0,'length':5},{'start':6,'length':6}]"}}`,
 
 			`{"section":{"type":"ranges","queryRanges":"[{'start':0,'length':5},{'start':6,'length':6}]","selectors":"p","selectorAll":false}}`,
-			
+
 			`{"section":{"type":"ranges","markLines":true,"wrapAllRanges":true,"queryRanges":"[{'start':1,'length':1},{'start':2,'length':1}]"}}`,
 		]
 	},
@@ -154,7 +154,7 @@ const test = {
 				}
 			}
 		}
-		this.logResults(`The 'set options to default value' test for ${currentType} is ${this.result(success)}`, success);
+		this.logResults(`The 'set options to default value' test for ${currentType} is ${this.result(success)}${internal ? ', internal test' : ''}`, success);
 	},
 
 	checkSetOptions : function(options, obj, internal) {
