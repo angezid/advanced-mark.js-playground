@@ -241,7 +241,7 @@ const highlighter = {
 		obj.element = $(`${optionPad} .element input`).val().trim();
 		obj.className = $(`${optionPad} .className input`).val().trim();
 
-		obj.exclude = this.tryToEvaluate('exclude', 4) || [];
+		obj.exclude = this.tryToEvaluate('exclude', 3) || [];
 		obj.debug = tab.isChecked('debug');
 
 		obj.iframes = tab.isChecked('iframes');
@@ -337,7 +337,7 @@ const highlighter = {
 		if (editor) {
 			text = editor.toString().trim();
 
-			if (text.length > minLength) {
+			if (text.length >= minLength) {
 				try {
 					return new Function('"use strict"; return (' + text + ')')();
 
@@ -493,7 +493,7 @@ const highlighter = {
 		let array = [];
 		for (let key in obj) {
 			if (obj[key] !== 0) {
-				array.push(`${key} = ${obj[key]}`);
+				array.push(`'${key}' = ${obj[key]}`);
 			}
 		}
 		return array.length ? title + array.join('<b>,</b> ') : '';

@@ -1783,12 +1783,10 @@ function registerEvents() {
 		}
 	});
 
-	$("label[name], input[name], option[name], div.editor[name], select[name]").on('mouseenter', function(e) {
+	$("label[name], input[name], option[name], details[name], div.editor[name], select[name]").on('mouseenter', function(e) {
 		if (settings.showTooltips || e.ctrlKey || e.metaKey) {
 			showTooltip($(this).attr('name'), $(this), e);
 		}
-	}).on('mouseleave', function() {
-		$(this).powerTip('hide', true);
 	});
 
 	$('button.open-json-form').on('click', function() {
@@ -2014,14 +2012,18 @@ function getFileName() {
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-
+	
 	elem.data('powertiptarget', id).powerTip({
-		manual : true,
 		intentPollInterval : 300,
 		fadeInTime : 100,
 		smartPlacement : true,
+		mouseOnToPopup: true, 
 		placement : 'w',
-		offset : 30
+		offset : 30,
+	}).on({
+		powerTipClose: function() {
+			elem.powerTip('destroy');
+		}
 	});
 	elem.powerTip('show', e);
 }
