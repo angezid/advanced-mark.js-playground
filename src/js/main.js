@@ -391,7 +391,7 @@ const tab = {
 			constructor() {
 				super();
 				const root = this.attachShadow({ mode : 'open' });
-				root.innerHTML = `<link rel="stylesheet" href="css/shadow-dom.css" /><div class="editor"></div>`;
+				root.innerHTML = shadowStyle + '<div class="editor"></div>';
 			}
 		});
 	},

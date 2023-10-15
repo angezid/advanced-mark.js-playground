@@ -22,11 +22,67 @@ const defaultHtml = `
 <p>On January 15, 2001, <a href="#">Jimmy Wales</a><sup id="cite_ref-auto1_9-0" class="reference"><a href="#">[7]</a></sup> and <a href="#">Larry Sanger</a> launched Wikipedia.Sanger coined its name as a <a href="#">blend</a> of  "wiki" and "encyclopedia."<sup id="cite_ref-MiliardWho_10-0" class="reference"><a href="#">[8]</a></sup><sup id="cite_ref-J_Sidener_11-0" class="reference"><a href="#">[9]</a></sup>Wales was influenced by the "<a href="#">spontaneous order</a>" ideas associated with <a href="#">Friedrich Hayek</a> and the <a href="#">Austrian School</a> of economics, after being exposed to these ideas by Austrian economist and <a href="#">Mises Institute</a> Senior Fellow <a href="#">Mark Thornton</a>.<sup id="cite_ref-12" class="reference"><a href="#">[10]</a></sup> Initially available only in English, versions in other languages werequickly developed. Its combined editions comprise more than 58 millionarticles, attracting around 2<span class="nowrap">&nbsp;</span>billion unique device visits per month and more than 17 million edits per month (1.9<span class="nowrap">&nbsp;</span>edits per second) as of November&nbsp;2020<sup class="plainlinks noexcerpt noprint asof-tag update" style="display:none;"><a class="external text pressed" href="#">[update]</a></sup>.<sup id="cite_ref-small_screen_13-0" class="reference"><a href="#">[11]</a></sup><sup id="cite_ref-Wikimedia_Stats_14-0" class="reference"><a href="#">[12]</a></sup>In 2006, <i><a href="#">Time magazine</a></i> stated that the policy of allowing anyone to edit had made Wikipedia the "biggest (and perhaps best) encyclopedia in the world."<sup id="cite_ref-auto1_9-1" class="reference"><a href="#">[7]</a></sup></p>
 `;
 
+const shadowStyle = `<style>.editor {
+    font-family: Arial, sans-serif;
+    font-size: 1em;
+    border: #ccc 1px solid;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 5px 0 rgba(0, 0, 0, 0.07), 0 3px 1px -2px rgba(0, 0, 0, 0.05);
+    font-size: 14px;
+    font-weight: 400;
+    min-height: 40vh;
+    max-height: 55vh;
+    max-width: 44vw;
+    letter-spacing: normal;
+    line-height: 20px;
+    margin: 0;
+    padding: 5px 10px;
+    tab-size: 4;
+}
+a[href] { color: #006ab7; text-decoration: underline; }
+p { margin: 10px 0 0 0; }
+mark[data-markjs],
+*[data-markjs].custom-element { background: #ddd; padding: 0; border: #d4d4d4 1px solid; }
+mark[data-markjs].current,
+*[data-markjs].custom-element.current { font-size: 110%; background: #ffe408; border-color: #ffe408; border-bottom: #444 2px solid; }
+mark[data-markjs].mark-term { background: #ffe408; }
+mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }</style>`;
+
 // exported json requires replacing backslash \ by \\
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
 // also, there is need to delete a library property in examples, which intended to work in both libraries
 const examples = {
 	name : 'examples',
+	
+	exclude : `{
+        "version": "2.0.0",
+        "section": {
+            "type": "array",
+            "exclude": "'.exclude, .exclude *'",
+            "diacritics": false,
+            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
+            "testString": {
+                "mode": "html",
+                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[excluded] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
+            }
+        }
+    }`,
+    
+	preserveTerms : ` {
+        "version": "2.1.0",
+        "library": "advanced",
+        "section": {
+            "type": "string_",
+            "separateWordSearch": "preserveTerms",
+            "diacritics": false,
+            "combinePatterns": 10,
+            "queryString": "word \\"preserved term\\" \\"\\"quoted term\\"\\"",
+            "testString": {
+                "mode": "html",
+                "content": "<p>separate word preserved term \\"quoted term\\"</p>"
+            }
+        }
+    }`,
 
 	accuracyExactly : `{
         "version": "2.0.0",
@@ -54,37 +110,7 @@ const examples = {
             "queryString": "acc opt \\"st w val\\"",
             "testString": {
                 "mode": "html",
-                "content": "<p>accuracy option with starts with value</p>\\n<p> Accuracy example which uses built-in word boundary characters.\\nIt also demonstrate \`separateWordSearch: 'preserveTerms'\` option.</p>"
-            }
-        }
-    }`,
-
-	preserveTerms : ` {
-		"version": "2.1.0",
-        "library": "advanced",
-        "section": {
-            "type": "string_",
-            "separateWordSearch": "preserveTerms",
-            "diacritics": false,
-            "combinePatterns": 10,
-            "queryString": "word \\"preserve term\\" \\"\\"quoted term\\"\\"",
-            "testString": {
-                "mode": "html",
-                "content": "<p>separate word preserve term \\"quoted term\\"</p>"
-            }
-        }
-	}`,
-
-	exclude : `{
-        "version": "2.0.0",
-        "section": {
-            "type": "array",
-            "exclude": "'.exclude, .exclude *'",
-            "diacritics": false,
-            "queryArray": "['Lorem', 'ipsum', 'dolor', 'amet']",
-            "testString": {
-                "mode": "html",
-                "content": "<p>Lorem ipsum dolor sit amet</p>\\n<p class=\\"exclude\\">[exclude] Lorem <i>ipsum <b>dolor</b> sit</i> amet</p><p><b>Note:</b> to exclude all descendants, you need to use '.exclude *' selector</p>\\n<p>Lorem ipsum dolor sit amet</p>"
+                "content": "<p>accuracy option with starts with value</p>\\n<p> Accuracy example which uses built-in word boundary characters.\\nIt also demonstrates \`separateWordSearch: 'preserveTerms'\` option.</p>"
             }
         }
     }`,
@@ -151,7 +177,7 @@ const examples = {
             "queryString": "h",
             "testString": {
                 "mode": "html",
-                "content": "<p>Hello world!</p>\\n<hr><h3>Iframe test</h3>\\n<iframe height=\\"70\\" src=\\"\\" srcdoc=\\"<p>Hello world!</p>\\"></iframe>\\n<hr>\\n<div id=\\"shadow-dom\\"></div"
+                "content": "<p>Hello world!</p>\\n<hr><h3>Iframe test</h3>\\n<iframe height=\\"70\\" src=\\"\\" srcdoc=\\"<p>Hello world!</p>\\"></iframe>\\n<hr>\\n<div id=\\"shadow-dom\\"></div>\\n<hr>\\n<p>Try out accuracy 'startsWith' option</p>"
             }
         }
     }`,

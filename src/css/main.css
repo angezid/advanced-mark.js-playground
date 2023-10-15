@@ -239,8 +239,8 @@ details.instructions { margin: 20px 0; }
 header .mark-type ul li.error { background-color: #f9d; }
 
 code { font-family: Consolas, monospace; font-size: 1em; padding: 0 3px; color: #b12; background: #f8f8f8; border: #d8d8d8 1px solid; }
-pre code { padding: 0; color: #000; background: #ececec; border: none; }
-pre { font-family: "Lucida Sans Unicode", "Lucida Grande", monospace; padding: 6px 10px 5px 10px; margin: 15px 0 7px 0; display: block; border: #ddd 1px solid; background: #ececec; font-size: 0.9375em; color: #000; overflow: auto; tab-size: 4; max-width: 44vw; max-height: 100vh; }
+pre code { padding: 0; color: #000; background: #efefef; border: none; }
+pre { font-family: "Lucida Sans Unicode", "Lucida Grande", monospace; padding: 6px 10px 5px 10px; margin: 15px 0 7px 0; display: block; border: #ddd 1px solid; background: #efefef; font-size: 0.9375em; color: #000; overflow: auto; tab-size: 4; max-width: 44vw; max-height: 100vh; }
 
 @media only screen and (max-width: 1260px) {
 	main { margin: 0 0 0 20px; }
