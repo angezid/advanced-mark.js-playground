@@ -27,6 +27,8 @@
 <body class="playground">
 
 <header class="playground-header">
+<div class="section">
+<div class="content">
 <div class="mark-type left">
 <ul>
 <li class="selected" data-type="string_">String</li>
@@ -49,6 +51,8 @@
 <button class="open-json-form" title="Open JSON form" type="button">JSON</button>
 <button class="open-setting-form" title="Open setting form" type="button">&#x2600;</button>
 <button class="show-instructions" type="button" onclick="showInstructions(true);"><b>?</b></button>
+</div>
+</div>
 </div>
 </header>
 
@@ -167,7 +171,7 @@
 <div class="checkboxes">
 <div class="separateWordSearch">
 <input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked onchange="setCacheAndCombine(this)">
-<label for="string_-separateWordSearch" name="separateWordSearch">Separate word search</label>
+<label for="string_-separateWordSearch" name="separateWordSearch">Separate words</label>
 </div>
 <div class="diacritics">
 <input name="diacritics" id="string_-diacritics" type="checkbox" checked>
@@ -191,7 +195,7 @@
 </div>
 <div class="combinePatterns advanced dependable hide">
 <input name="combinePatterns" id="string_-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
-<label for="string_-combinePatterns" name="combinePatterns">Combine term patterns</label>
+<label for="string_-combinePatterns" name="combinePatterns">Combine patterns</label>
 </div>
 <div class="cacheTextNodes advanced dependable hide">
 <input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
@@ -380,7 +384,7 @@
 <div class="checkboxes">
 <div class="separateWordSearch">
 <input name="separateWordSearch" id="array-separateWordSearch" type="checkbox" checked onchange="setSeparateWordValue(this)">
-<label for="array-separateWordSearch" name="separateWordSearch">Separate word search</label>
+<label for="array-separateWordSearch" name="separateWordSearch">Separate words</label>
 </div>
 <div class="diacritics">
 <input name="diacritics" id="array-diacritics" type="checkbox" checked>
@@ -404,7 +408,7 @@
 </div>
 <div class="combinePatterns advanced">
 <input name="combinePatterns" id="array-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
-<label for="array-combinePatterns" name="combinePatterns">Combine term patterns</label>
+<label for="array-combinePatterns" name="combinePatterns">Combine patterns</label>
 </div>
 <div class="cacheTextNodes advanced">
 <input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
@@ -818,21 +822,19 @@
 </div>
 
 <div class="row">
-<div class="column">
 <div class="internal-code hide">
 <details id="internal-code"><summary>Internal code</summary>
 <pre><code class="language-js"></code></pre>
 </details>
 </div>
 </div>
-</div>
 </div><!-- column -->
 
-<div class="column">
+<div class="right-column">
 <div class="generated-code">
 <div class="unmark-method right">
 <input id="unmark" type="checkbox" onchange="unmarkMethod(this)">
-<label for="unmark">unmark method</label>
+<label for="unmark">unmark</label>
 </div>
 
 <div class="callbacks right">
@@ -1148,7 +1150,7 @@ Parameters:
 
 <article class="instructions">
 <div id="playground-instructions">
-<h1 id="advance-mark.js-playground">advance-mark.js-playground</h1>
+<h1 id="how-to-use">How to use</h1>
 
 <p>There are two test content modes - Text and Html. If you want to add HTML content, you need to switch to the Html mode.</p>
 <p>When you paste a HTML content into the Html editor or load/import, the content runs through the HTML sanitizer, which removes <code>head</code>, <code>script</code>, <code>style</code>, <code>link</code>, and <code>meta</code> elements and comments. It also removes attributes containing <code>javascript:</code> or having name start with <code>on</code>. <br>The values of <code>href</code>, <code>src</code>, <code>srcset</code> attributes are replaced by <code>#</code> (except iframe's <code>src</code> attribute).</p>

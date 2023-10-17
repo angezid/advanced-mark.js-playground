@@ -32,7 +32,6 @@ const shadowStyle = `<style>.editor {
     font-weight: 400;
     min-height: 40vh;
     max-height: 55vh;
-    max-width: 44vw;
     letter-spacing: normal;
     line-height: 20px;
     margin: 0;
@@ -46,7 +45,12 @@ mark[data-markjs],
 mark[data-markjs].current,
 *[data-markjs].custom-element.current { font-size: 110%; background: #ffe408; border-color: #ffe408; border-bottom: #444 2px solid; }
 mark[data-markjs].mark-term { background: #ffe408; }
-mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }</style>`;
+mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
+@media only screen and (max-width: 980px) {
+    .left-column, .right-column, .column { width: 100%; }
+    .editor { min-height: 20vh; max-height: 35vh; }
+}
+</style>`;
 
 // exported json requires replacing backslash \ by \\
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
