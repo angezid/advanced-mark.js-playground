@@ -438,7 +438,7 @@ function CodeJar(editor, highlighter, opt = {}) {
 
         if (options.tab === '\t') {
             const style = window.getComputedStyle(editor),
-                size = parseInt(style.size) || 8,
+                size = style.getPropertyValue('tab-size') || 8,
                 reg = new RegExp(` {${size < 3 ? 1 : (Math.floor(size / 2) + 1)},${size}}`, 'g'),
                 spaces = ' '.repeat(size);
 
@@ -568,6 +568,7 @@ function CodeJar(editor, highlighter, opt = {}) {
         updateCode(code) {
             editor.textContent = code;
             highlight();
+            onUpdate(code);
         },
         onUpdate(cb) {
             onUpdate = cb;

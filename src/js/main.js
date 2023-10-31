@@ -26,7 +26,7 @@ const currentLibrary = { jquery : false };
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'charSets', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
@@ -35,7 +35,7 @@ const types = {
 	},
 
 	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'charSets', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
 		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
@@ -71,6 +71,7 @@ const defaultOptions = {
 	separateWordSearch : { value : true, type : 'checkbox' },
 	diacritics : { value : true, type : 'checkbox' },
 	accuracy : { value : 'partially', type : 'select' },
+	charSets : { value : false, type : 'checkbox' },
 	synonyms : { value : {}, type : 'editor' },
 	iframes : { value : false, type : 'checkbox' },
 	iframesTimeout : { value : 5000, type : 'number' },
@@ -90,7 +91,7 @@ const defaultOptions = {
 	debug : { value : false, type : 'checkbox' },
 	log : { value : false, type : 'checkbox' },
 };
-
+ 
 $(document).ready(function() {
 	let t0 = performance.now();
 
@@ -228,7 +229,9 @@ const tab = {
 				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
 
 				setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
-				setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
+				if (isVisible('combinePatterns')) {
+					setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
+				}
 				setSeparateWordValue($(`${optionPad} .separateWordSearch input`)[0]);
 				break;
 
@@ -461,11 +464,8 @@ const tab = {
 	},
 
 	onUpdateEditor : function(code, selector) {
-		const button = $(selector).parents('div').first().find('button.clear');
-
-		if (code.length) button.removeClass('hide');
-		else button.addClass('hide');
-
+		$(selector).parent('div').find('button.clear').toggleClass('hide', code.length === 0);
+		
 		this.setDirty(true);
 	},
 
@@ -640,6 +640,8 @@ function setSeparateGroupsDependable(elem) {
 // also DOM 'onchange' event
 function setAcrossElementsDependable(elem) {
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
+	
+	tab.switchElements(elem, '.acrossElementsValue'); // required
 
 	setBlockElementsBoundary(elem);
 }
@@ -651,7 +653,7 @@ function setBlockElementsBoundary(elem) {
 
 	tab.switchElements(elem, '.blockElementsBoundary');
 
-	if (tab.isChecked('acrossElements') && !$(`${optionPad} .blockElementsBoundary`).hasClass('hide')) {
+	if (tab.isChecked('acrossElements') && isVisible('blockElementsBoundary')) {
 		setBlockElements($(`${optionPad} .blockElementsBoundary input`)[0]);
 	}
 }
@@ -670,7 +672,7 @@ function setCacheAndCombine(elem) {
 	tab.switchElements(elem, '.cacheTextNodes');
 	tab.switchElements(elem, '.separateWordValue');
 
-	if ( !$(`${optionPad} .combinePatterns`).hasClass('hide')) {
+	if (tab.isChecked('separateWordSearch')) {
 		setCombineNumber($('#string_-combinePatterns')[0]);
 	}
 }
@@ -706,9 +708,9 @@ function setAccuracy(elem) {
 		const editor = tab.getOptionEditor('accuracyObject');
 		let text = editor.toString();
 
-		if(text.trim()) {
+		if (text.trim()) {
 			const value = getSetAccuracyValue(text);
-			if(value !== elem.value) {
+			if (value !== elem.value) {
 				text = getSetAccuracyValue(text, elem.value);
 				editor.updateCode(text);
 			}
@@ -924,7 +926,10 @@ const importer = {
 					case 'checkbox' :
 						if (option === 'separateWordSearch') {
 							$(`${optionPad} .separateWordValue>select`).val('true');
-						}
+							
+						} else if(option === 'acrossElementsValue') {
+							$(`${optionPad} .acrossElementsValue>select`).val('true');
+						} 
 						$(selector + ' input').prop('checked', opt.value);
 						break;
 
@@ -984,6 +989,10 @@ const importer = {
 							$(`${optionPad} .separateWordValue>select`).val(saved ? saved : 'true');
 							saved = true;
 
+						} else if (option === 'acrossElements' && notBoolean) {
+							$(`${optionPad} .acrossElementsValue>select`).val(saved ? saved : 'true');
+							saved = true;
+							
 						} else if (option === 'combinePatterns') {
 							$(`${optionPad} .combineNumber input`).val(parseInt(saved) || 10);
 							saved = !isNullOrUndefined(json.section[option]);
@@ -1044,6 +1053,9 @@ const importer = {
 				} else {
 					if (content === 'defaultHtml') {
 						tab.loadDefaultHtml(true);
+
+					} else if (content === 'minHtml') {
+						tab.setHtmlMode(minHtml, false);
 
 					} else {
 						tab.setHtmlMode(content, false);
@@ -1210,6 +1222,11 @@ function runCode(reset) {
 
 	} else {
 		highlighter.highlight();
+		
+		const val = settings.loadValue('generated_code');
+		if (val && val === 'opened') {
+			$(".generated-code details").attr('open', true);
+		}
 	}
 }
 
@@ -1355,9 +1372,19 @@ const codeBuilder = {
 				switch (opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
+						if (isNullOrUndefined(value)) break;
 
 						if (option === 'separateWordSearch' && value === opt.value) {
 							const selectValue = $(`${optionPad} .separateWordValue select`).val();
+
+							if (selectValue && selectValue != 'true') {
+								code += `${indent}${option} : '${selectValue}',\n`;
+								break;
+							}
+						}
+						
+						if (option === 'acrossElements' && value === true && isVisible('acrossElementsValue')) {
+							const selectValue = $(`${optionPad} .acrossElementsValue select`).val();
 
 							if (selectValue && selectValue != 'true') {
 								code += `${indent}${option} : '${selectValue}',\n`;
@@ -1422,6 +1449,7 @@ const codeBuilder = {
 
 					case 'select' :
 						value = $(selector + ' select').val();
+						if (isNullOrUndefined(value)) break;
 
 						if (value !== opt.value) {
 							code += `${indent}${option} : `;
@@ -1595,10 +1623,20 @@ const Json = {
 				switch (opt.type) {
 					case 'checkbox' :
 						value = $(input).prop('checked');
+						if (isNullOrUndefined(value)) break;
 
 						if (option === 'separateWordSearch' && value === opt.value) {
 							const selectValue = $(`${optionPad} .separateWordValue select`).val();
 
+							if (selectValue && selectValue != 'true') {
+								json += `,"${option}":"${selectValue}"`;
+								break;
+							}
+						}
+						
+						if (option === 'acrossElements' && value === true && isVisible('acrossElementsValue')) {
+							const selectValue = $(`${optionPad} .acrossElementsValue select`).val();
+							
 							if (selectValue && selectValue != 'true') {
 								json += `,"${option}":"${selectValue}"`;
 								break;
@@ -1669,6 +1707,7 @@ const Json = {
 
 					case 'select' :
 						value = $(selector + ' select').val();
+						if (isNullOrUndefined(value)) break;
 
 						if (value !== opt.value) {
 							if (option === 'accuracy' && isAccuracyValue(value)) {
@@ -1747,6 +1786,11 @@ function registerEvents() {
 		tab.initTab();
 	});
 
+	$(".generated-code details").on('toggle', function(e) {
+		const attr = $(this).attr('open');
+		settings.saveValue('generated_code', attr ? 'opened' : 'closed');
+	});
+	
 	$("#internal-code").on('toggle', function(e) {
 		const attr = $(this).attr('open');
 		settings.saveValue('internal_code', attr ? 'opened' : 'closed');
@@ -2012,16 +2056,16 @@ function getFileName() {
 
 function showTooltip(id, elem, e) {
 	showHideInfo(id);
-	
+
 	elem.data('powertiptarget', id).powerTip({
 		intentPollInterval : 300,
 		fadeInTime : 100,
 		smartPlacement : true,
-		mouseOnToPopup: true, 
+		mouseOnToPopup : true,
 		placement : 'w',
 		offset : 30,
 	}).on({
-		powerTipClose: function() {
+		powerTipClose : function() {
 			elem.powerTip('destroy');
 		}
 	});
@@ -2036,20 +2080,20 @@ function showHideInfo(id) {
 		elemsSG = info.find('.separateGroups').addClass('hide');
 
 	if (acrossElements) {
-		elemsAE.each(function() {
-			if ($(this).hasClass('separateGroups')) {
+		elemsAE.each((i, elem) => {
+			if ($(elem).hasClass('separateGroups')) {
 				if (separateGroups) $(this).removeClass('hide');
 
-			} else $(this).removeClass('hide');
+			} else $(elem).removeClass('hide');
 		});
 	}
 
 	if (separateGroups) {
-		elemsSG.each(function() {
-			if ($(this).hasClass('acrossElements')) {
-				if (acrossElements) $(this).removeClass('hide');
+		elemsSG.each((i, elem) => {
+			if ($(elem).hasClass('acrossElements')) {
+				if (acrossElements) $(elem).removeClass('hide');
 
-			} else $(this).removeClass('hide');
+			} else $(elem).removeClass('hide');
 		});
 	}
 }
@@ -2066,6 +2110,11 @@ function log(message, error, warning) {
 	}
 	let html = $('.results code').html();
 	$('.results code').html((html ? html + '\n' : '') + message);
+}
+
+function isVisible(klass) {
+	const elem = $(`${optionPad} .${klass}`);
+	return !elem.hasClass('hide') && !elem.hasClass('disable');
 }
 
 function isNullOrUndefined(prop) {
@@ -2116,11 +2165,11 @@ function findNextPrevious(next) {
 		top = $(`${currentSection} .testString>.test-container`).offset().top;
 
 	if (next) {
-		startElements.each(function(i) {
+		startElements.each((i, el) => {
 			if (isScrolled) {
-				if ($(this).offset().top > top) elem = $(this);
+				if ($(el).offset().top > top) elem = $(el);
 
-			} else if (i > currentIndex) elem = $(this);
+			} else if (i > currentIndex) elem = $(el);
 
 			if (elem) {
 				currentIndex = i;
@@ -2133,9 +2182,9 @@ function findNextPrevious(next) {
 		}
 
 	} else {
-		startElements.each(function(i) {
+		startElements.each((i, el) => {
 			if (isScrolled) {
-				if ($(this).offset().top > top) {
+				if ($(el).offset().top > top) {
 					currentIndex = i > 0 ? i - 1 : i;
 					return false;
 				}
@@ -2144,7 +2193,7 @@ function findNextPrevious(next) {
 				currentIndex = i > 0 ? i - 1 : i;
 				return false;
 			}
-			elem = $(this);
+			elem = $(el);
 		});
 		if ( !elem) {
 			elem = startElements.first();
@@ -2161,22 +2210,22 @@ function highlightMatch(elem) {
 	const htmlMode = types[currentType].testEditorMode === 'html';
 	let found = false;
 
-	marks.each(function(i, el) {
+	marks.each((i, el) => {
 		if ( !found) {
 			if (el === elem[0]) found = true;
 
 		} else {
 			// the start of the next 'start element' means the end of the current match
-			if ($(this).data('markjs') === 'start-1') return false;
+			if ($(el).data('markjs') === 'start-1') return false;
 		}
 
 		if (found) {
 			if (htmlMode) {
-				$(this).find(markElementSelector + '.mark-term').addClass('current');
+				$(el).find(markElementSelector + '.mark-term').addClass('current');
 
 			} else {
-				$(this).addClass('current');
-				$(this).find(markElementSelector).addClass('current');
+				$(el).addClass('current');
+				$(el).find(markElementSelector).addClass('current');
 			}
 		}
 	});
