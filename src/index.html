@@ -110,6 +110,13 @@
 </div>
 
 <div class="row">
+<div class="run-onchange">
+<input id="run-onchange" type="checkbox" onchange="settings.changed(this);">
+<label for="run-onchange" title="Highlight when checkbox or selector is changed. Can be slow with large HTML content">Run on settings changes</label>
+</div>
+</div>
+
+<div class="row">
 <div class="show-test-btn">
 <input id="test" type="checkbox" onchange="toggleTestButton(this);">
 <!-- <input id="test" type="checkbox" onchange="this.parentNode.querySelector('button').classList.toggle('hide', !this.checked);"> -->
@@ -155,10 +162,11 @@
 <button class="next" type="button" onclick="nextMatch();"></button>
 <button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
 <button class="text" type="button" onclick="setTextMode(event)">Text</button>
-<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<select class="default-html" onchange="selectHtml(this)">
+</select>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Test Html</p>
+<p>HTML</p>
 <shadow-dom-string_ class="test-container">
 </shadow-dom-string_>
 </div>
@@ -181,13 +189,13 @@
 <input name="caseSensitive" id="string_-caseSensitive" type="checkbox">
 <label for="string_-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
-<div class="charSets hide">
-<input name="charSets" id="string_-charSets" type="checkbox">
-<label for="string_-charSets" name="charSets">Char sets</label>
-</div>
 <div class="ignoreJoiners">
 <input name="ignoreJoiners" id="string_-ignoreJoiners" type="checkbox">
 <label for="string_-ignoreJoiners" name="ignoreJoiners">Ignore joiners</label>
+</div>
+<div class="charSets hide">
+<input name="charSets" id="string_-charSets" type="checkbox">
+<label for="string_-charSets" name="charSets">Char sets</label>
 </div>
 <div class="acrossElements">
 <input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
@@ -381,10 +389,11 @@
 <button class="next" type="button" onclick="nextMatch();"></button>
 <button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
 <button class="text" type="button" onclick="setTextMode(event)">Text</button>
-<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<select class="default-html" onchange="selectHtml(this)">
+</select>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Test Html</p>
+<p>HTML</p>
 <shadow-dom-array class="test-container">
 </shadow-dom-array>
 </div>
@@ -407,13 +416,13 @@
 <input name="caseSensitive" id="array-caseSensitive" type="checkbox">
 <label for="array-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
-<div class="charSets hide">
-<input name="charSets" id="array-charSets" type="checkbox">
-<label for="array-charSets" name="charSets">Char sets</label>
-</div>
 <div class="ignoreJoiners">
 <input name="ignoreJoiners" id="array-ignoreJoiners" type="checkbox">
 <label for="array-ignoreJoiners" name="ignoreJoiners">Ignore joiners</label>
+</div>
+<div class="charSets hide">
+<input name="charSets" id="array-charSets" type="checkbox">
+<label for="array-charSets" name="charSets">Char sets</label>
 </div>
 <div class="acrossElements">
 <input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
@@ -605,10 +614,11 @@
 <button class="next" type="button" onclick="nextMatch();"></button>
 <button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
 <button class="text" type="button" onclick="setTextMode(event)">Text</button>
-<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<select class="default-html" onchange="selectHtml(this)">
+</select>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Test Html</p>
+<p>HTML</p>
 <shadow-dom-regexp class="test-container">
 </shadow-dom-regexp>
 </div>
@@ -748,10 +758,11 @@
 <button class="next" type="button" onclick="nextMatch();"></button>
 <button class="html" type="button" onclick="setHtmlMode(event)">Html</button>
 <button class="text" type="button" onclick="setTextMode(event)">Text</button>
-<button class="default" type="button" onclick="loadDefaultHtml()">Default</button>
+<select class="default-html" onchange="selectHtml(this)">
+</select>
 <button class="clear" type="button" onclick="clearEditor(this);"></button>
 </div>
-<p>Test Html</p>
+<p>HTML</p>
 <shadow-dom-ranges class="test-container">
 </shadow-dom-ranges>
 </div>
@@ -991,8 +1002,8 @@ otherwise only the custom elements do have boundaries</li>
 
 <div id="accuracyObject">
 <ul>
-<li><code>value</code> <em class="type">string</em> 'exactly' or 'complementary'</li>
-<li><code>limiters</code> <em class="type">object</em> : a string or an array of custom word boundary characters, e.g. <span class="accuracy-exactly hide"><code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></span><span class="accuracy-complementary hide"><code>{ value : &quot;complementary&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code><br>The default word boundary chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span></li>
+<li><code>value</code> <em class="type">string</em> 'exactly' or 'startsWith' or 'complementary'</li>
+<li><code>limiters</code> <em class="type">object</em> : a string or an array of custom word boundary characters, e.g. <span class="accuracy-exactly hide"><code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></span><span class="accuracy-startsWith hide"><code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code></span><span class="accuracy-complementary hide"><code>{ value : &quot;complementary&quot;, limiters : &quot;,.;:?!'\&quot;&quot; }</code><br>The default word boundary chars are: <code>!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~¡¿</code></span></li>
 </ul>
 </div>
 
@@ -1015,14 +1026,6 @@ If you provided an object with property <code>style</code>, the style element wi
 <li><code>char</code> <em class="type">string</em> <code>\x01</code> A custom boundary character
 </li>
 </ul>
-</div>
-
-<div id="combinePatterns">
-Combines given numbers of RegExp patterns into a single pattern. Any number bigger than the array length or <code>Infinity</code> creates a single combined pattern.
-</div>
-
-<div id="cacheTextNodes">
-This option will improve performance when marking a (especially)large array or string with <code>separateWordSearch</code> option.<br>
 </div>
 
 <div id="stringArrayCustomCode">

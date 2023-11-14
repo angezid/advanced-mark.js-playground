@@ -15,10 +15,10 @@ const test = {
 			`{"section":{"type":"array","acrossElements":true,"blockElementsBoundary":true,"combinePatterns":10,"cacheTextNodes":true,"shadowDOM":true,"debug":true,"queryArray":"['query','test']","selectors":"p,li","selectorAll":true}}`,
 		],
 		regexp : [
-			`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"separateGroups":true,"blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","wrapAllRanges":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/gi","selectors":"p,li","selectorAll":true}}`,
-			`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"ignoreGroups":1,"debug":true,"queryRegExp":"/()\\\\b(query|test)\\\\b/gi","selectors":"p,li","selectorAll":true}}`,
+			`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"separateGroups":true,"blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","wrapAllRanges":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/dgi","selectors":"p,li","selectorAll":true}}`,
+			`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"ignoreGroups":1,"debug":true,"queryRegExp":"/()\\\\b(query|test)\\\\b/dgi","selectors":"p,li","selectorAll":true}}`,
 
-			`{"section":{"type":"regexp","acrossElements":true,"separateGroups":true,"wrapAllRanges":true,"queryRegExp":"/\\\\b(query|test)\\\\b/gi"}}`
+			`{"section":{"type":"regexp","acrossElements":true,"separateGroups":true,"wrapAllRanges":true,"queryRegExp":"/\\\\b(query|test)\\\\b/dgi"}}`
 		],
 		ranges : [
 			`{"section":{"type":"ranges","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"wrapAllRanges":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryRanges":"[{'start':0,'length':5},{'start':6,'length':6}]","selectors":"p,li","selectorAll":true}}`,
@@ -305,7 +305,7 @@ const test = {
 		importer.resetOptions();
 
 		if (internal) {
-			tab.loadDefaultSearchParameter();
+			tab.loadSearchParameter();
 			tab.loadDefaultHtml();
 			tab.updateCustomCode(codeBuilder.snippet);
 

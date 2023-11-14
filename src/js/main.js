@@ -1,7 +1,7 @@
 
 'use strict';
 
-const version = '2.2.0';
+const version = '2.3.0';
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -91,7 +91,7 @@ const defaultOptions = {
 	debug : { value : false, type : 'checkbox' },
 	log : { value : false, type : 'checkbox' },
 };
- 
+
 $(document).ready(function() {
 	let t0 = performance.now();
 
@@ -104,7 +104,8 @@ $(document).ready(function() {
 	tab.initTab();
 	settings.setCheckboxes();
 	tab.setDirty(false);
-	tab.buildExampleSelector(`header select#examples`, examples);
+	tab.buildExampleSelector();
+	tab.buildHtmlSelector();
 
 	console.log('total time - ' + (performance.now() - t0));
 });
@@ -153,7 +154,7 @@ const tab = {
 			if (settings.loadDefault || !saved) {
 				importer.resetOptions();
 
-				this.loadDefaultSearchParameter();
+				this.loadSearchParameter();
 				this.loadDefaultHtml();
 				runCode(true);
 
@@ -219,33 +220,44 @@ const tab = {
 
 		switch (currentType) {
 			case 'string_' :
-				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
-
-				setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
-				setCacheAndCombine($(`${optionPad} .separateWordSearch input`)[0]);
+				setAccuracy(this.getElement('accuracy', 'select')[0]);
+				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
+				setCacheAndCombine(this.getElement('separateWordSearch', 'input')[0]);
 				break;
 
 			case 'array' :
-				setAccuracy($(`${optionPad} .accuracy>select`)[0]);
+				setAccuracy(this.getElement('accuracy', 'select')[0]);
+				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
 
-				setAcrossElementsDependable($(`${optionPad} .acrossElements input`)[0]);
 				if (isVisible('combinePatterns')) {
-					setCombineNumber($(`${optionPad} .combinePatterns input`)[0]);
+					setCombineNumber(this.getElement('combinePatterns', 'input')[0]);
 				}
-				setSeparateWordValue($(`${optionPad} .separateWordSearch input`)[0]);
+				setSeparateWordValue(this.getElement('separateWordSearch', 'input')[0]);
 				break;
 
 			case 'regexp' :
-				setBlockElementsBoundary($(`${optionPad} .acrossElements input`)[0]);
-				setSeparateGroupsDependable($(`${optionPad} .separateGroups input`)[0]);
+				setBlockElementsBoundary(this.getElement('acrossElements', 'input')[0]);
+				setSeparateGroupsDependable(this.getElement('separateGroups', 'input')[0]);
 				break;
 
 			default : break;
 		}
 	},
 
-	buildExampleSelector : function(selector, obj) {
-		let options = '<option value="">Examples</option>';
+	buildHtmlSelector : function() {
+		const options = this.buildSelectorOptions(defaultHtmls);
+
+		$('select.default-html').html(options);
+	},
+
+	buildExampleSelector : function() {
+		const options = this.buildSelectorOptions(examples);
+
+		$('header select#examples').html(options);
+	},
+
+	buildSelectorOptions : function(obj) {
+		let options = '<option value="">' + obj['name'] + '</option>';
 
 		for (const key in obj) {
 			if (key !== 'name') {
@@ -254,7 +266,7 @@ const tab = {
 				options += `<option value="${key}">${title}</option>`;
 			}
 		}
-		$(selector).html(options);
+		return options;
 	},
 
 	buildSelector : function(selector, obj) {
@@ -288,18 +300,18 @@ const tab = {
 
 		if (force || testEditor.toString().trim() === '') {
 			const elem = this.getTestElement();
-			elem.innerHTML = defaultHtml;
+			elem.innerHTML = defaultHtmls['lorem'];
 
 			types[currentType].testEditorMode = 'text';
 			this.highlightButton('.text');
 		}
 	},
 
-	loadDefaultSearchParameter : function() {
+	loadSearchParameter : function() {
 		const info = this.getSearchEditorInfo();
 
 		if (info.editor.toString().trim() === '') {
-			let searchParameter = defaultSearchParameter[currentType];
+			let searchParameter = searchParameters[currentType];
 
 			if (searchParameter) {
 				if (currentType === 'array' || currentType === 'ranges') {
@@ -465,7 +477,7 @@ const tab = {
 
 	onUpdateEditor : function(code, selector) {
 		$(selector).parent('div').find('button.clear').toggleClass('hide', code.length === 0);
-		
+
 		this.setDirty(true);
 	},
 
@@ -545,9 +557,17 @@ const tab = {
 		types[currentType].isDirty = value;
 		$('header .save').toggleClass('dirty', value);
 	},
+	
+	getNumericalValue : function(option, defaultValue) {
+		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
+	},
+
+	getElement : function(option, name) {
+		return $(`${optionPad} .${option} ${name}`)
+	},
 
 	isChecked : function(option) {
-		return $(`${optionPad} .${option} input`).prop('checked');
+		return this.getElement(option, 'input').prop('checked');
 	},
 
 	getInnerHTML : function() {
@@ -640,8 +660,8 @@ function setSeparateGroupsDependable(elem) {
 // also DOM 'onchange' event
 function setAcrossElementsDependable(elem) {
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
-	
-	tab.switchElements(elem, '.acrossElementsValue'); // required
+
+	tab.switchElements(elem, '.acrossElementsValue');    // required
 
 	setBlockElementsBoundary(elem);
 }
@@ -672,7 +692,7 @@ function setCacheAndCombine(elem) {
 	tab.switchElements(elem, '.cacheTextNodes');
 	tab.switchElements(elem, '.separateWordValue');
 
-	if (tab.isChecked('separateWordSearch')) {
+	if (isVisible('combinePatterns')) {
 		setCombineNumber($('#string_-combinePatterns')[0]);
 	}
 }
@@ -740,9 +760,27 @@ function isAccuracyValue(value) {
 	return value === 'exactly' || value === 'complementary' || value === 'startsWith';
 }
 
+// DOM 'onchange' event
+function selectHtml(elem) {
+	const title = $(elem).val();
+	let content = defaultHtmls[title];
+
+	tab.setHtmlMode(content, false);
+	tab.setTextMode(null);
+}
+
 // also DOM 'onchange' event
 function setIframesTimeout(elem) {
 	tab.switchElements(elem, '.iframesTimeout');
+}
+
+// DOM 'onchange' event
+function selectDefaultHtml(elem) {
+	const title = $(elem).val();
+	let content = defaultHtmls[title];
+
+	tab.setHtmlMode(content, false);
+	tab.setTextMode(null);
 }
 
 // DOM 'onchange' event
@@ -925,11 +963,11 @@ const importer = {
 				switch (opt.type) {
 					case 'checkbox' :
 						if (option === 'separateWordSearch') {
-							$(`${optionPad} .separateWordValue>select`).val('true');
-							
-						} else if(option === 'acrossElementsValue') {
-							$(`${optionPad} .acrossElementsValue>select`).val('true');
-						} 
+							tab.getElement('separateWordValue', 'select').val('true');
+
+						} else if (option === 'acrossElementsValue') {
+							tab.getElement('acrossElementsValue', 'select').val('true');
+						}
 						$(selector + ' input').prop('checked', opt.value);
 						break;
 
@@ -986,15 +1024,15 @@ const importer = {
 						const notBoolean = saved !== true && saved !== false;
 
 						if (option === 'separateWordSearch' && notBoolean) {
-							$(`${optionPad} .separateWordValue>select`).val(saved ? saved : 'true');
+							tab.getElement('separateWordValue', 'select').val(saved || 'true');
 							saved = true;
 
 						} else if (option === 'acrossElements' && notBoolean) {
-							$(`${optionPad} .acrossElementsValue>select`).val(saved ? saved : 'true');
+							tab.getElement('acrossElementsValue', 'select').val(saved || 'true');
 							saved = true;
-							
+
 						} else if (option === 'combinePatterns') {
-							$(`${optionPad} .combineNumber input`).val(parseInt(saved) || 10);
+							tab.getElement('combineNumber', 'input').val(parseInt(saved) || 10);
 							saved = !isNullOrUndefined(json.section[option]);
 
 						} else if (option === 'shadowDOM' && notBoolean) {
@@ -1054,11 +1092,15 @@ const importer = {
 					if (content === 'defaultHtml') {
 						tab.loadDefaultHtml(true);
 
-					} else if (content === 'minHtml') {
-						tab.setHtmlMode(minHtml, false);
-
 					} else {
-						tab.setHtmlMode(content, false);
+						if (/^defaultHtmls\[(['"])\w+\1\]$/.test(content)) {
+							const match = /^defaultHtmls\[['"](\w+)['"]\]([^]*)/.exec(content);
+							tab.setHtmlMode(defaultHtmls[match[1]] + (match[2] || ''), false);
+
+						} else {
+							tab.setHtmlMode(content, false);
+						}
+						tab.setTextMode(null);
 					}
 				}
 
@@ -1168,8 +1210,8 @@ function setVariables() {
 	canBeNested = (currentType === 'regexp' || currentType === 'ranges') && tab.isChecked('wrapAllRanges');
 	flagEveryElement = currentType !== 'ranges' && !tab.isChecked('acrossElements');
 
-	const className = $(`${optionPad} .className input`).val().trim();
-	markElement = $(`${optionPad} .element input`).val().trim().toLowerCase() || 'mark';
+	const className = tab.getElement('className', 'input').val().trim();
+	markElement = tab.getElement('element', 'input').val().trim().toLowerCase() || 'mark';
 	markElementSelector = `${markElement}[data-markjs]${className ? '.' + className : ''}`;
 }
 
@@ -1222,7 +1264,7 @@ function runCode(reset) {
 
 	} else {
 		highlighter.highlight();
-		
+
 		const val = settings.loadValue('generated_code');
 		if (val && val === 'opened') {
 			$(".generated-code details").attr('open', true);
@@ -1260,10 +1302,15 @@ const codeBuilder = {
 			str = '',
 			text;
 
-		const name = $(`${optionPad} .element input`).val().trim();
+		const name = tab.getElement('element', 'input').val().trim();
 		if (name && name.toLowerCase() !== 'mark') {
 			unmarkOpt = `element :  '${name}',\n  `;
 		}
+		const klass = tab.getElement('className', 'input').val().trim();
+		if (klass) {
+			unmarkOpt += `className :  '${klass}',\n  `;
+		}
+
 		unmarkOpt += (tab.isChecked('iframes') ? 'iframes : true,\n  ' : '') + (tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '');
 
 		if (kind === 'jq') {
@@ -1287,7 +1334,7 @@ const codeBuilder = {
 		if (text = info.editor.toString().trim()) {
 			switch (currentType) {
 				case 'string_' :
-					str = `.mark('${text}', ${optionCode});`;
+					str = `.mark(${util.stringify(text)}, ${optionCode});`;
 					break;
 
 				case 'array' :
@@ -1342,7 +1389,9 @@ const codeBuilder = {
 				text = addCode(text, `highlighter.finish${doneParam}`, doneParam, /\bfunction\s+done(\([^)]+\))\s*\{/);
 			}
 			text = text.replace(new RegExp(`${this.comment}\s*\n`), '');
-			code = text.replace(/<<markjsCode>>(?:[ \t]*\/\/.*)?/, code);
+
+			// string replace() function causes problem when the code contains combination of $$, $&, $', $`, $n
+			code = text.split(/<<markjsCode>>(?:[ \t]*\/\/.*)?/).join(code);
 		}
 
 		function addCode(text, fn, param, regex) {
@@ -1375,16 +1424,16 @@ const codeBuilder = {
 						if (isNullOrUndefined(value)) break;
 
 						if (option === 'separateWordSearch' && value === opt.value) {
-							const selectValue = $(`${optionPad} .separateWordValue select`).val();
+							const selectValue = tab.getElement('separateWordValue', 'select').val();
 
 							if (selectValue && selectValue != 'true') {
 								code += `${indent}${option} : '${selectValue}',\n`;
 								break;
 							}
 						}
-						
+
 						if (option === 'acrossElements' && value === true && isVisible('acrossElementsValue')) {
-							const selectValue = $(`${optionPad} .acrossElementsValue select`).val();
+							const selectValue = tab.getElement('acrossElementsValue', 'select').val();
 
 							if (selectValue && selectValue != 'true') {
 								code += `${indent}${option} : '${selectValue}',\n`;
@@ -1395,7 +1444,7 @@ const codeBuilder = {
 						if (value !== opt.value) {
 							if (option === 'combinePatterns') {
 								if (markArray()) {
-									value = util.getNumericalValue('combineNumber', 10);
+									value = tab.getNumericalValue('combineNumber', 10);
 
 								} else {
 									value = null;
@@ -1626,17 +1675,17 @@ const Json = {
 						if (isNullOrUndefined(value)) break;
 
 						if (option === 'separateWordSearch' && value === opt.value) {
-							const selectValue = $(`${optionPad} .separateWordValue select`).val();
+							const selectValue = tab.getElement('separateWordValue', 'select').val();
 
 							if (selectValue && selectValue != 'true') {
 								json += `,"${option}":"${selectValue}"`;
 								break;
 							}
 						}
-						
+
 						if (option === 'acrossElements' && value === true && isVisible('acrossElementsValue')) {
-							const selectValue = $(`${optionPad} .acrossElementsValue select`).val();
-							
+							const selectValue = tab.getElement('acrossElementsValue', 'select').val();
+
 							if (selectValue && selectValue != 'true') {
 								json += `,"${option}":"${selectValue}"`;
 								break;
@@ -1646,7 +1695,7 @@ const Json = {
 						if (value !== opt.value) {
 							if (option === 'combinePatterns') {
 								if (markArray()) {
-									json += `,"combinePatterns":${util.getNumericalValue('combineNumber', 10)}`;
+									json += `,"combinePatterns":${tab.getNumericalValue('combineNumber', 10)}`;
 								}
 
 							} else if (option === 'shadowDOM') {
@@ -1789,8 +1838,12 @@ function registerEvents() {
 	$(".generated-code details").on('toggle', function(e) {
 		const attr = $(this).attr('open');
 		settings.saveValue('generated_code', attr ? 'opened' : 'closed');
+
+		if(attr && !$(this).find('pre').text()) {
+			runCode();
+		}
 	});
-	
+
 	$("#internal-code").on('toggle', function(e) {
 		const attr = $(this).attr('open');
 		settings.saveValue('internal_code', attr ? 'opened' : 'closed');
@@ -1816,13 +1869,19 @@ function registerEvents() {
 
 	$("input[type=text]").on('input', function(e) {
 		codeBuilder.build('js-jq');
+		if(settings.runOnchange) {
+			runCode();
+		}
 		tab.setDirty(true);
 	});
 
-	$("input[type=checkbox], input[type=number], select[name]").on('change', function(e) {
+	$("input[type=checkbox], input[type=number], input[type=text], select[name]").on('change', function(e) {
 		codeBuilder.build('js-jq');
 
 		if ($(this).attr('name')) {
+			if(settings.runOnchange) {
+				runCode();
+			}
 			tab.setDirty(true);
 		}
 	});
@@ -1943,15 +2002,18 @@ const util = {
 		return this.voidElements.indexOf(node.nodeName.toLowerCase()) !== -1;
 	},
 
-	getNumericalValue : function(option, defaultValue) {
-		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
-	},
-
 	entitize : function(text) {
 		text = text.replace(/[<>&"']/g, m => {
 			return m === '<' ? '&lt;' : m === '>' ? '&gt;' : m === '&' ? '&amp;' : m === '"' ? '&quot;' : '&#039;';
 		});
 		return text;
+	},
+
+	// stringifies a str if it isn't a real string
+	stringify : function(str) {
+		const reg =/^(?:(['"])(?:(?:(?!\1|\\).)|(?:\\.))+\1|`(?:(?:(?![`\\])[^])|(?:\\.))+`)$/;
+
+		return reg.test(str.trim()) ? str : JSON.stringify(str);
 	},
 
 	distinct : function(arr) {
@@ -1979,6 +2041,7 @@ const settings = {
 	loadDefault : true,
 	showTooltips : false,
 	showWarning : true,
+	runOnchange : false,
 
 	save : function() {
 		const str = JSON.stringify(settings);
@@ -2001,6 +2064,10 @@ const settings = {
 				if ( !isNullOrUndefined(json.showWarning)) {
 					this.showWarning = json.showWarning;
 				}
+				
+				if ( !isNullOrUndefined(json.runOnchange)) {
+					this.runOnchange = json.runOnchange;
+				}
 				this.setCheckboxes();
 			}
 		}
@@ -2010,12 +2077,14 @@ const settings = {
 		$('#load-default').prop('checked', this.loadDefault);
 		$('#show-tooltips').prop('checked', this.showTooltips);
 		$('#unsaved').prop('checked', this.showWarning);
+		$('#run-onchange').prop('checked', this.runOnchange);
 	},
 
 	changed : function(elem) {
 		this.loadDefault = $('#load-default').prop('checked');
 		this.showTooltips = $('#show-tooltips').prop('checked');
 		this.showWarning = $('#unsaved').prop('checked');
+		this.runOnchange = $('#run-onchange').prop('checked');
 		this.save();
 	},
 
@@ -2051,7 +2120,7 @@ function toText(obj, title, msg) {
 function getFileName() {
 	let name = settings.loadValue(currentType + '-fileName');
 
-	return name || `${(currentType === 'string_' ? 'string' : currentType)}-advanced-lib.json`;
+	return name || `${(currentType === 'string_' ? 'string' : currentType)}.json`;
 }
 
 function showTooltip(id, elem, e) {

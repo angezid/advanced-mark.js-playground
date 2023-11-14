@@ -1,6 +1,6 @@
 {
   "name": "advanced-mark.js-playground",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Help to get familiar with advanced-mark.js, generate code, play with custom code and HTML.",
   "keywords": [
     "playground",
@@ -13,6 +13,10 @@
     "name": "angezid",
     "url": "https://github.com/angezid"
   },
+  "bugs": {
+    "url": "https://github.com/angezid/advanced-mark.js-playground/issues"
+  },
+  "homepage": "https://github.com/angezid/advanced-mark.js-playground#readme",
   "license": "MIT",
   "dependencies": {
     "http-server": "^14.1.1",

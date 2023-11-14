@@ -20,6 +20,7 @@ const highlighter = {
 	
 	markContext : function(parameter, options, settings, fn) {
 		settings.testContainer.unmark({
+			'element' : '*',
 			'iframes' : options.iframes,
 			'shadowDOM' : options.shadowDOM,
 			'done' : () => {
@@ -247,7 +248,7 @@ const highlighter = {
 		
 		obj.iframes = tab.isChecked('iframes');
 		if (obj.iframes) {
-			obj.iframesTimeout = util.getNumericalValue('iframesTimeout', 5000);
+			obj.iframesTimeout = tab.getNumericalValue('iframesTimeout', 5000);
 		}
 		
 		if (currentType === 'string_' || currentType === 'array') {
@@ -278,7 +279,7 @@ const highlighter = {
 			obj.separateGroups = tab.isChecked('separateGroups');
 			
 			if ( !obj.separateGroups) {
-				obj.ignoreGroups = util.getNumericalValue('ignoreGroups', 0);
+				obj.ignoreGroups = tab.getNumericalValue('ignoreGroups', 0);
 			}
 		}
 		
@@ -323,7 +324,7 @@ const highlighter = {
 			
 			const combine = tab.isChecked('combinePatterns');
 			if (combine) {
-				obj.combinePatterns = util.getNumericalValue('combineNumber', 10);
+				obj.combinePatterns = tab.getNumericalValue('combineNumber', 10);
 			}
 		}
 		
@@ -356,15 +357,12 @@ const highlighter = {
 	
 	getSearchParameter : function(name, selector) {
 		const info = tab.getSearchEditorInfo();
-		let parameter = info.editor.toString();
+		let parameter = info.editor.toString(),
+			result;
 		if ( !parameter.trim()) return null;
 		
-		let result;
-		
 		if (currentType === 'string_') {
-			if ( !/^(['"`])[^]+\1$/.test(parameter.trim())) {
-				parameter = JSON.stringify(parameter);
-			}
+			parameter = util.stringify(parameter);
 		}
 		
 		try {
