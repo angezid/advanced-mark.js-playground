@@ -557,7 +557,7 @@ const tab = {
 		types[currentType].isDirty = value;
 		$('header .save').toggleClass('dirty', value);
 	},
-	
+
 	getNumericalValue : function(option, defaultValue) {
 		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
 	},
@@ -1839,7 +1839,7 @@ function registerEvents() {
 		const attr = $(this).attr('open');
 		settings.saveValue('generated_code', attr ? 'opened' : 'closed');
 
-		if(attr && !$(this).find('pre').text()) {
+		if (attr && !$(this).find('pre').text()) {
 			runCode();
 		}
 	});
@@ -1869,7 +1869,7 @@ function registerEvents() {
 
 	$("input[type=text]").on('input', function(e) {
 		codeBuilder.build('js-jq');
-		if(settings.runOnchange) {
+		if (settings.runOnchange) {
 			runCode();
 		}
 		tab.setDirty(true);
@@ -1879,7 +1879,7 @@ function registerEvents() {
 		codeBuilder.build('js-jq');
 
 		if ($(this).attr('name')) {
-			if(settings.runOnchange) {
+			if (settings.runOnchange) {
 				runCode();
 			}
 			tab.setDirty(true);
@@ -2011,7 +2011,7 @@ const util = {
 
 	// stringifies a str if it isn't a real string
 	stringify : function(str) {
-		const reg =/^(?:(['"])(?:(?:(?!\1|\\).)|(?:\\.))+\1|`(?:(?:(?![`\\])[^])|(?:\\.))+`)$/;
+		const reg = /^(?:(['"])(?:(?:(?!\1|\\).)|(?:\\.))+\1|`(?:(?:(?![`\\])[^])|(?:\\.))+`)$/;
 
 		return reg.test(str.trim()) ? str : JSON.stringify(str);
 	},
@@ -2064,7 +2064,7 @@ const settings = {
 				if ( !isNullOrUndefined(json.showWarning)) {
 					this.showWarning = json.showWarning;
 				}
-				
+
 				if ( !isNullOrUndefined(json.runOnchange)) {
 					this.runOnchange = json.runOnchange;
 				}
@@ -2206,7 +2206,7 @@ function previousMatch() {
 	if (canBeNested) {
 		if (--currentIndex <= 0) currentIndex = 0;
 
-		highlightMatch2();
+		highlightMatch2(true);
 
 	} else {
 		if ( !startElements.length) return;
@@ -2220,7 +2220,7 @@ function nextMatch() {
 	if (canBeNested) {
 		if (++currentIndex > matchCount - 1) currentIndex = matchCount - 1;
 
-		highlightMatch2();
+		highlightMatch2(true);
 
 	} else {
 		if ( !startElements.length) return;
@@ -2270,10 +2270,10 @@ function findNextPrevious(next) {
 		}
 	}
 
-	highlightMatch(elem);
+	highlightMatch(elem, true);
 }
 
-function highlightMatch(elem) {
+function highlightMatch(elem, buttonClick) {
 	marks.removeClass('current');
 
 	const htmlMode = types[currentType].testEditorMode === 'html';
@@ -2300,12 +2300,14 @@ function highlightMatch(elem) {
 	});
 
 	setButtonOpacity();
-	setTimeout(function() { scrollIntoView(elem); }, 100);
+	if (buttonClick || scroll()) {
+		setTimeout(scrollIntoView(elem), 100);
+	}
 }
 
 // highlight a whole match using only the 'start elements' is not possible with nesting/overlapping matches
 // using numbers as unique match identifiers can solve this problem, but only with single-pass methods - 'markRegExp' and 'markRanges'
-function highlightMatch2() {
+function highlightMatch2(buttonClick) {
 	marks.removeClass('current');
 	let elems;
 
@@ -2319,7 +2321,9 @@ function highlightMatch2() {
 		elems.find(`${markElement}[data-markjs]`).addClass('current');
 	}
 	setButtonOpacity();
-	setTimeout(function() { scrollIntoView(elems.first()); }, 100);
+	if (buttonClick || scroll()) {
+		setTimeout(scrollIntoView(elems.first()), 100);
+	}
 }
 
 function setButtonOpacity() {
@@ -2331,6 +2335,10 @@ function setButtonOpacity() {
 		previousButton.css('opacity', currentIndex > 0 ? 1 : 0.5);
 		nextButton.css('opacity', currentIndex < (canBeNested ? matchCount - 1 : startElements.length - 1) ? 1 : 0.5);
 	}
+}
+
+function scroll() {
+	return $(window).width() > 980;    // not collapsed to the single column
 }
 
 function scrollIntoView(elem) {

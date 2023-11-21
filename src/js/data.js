@@ -180,7 +180,7 @@ const examples = {
             "type": "regexp",
             "acrossElements": true,
             "separateGroups": true,
-            "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match.length === 4 && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
+            "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match[3] && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
             "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/g",
             "testString": {
                 "mode": "html",
