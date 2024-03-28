@@ -111,7 +111,7 @@ const code = {
 	setText : function(text) {
 		tab.setTextMode(text);
 	},
-
+	
 	// code.setHtml(iframes);
 	setHtml : function(html) {
 		tab.setHtmlMode(html, false);
@@ -1320,11 +1320,6 @@ const codeBuilder = {
 			code += this.buildContextCode(code);
 
 			code += `\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
-			
-			/*const time = `\n    time = performance.now();`;
-			code = `let options;\n`;
-			
-			code += `const instance = new Mark(tab.getTestElement());\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;*/
 		}
 
 		if (text = info.editor.toString().trim()) {
@@ -1370,17 +1365,16 @@ const codeBuilder = {
 	},
 
 	buildContextCode : function(code) {
-		code = `let options, elems;
-const elem = tab.getTestElement(),
-	info = tab.getSelectorsEditorInfo(),
+		code = `let options, context= tab.getTestElement(); 
+const info = tab.getSelectorsEditorInfo(),
 	selectors = info.editor.toString().trim();
 
 if (selectors) {
-	elems = $(info.all).prop('checked') ? elem.querySelectorAll(selectors) : elem.querySelector(selectors);
-} else {
-	elems = elem;
+	context = $(info.all).prop('checked') ? context.querySelectorAll(selectors) : context.querySelector(selectors);
 }
-const instance = new Mark(elems);`;
+
+const instance = new Mark(context);`;
+
 		return code; 
 	},
 	
