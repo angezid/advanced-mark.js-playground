@@ -111,7 +111,7 @@ const code = {
 	setText : function(text) {
 		tab.setTextMode(text);
 	},
-	
+
 	// code.setHtml(iframes);
 	setHtml : function(html) {
 		tab.setHtmlMode(html, false);
@@ -1307,7 +1307,15 @@ const codeBuilder = {
 			unmarkOpt += `className :  '${klass}',\n  `;
 		}
 
-		unmarkOpt += (tab.isChecked('iframes') ? 'iframes : true,\n  ' : '') + (tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '');
+		if(tab.isChecked('iframes')) {
+			unmarkOpt += `iframes : true,\n  `;
+			const timeout = tab.getNumericalValue('iframesTimeout', 5000);
+			if(timeout !== 5000) {
+				unmarkOpt += `iframesTimeout : ${timeout},\n  `;
+			}
+		}
+
+		unmarkOpt += tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '';
 
 		if (kind === 'jq') {
 			code = `$('selector')` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    $('selector')` : '');
@@ -1365,7 +1373,7 @@ const codeBuilder = {
 	},
 
 	buildContextCode : function(code) {
-		code = `let options, context= tab.getTestElement(); 
+		code = `let options, context= tab.getTestElement();
 const info = tab.getSelectorsEditorInfo(),
 	selectors = info.editor.toString().trim();
 
@@ -1375,9 +1383,9 @@ if (selectors) {
 
 const instance = new Mark(context);`;
 
-		return code; 
+		return code;
 	},
-	
+
 	buildCustomCode : function(code, kind) {
 		let text;
 		const reg = /\s+/g,
@@ -1843,7 +1851,7 @@ function registerEvents() {
 	$(".generated-code details").on('toggle', function(e) {
 		const attr = $(this).attr('open');
 		settings.saveValue('generated_code', attr ? 'opened' : 'closed');
-		
+
 		if (attr && !$(this).find('pre').text()) {
 			runCode();
 		}
