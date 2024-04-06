@@ -150,7 +150,7 @@ const examples = {
             "iframes": true,
             "combinePatterns": 10,
             "customCode": "// don't foget to launch a sever (see README)\\n// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
-            "queryString": "iframe test wikipedia encyclopedia",
+            "queryString": "iframe test lorem ipsum",
             "testString": {
                 "mode": "html",
                 "content": "Iframes test"
@@ -158,6 +158,20 @@ const examples = {
         }
     }`,
 
+	srcdocIframe : `{
+        "version": "2.0.0",
+        "section": {
+            "type": "string_",
+            "accuracy": "startsWith",
+            "diacritics": false,
+            "iframes": true,
+            "customCode": "code.setHtml('<iframe srcdoc=\\"Hello world!\\"></iframe>');\\n// adds event listener to the search editor\\ncode.setListener('keyup', runCode);\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "queryString": "h",
+            "selectors": "iframe",
+            "selectorAll": true
+        }
+    }`,
+    
 	markWhileTyping : `{
         "version": "2.0.0",
         "section": {
@@ -261,6 +275,23 @@ const examples = {
             "testString": {
                 "mode": "html",
                 "content": "123\\n132\\n213\\n231\\n312\\n321\\n\\nDemonstrates 'wrapAllRanges' option"
+            }
+        }
+    }`,
+    
+	testMobiles : `{
+        "version": "2.4.0",
+        "library": "advanced",
+        "section": {
+            "type": "array",
+            "accuracy": "exactly",
+            "diacritics": false,
+            "combinePatterns": 200,
+            "customCode": "let count = 0;\\n// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(textNode, term, matchesSoFar, termMatchesSoFar, info) {\\n   // if (++count > 100) { info.execution.abort = true; return false; }\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "queryArray": "wordArrays.words_50",
+            "testString": {
+                "mode": "html",
+                "content": "defaultHtmls['text_100KB']"
             }
         }
     }`,
