@@ -1324,11 +1324,16 @@ const codeBuilder = {
 		} else if (kind === 'js') {
 			code = `const instance = new Mark('selector');\ninstance` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    instance` : '');
 
-		} else {
+		} else { // internal
 			const time = `\n    time = performance.now();`;
 			code += this.buildContextCode(code);
+			
+			const iframes = location.protocol === 'file:' ? '' : 'iframes : true,\n  ';
 
-			code += `\ninstance.unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
+			unmarkOpt = `element :  '*',\n  ${iframes}shadowDOM : true,\n  `;
+
+			code += `\n// unmarks whole editor regardless of selectors or other options`;
+			code += `\nnew Mark(editor).unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
 		}
 
 		if (text = info.editor.toString().trim()) {
@@ -1374,7 +1379,8 @@ const codeBuilder = {
 	},
 
 	buildContextCode : function(code) {
-		code = `let options, context = tab.getTestElement();
+		code = `const editor = tab.getTestElement();
+let options, context = editor;
 // checks selector editor
 const info = tab.getSelectorsEditorInfo(),
 	selectors = info.editor.toString().trim();
