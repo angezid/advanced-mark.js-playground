@@ -1,7 +1,7 @@
 
 'use strict';
 
-const version = '2.4.0';
+const version = '2.4.1';
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -2208,7 +2208,7 @@ function isVisible(klass) {
 }
 
 function isNullOrUndefined(prop) {
-	return typeof prop === 'undefined' || prop === null;
+	return prop == null;
 }
 
 function isDirty() {
