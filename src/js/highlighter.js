@@ -21,7 +21,7 @@ const highlighter = {
 	markContext : function(parameter, options, settings, fn) {
 		settings.testContainer.unmark({
 			'element' : '*',
-			'iframes' : location.protocol !== 'file:', // avoids unnecessary delay when processing iframes
+			'iframes' : location.protocol !== 'file:', // avoids unnecessary delay when protocol is 'file:'
 			'shadowDOM' : true,
 			'done' : () => {
 				time = performance.now();
