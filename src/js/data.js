@@ -54,7 +54,7 @@ const examples = {
 	name : 'Examples',
 	
 	exclude : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "array",
             "exclude": "'.exclude, .exclude *'",
@@ -68,12 +68,11 @@ const examples = {
     }`,
     
 	preserveTerms : ` {
-        "version": "2.1.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": "preserveTerms",
             "diacritics": false,
-            "combinePatterns": 10,
             "queryString": "word \\"preserved term\\" \\"\\"quoted term\\"\\"",
             "testString": {
                 "mode": "html",
@@ -83,7 +82,7 @@ const examples = {
     }`,
 
 	accuracyExactly : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "{ value: 'exactly', limiters : ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
@@ -96,13 +95,12 @@ const examples = {
     }`,
 
 	accuracyStartsWith : `{
-        "version": "2.2.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": "preserveTerms",
             "accuracy": "startsWith",
             "diacritics": false,
-            "combinePatterns": 10,
             "queryString": "acc opt \\"st w val\\"",
             "testString": {
                 "mode": "html",
@@ -112,7 +110,7 @@ const examples = {
     }`,
 
 	ignorePunctuation : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -125,8 +123,25 @@ const examples = {
         }
     }`,
 
+	characterSetsUnicode : `{
+        "version": "3.0.0",
+        "library": "advanced",
+        "section": {
+            "type": "string_",
+            "diacritics": false,
+            "characterSets": true,
+            "unicode": true,
+            "debug": true,
+            "queryString": "hello [\\\\p{Sc}][\\\\d.]+ [\\\\p{sc=Han}] [\\\\p{Nl}] [\\\\u{1d4b3}]",
+            "testString": {
+                "mode": "html",
+                "content": "  <p>Prices: $19.99, \\"€18.99, ¥2000</p>\\n  <p>Hello 你好 123 Ⅻ</p>\\n  𝒳 x"
+            }
+        }
+    }`,
+
 	shadowDOM : `{
-		"version": "2.0.0",
+		"version": "3.0.0",
         "section": {
             "type": "array",
             "diacritics": false,
@@ -141,14 +156,13 @@ const examples = {
 	}`,
 
 	iframes : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
             "exclude": "'#ifr2'",
             "iframes": true,
-            "combinePatterns": 10,
             "customCode": "// don't foget to launch a sever (see README)\\n// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "iframe test lorem ipsum",
             "testString": {
@@ -159,7 +173,7 @@ const examples = {
     }`,
 
 	srcdocIframe : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "startsWith",
@@ -173,7 +187,7 @@ const examples = {
     }`,
     
 	markWhileTyping : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -189,7 +203,7 @@ const examples = {
     }`,
 
 	markSeparateGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -204,7 +218,7 @@ const examples = {
     }`,
 
 	blockElementsBoundary : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": false,
@@ -221,7 +235,7 @@ const examples = {
 	}`,
 
 	markLineRanges : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "ranges",
             "wrapAllRanges": true,
@@ -235,7 +249,7 @@ const examples = {
     }`,
 
 	overlappedMatches : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -250,7 +264,7 @@ const examples = {
     }`,
 
 	overlappedGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -265,7 +279,7 @@ const examples = {
     }`,
 
 	randomGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -280,13 +294,13 @@ const examples = {
     }`,
     
 	performance : `{
-        "version": "2.4.0",
+        "version": "3.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
             "accuracy": "exactly",
             "diacritics": false,
-            "combinePatterns": 200,
+            "combineby": 200,
             "customCode": "let count = 0;\\n// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(textNode, term, matchesSoFar, termMatchesSoFar, info) {\\n   // if (++count > 100) { info.execution.abort = true; return false; }\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryArray": "wordArrays.words_50",
             "testString": {

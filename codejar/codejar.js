@@ -478,13 +478,6 @@ function CodeJar(editor, highlighter, opt = {}) {
 		pos.start = right ? start : pos.start;
 		pos.end = right ? pos.end : start;
 		select(pos);
-
-		const text = getSelection().toString(),
-			normalized = normalizeSpaces(text);
-
-		insert(normalized);
-		pos.end += (normalized.length - text.length);
-		select(pos);
 	}
 	function normalizeSpaces(text) {
 		const indentReg = /(^|\n)[ \t]+(?=(\S)?)/g;

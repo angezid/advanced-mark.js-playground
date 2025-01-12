@@ -2,17 +2,17 @@
 const test = {
 	jsons : {
 		string_ : [
-			`{"section":{"type":"string_","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"{value:'exactly',limiters:[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","combinePatterns":101,"cacheTextNodes":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryString":"query test","selectors":"p,li","selectorAll":true}}`,
+			`{"section":{"type":"string_","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"{value:'exactly',limiters:[',','.']}","diacritics":false,"iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","combineBy":101,"characterSets":true,"unicode":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryString":"query test","selectors":"p,li","selectorAll":true}}`,
 
-			`{"section":{"type":"string_","cacheTextNodes":true,"queryString":"query test"}}`,
+			`{"section":{"type":"string_","characterSets":true,"unicode":true,"queryString":"query test"}}`,
 
-			`{"section":{"type":"string_","combinePatterns":1,"shadowDOM":true,"queryString":"query test"}}`,
+			`{"section":{"type":"string_","combineBy":1,"shadowDOM":true,"queryString":"query test"}}`,
 
 			`{"section":{"type":"string_","acrossElements":true,"blockElementsBoundary":true,"queryString":"query test"}}`,
 		],
 		array : [
-			`{"section":{"type":"array","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"{value:'exactly',limiters:[',','.']}","diacritics":false,"synonyms":"{'one':'1'}","iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","combinePatterns":101,"cacheTextNodes":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryArray":"['query','test']","selectors":"p,li","selectorAll":true}}`,
-			`{"section":{"type":"array","acrossElements":true,"blockElementsBoundary":true,"combinePatterns":10,"cacheTextNodes":true,"shadowDOM":true,"debug":true,"queryArray":"['query','test']","selectors":"p,li","selectorAll":true}}`,
+			`{"section":{"type":"array","element":"span","className":"test","exclude":"['h1','.ignore']","accuracy":"{value:'exactly',limiters:[',','.']}","diacritics":false,"iframes":true,"iframesTimeout":4999,"acrossElements":true,"caseSensitive":true,"ignoreJoiners":true,"ignorePunctuation":"[',','.']","wildcards":"enabled","blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","combineBy":101,"characterSets":true,"unicode":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryArray":"['query','test']","selectors":"p,li","selectorAll":true}}`,
+			`{"section":{"type":"array","acrossElements":true,"blockElementsBoundary":true,"combineBy":11,"characterSets":true,"unicode":true,"shadowDOM":true,"debug":true,"queryArray":"['query','test']","selectors":"p,li","selectorAll":true}}`,
 		],
 		regexp : [
 			`{"section":{"type":"regexp","element":"span","className":"test","exclude":"['h1','.ignore']","iframes":true,"iframesTimeout":4999,"acrossElements":true,"separateGroups":true,"blockElementsBoundary":"{tagNames:['div','p'],char:'.'}","wrapAllRanges":true,"shadowDOM":"{style:'mark[data-markjs]{color:red;}'}","debug":true,"queryRegExp":"/\\\\b(?:query|test)\\\\b/dgi","selectors":"p,li","selectorAll":true}}`,
@@ -34,9 +34,7 @@ const test = {
 	// for testing options, which are dependable on other option(s)
 	dependables : {
 		string_ : [
-			{ json : `{"section":{"type":"string_","separateWordSearch":false,"combinePatterns":100,"cacheTextNodes":true,"blockElementsBoundary":true,"queryString":"query test"}}`, options : ['combinePatterns', 'cacheTextNodes', 'blockElementsBoundary'] },
-
-			{ json : `{"section":{"type":"string_","separateWordSearch":false,"acrossElements":true,"cacheTextNodes":true,"queryString":"query test"}}`, options : ['cacheTextNodes'] },
+			{ json : `{"section":{"type":"string_","separateWordSearch":false,"combineBy":100,"blockElementsBoundary":true,"queryString":"query test"}}`, options : [ 'blockElementsBoundary'] },
 		],
 
 		array : [

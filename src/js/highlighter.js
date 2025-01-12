@@ -36,26 +36,25 @@ const highlighter = {
 
 		const hl = this,
 			settings = this.getCurrentSettings();
-
+		
 		const options = {
 			'element' : settings.element,
 			'className' : settings.className,
 			'separateWordSearch' : settings.separateWordSearch,
 			'diacritics' : settings.diacritics,
 			'caseSensitive' : settings.caseSensitive,
+			'characterSets' : settings.characterSets,
+			'unicode' : settings.unicode,
 			'ignoreJoiners' : settings.ignoreJoiners,
 			'acrossElements' : settings.acrossElements,
-			'combinePatterns' : settings.combinePatterns,
-			'cacheTextNodes' : settings.cacheTextNodes,
+			'combineBy' : settings.combineBy,
 			'shadowDOM' : settings.shadowDOM,
 			'wrapAllRanges' : settings.wrapAllRanges,
 			'blockElementsBoundary' : settings.blockElementsBoundary,
 
-			'charSets' : settings.charSets,
 			'accuracy' : settings.accuracy,
 			'wildcards' : settings.wildcards,
 
-			'synonyms' : settings.synonyms,
 			'ignorePunctuation' : settings.ignorePunctuation,
 			'exclude' : settings.exclude,
 
@@ -73,7 +72,7 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (t) => { noMatchTerms.push(t); }
 		};
-
+		
 		this.markContext(parameter, options, settings, 'mark');
 	},
 
@@ -259,13 +258,13 @@ const highlighter = {
 			}
 			obj.diacritics = tab.isChecked('diacritics');
 			obj.caseSensitive = tab.isChecked('caseSensitive');
-			obj.charSets = tab.isChecked('charSets');
+			obj.characterSets = tab.isChecked('characterSets');
+			obj.unicode = tab.isChecked('unicode');
 			obj.ignoreJoiners = tab.isChecked('ignoreJoiners');
 
 			obj.accuracy = $(`${optionPad} .accuracy select`).val();
 			obj.wildcards = $(`${optionPad} .wildcards select`).val();
 
-			obj.synonyms = this.tryToEvaluate('synonyms', 8) || {};
 			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 3) || [];
 
 			if (isAccuracyValue(obj.accuracy)) {
@@ -273,6 +272,10 @@ const highlighter = {
 				if (accuracy) {
 					obj.accuracy = accuracy;
 				}
+			}
+			
+			if (markArray()) {
+				obj.combineBy = tab.getNumericalValue('combineBy', 10);
 			}
 
 		} else if (currentType === 'regexp') {
@@ -317,15 +320,6 @@ const highlighter = {
 
 		if (currentType === 'ranges') {
 			obj.markLines = tab.isChecked('markLines');
-		}
-
-		if (markArray()) {
-			obj.cacheTextNodes = tab.isChecked('cacheTextNodes');
-
-			const combine = tab.isChecked('combinePatterns');
-			if (combine) {
-				obj.combinePatterns = tab.getNumericalValue('combineNumber', 10);
-			}
 		}
 
 		return obj;

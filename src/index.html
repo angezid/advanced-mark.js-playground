@@ -177,7 +177,7 @@
 
 <div class="checkboxes">
 <div class="separateWordSearch">
-<input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked onchange="setCacheAndCombine(this)">
+<input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked onchange="setCombineby(this)">
 <label for="string_-separateWordSearch" name="separateWordSearch">Separate words</label>
 </div>
 <div class="diacritics">
@@ -188,13 +188,17 @@
 <input name="caseSensitive" id="string_-caseSensitive" type="checkbox">
 <label for="string_-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
+<div class="characterSets advanced">
+<input name="characterSets" id="string_-characterSets" type="checkbox" onchange="switchUnicode(this)">
+<label for="string_-characterSets" name="characterSets">Character Sets</label>
+</div>
+<div class="unicode advanced dependable hide">
+<input name="unicode" id="string_-unicode" type="checkbox">
+<label for="string_-unicode" name="unicode">Unicode</label>
+</div>
 <div class="ignoreJoiners">
 <input name="ignoreJoiners" id="string_-ignoreJoiners" type="checkbox">
 <label for="string_-ignoreJoiners" name="ignoreJoiners">Ignore joiners</label>
-</div>
-<div class="charSets hide">
-<input name="charSets" id="string_-charSets" type="checkbox">
-<label for="string_-charSets" name="charSets">Char sets</label>
 </div>
 <div class="acrossElements">
 <input name="acrossElements" id="string_-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
@@ -203,14 +207,6 @@
 <div class="blockElementsBoundary advanced dependable hide">
 <input name="blockElementsBoundary" id="string_-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
 <label for="string_-blockElementsBoundary" name="blockElementsBoundary">Block elements boundary</label>
-</div>
-<div class="combinePatterns advanced dependable hide">
-<input name="combinePatterns" id="string_-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
-<label for="string_-combinePatterns" name="combinePatterns">Combine patterns</label>
-</div>
-<div class="cacheTextNodes advanced dependable hide">
-<input name="cacheTextNodes" id="string_-cacheTextNodes" type="checkbox">
-<label for="string_-cacheTextNodes" name="cacheTextNodes">Cache text nodes</label>
 </div>
 <div class="shadowDOM advanced">
 <input name="shadowDOM" id="string_-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
@@ -273,9 +269,9 @@
 </select>
 </div>
 
-<div class="combineNumber advanced dependable hide">
-<label for="string_-combineNumber" name="combinePatterns">Combine by:</label>
-<input name="combinePatterns" id="string_-combineNumber" type="number" min="1" max="10000" value="10">
+<div class="combineBy advanced">
+<label for="string_-combineBy" name="combineBy">Combine by:</label>
+<input name="combineBy" id="string_-combineBy" type="number" min="1" max="10000" value="10">
 </div>
 <div class="iframesTimeout dependable hide">
 <label for="string_-iframesTimeout" name="iframesTimeout">Iframes timeout:</label>
@@ -287,14 +283,14 @@
 <div class="row">
 <div class="edit-options">
 
-<div class="synonyms">
+<!-- <div class="synonyms">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Synonyms</p>
 <div class="editor" name="synonyms">
 </div>
-</div>
+</div> -->
 
 <div class="exclude">
 <div class="actions right">
@@ -415,13 +411,17 @@
 <input name="caseSensitive" id="array-caseSensitive" type="checkbox">
 <label for="array-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
+<div class="characterSets advanced">
+<input name="characterSets" id="array-characterSets" type="checkbox" onchange="switchUnicode(this)">
+<label for="array-characterSets" name="characterSets">Character Sets</label>
+</div>
+<div class="unicode advanced dependable hide">
+<input name="unicode" id="array-unicode" type="checkbox">
+<label for="array-unicode" name="unicode">Unicode</label>
+</div>
 <div class="ignoreJoiners">
 <input name="ignoreJoiners" id="array-ignoreJoiners" type="checkbox">
 <label for="array-ignoreJoiners" name="ignoreJoiners">Ignore joiners</label>
-</div>
-<div class="charSets hide">
-<input name="charSets" id="array-charSets" type="checkbox">
-<label for="array-charSets" name="charSets">Char sets</label>
 </div>
 <div class="acrossElements">
 <input name="acrossElements" id="array-acrossElements" type="checkbox" onchange="setAcrossElementsDependable(this)">
@@ -430,14 +430,6 @@
 <div class="blockElementsBoundary advanced dependable hide">
 <input name="blockElementsBoundary" id="array-blockElementsBoundary" type="checkbox" onchange="setBlockElements(this)">
 <label for="array-blockElementsBoundary" name="blockElementsBoundary">Block elements boundary</label>
-</div>
-<div class="combinePatterns advanced">
-<input name="combinePatterns" id="array-combinePatterns" type="checkbox" onchange="setCombineNumber(this)">
-<label for="array-combinePatterns" name="combinePatterns">Combine patterns</label>
-</div>
-<div class="cacheTextNodes advanced">
-<input name="cacheTextNodes" id="array-cacheTextNodes" type="checkbox">
-<label for="array-cacheTextNodes" name="cacheTextNodes">Cache text nodes</label>
 </div>
 <div class="shadowDOM advanced">
 <input name="shadowDOM" id="array-shadowDOM" type="checkbox" onchange="setShadowDOMStyle(this)">
@@ -500,9 +492,9 @@
 </select>
 </div>
 
-<div class="combineNumber advanced dependable hide">
-<label for="array-combineNumber" name="combinePatterns">Combine by:</label>
-<input name="combinePatterns" id="array-combineNumber" type="number" min="1" max="10000" value="10">
+<div class="combineBy advanced">
+<label for="array-combineBy" name="combineBy">Combine by:</label>
+<input name="combineBy" id="array-combineBy" type="number" min="1" max="10000" value="10">
 </div>
 <div class="iframesTimeout dependable hide">
 <label for="array-iframesTimeout" name="iframesTimeout">Iframes timeout:</label>
@@ -514,14 +506,14 @@
 <div class="row">
 <div class="edit-options">
 
-<div class="synonyms">
+<!-- <div class="synonyms">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearEditor(this);"></button>
 </div>
 <p>Synonyms</p>
 <div class="editor" name="synonyms">
 </div>
-</div>
+</div> -->
 
 <div class="exclude">
 <div class="actions right">
@@ -951,7 +943,7 @@ The value can be an array, e.g. <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
 
 <div id="acrossElements"><span><code>acrossElements</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search for matches across elements </div></div>
 
-<div id="combinePatterns"><span><code>combinePatterns</code></span><span><em class="type">number <span class="or">or</span> boolean</em></span><span> <code>10</code></span><div>Combine a specified number of individual term patterns into one 
+<div id="combineBy"><span><code>combineBy</code></span><span><em class="type">number <span class="or">or</span> boolean</em></span><span> <code>10</code></span><div>Combine a specified number of individual term patterns into one 
 <p>See <a href="../doc-v2/performance.html#ways-to-boost-performance" target="_blank">Performance</a> for more details.</div></div>
 
 <div id="cacheTextNodes"><span><code>cacheTextNodes</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Caching information to improve performance 
@@ -982,7 +974,7 @@ otherwise only the custom elements do have boundaries</li>
 <div id="noMatch"><span><code>noMatch</code></span><span><em class="type">function</em></span><span> </span><div>A callback that is called when a term has no match at all 
 <br><b>noMatch : (term) => {}</b>
 <ul>
-<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is an array when <code>combinePatterns</code> option is used</ul></div></div>
+<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is an array when <code>combineBy</code> option is used</ul></div></div>
 
 <div id="wrapAllRanges"><span><code>wrapAllRanges</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Mark nesting/overlapping capturing groups 
 <p>See <a href="../doc-v2/nesting-overlapping.html" target="_blank">Marking nesting and overlapping ranges and match groups</a> for more details.</p>

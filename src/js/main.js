@@ -1,7 +1,7 @@
-
+/* cacheTextNodes synonyms */
 'use strict';
 
-const version = '2.4.0';
+const version = '3.0.0';
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -24,8 +24,8 @@ let currentTabId = '',
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'charSets', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
 		customCodeEditor : null,
@@ -33,8 +33,8 @@ const types = {
 	},
 
 	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'charSets', 'blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
 		customCodeEditor : null,
@@ -60,7 +60,7 @@ const types = {
 	}
 };
 
-const newOptions = ['blockElementsBoundary', 'combinePatterns', 'cacheTextNodes', 'wrapAllRanges', 'shadowDOM', 'markLines'];
+const newOptions = ['blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'markLines', 'characterSets', 'unicode'];
 
 const defaultOptions = {
 	element : { value : 'mark', type : 'text' },
@@ -69,8 +69,6 @@ const defaultOptions = {
 	separateWordSearch : { value : true, type : 'checkbox' },
 	diacritics : { value : true, type : 'checkbox' },
 	accuracy : { value : 'partially', type : 'select' },
-	charSets : { value : false, type : 'checkbox' },
-	synonyms : { value : {}, type : 'editor' },
 	iframes : { value : false, type : 'checkbox' },
 	iframesTimeout : { value : 5000, type : 'number' },
 	acrossElements : { value : false, type : 'checkbox' },
@@ -79,8 +77,9 @@ const defaultOptions = {
 	ignorePunctuation : { value : [], type : 'editor' },
 	wildcards : { value : 'disabled', type : 'select' },
 	ignoreGroups : { value : 0, type : 'number' },
-	combinePatterns : { value : false, type : 'checkbox' },    //combinePatterns default value is actually number - 10
-	cacheTextNodes : { value : false, type : 'checkbox' },
+	combineBy : { value : 10, type : 'number' },
+	characterSets : { value : false, type : 'checkbox' },
+	unicode : { value : false, type : 'checkbox' },
 	wrapAllRanges : { value : false, type : 'checkbox' },
 	separateGroups : { value : false, type : 'checkbox' },
 	blockElementsBoundary : { value : false, type : 'checkbox' },
@@ -218,17 +217,22 @@ const tab = {
 			case 'string_' :
 				setAccuracy(this.getElement('accuracy', 'select')[0]);
 				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
-				setCacheAndCombine(this.getElement('separateWordSearch', 'input')[0]);
+				setCombineby(this.getElement('separateWordSearch', 'input')[0]);
+				switchUnicode(this.getElement('characterSets', 'input')[0]);
 				break;
 
 			case 'array' :
 				setAccuracy(this.getElement('accuracy', 'select')[0]);
 				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
-
-				if (isVisible('combinePatterns')) {
-					setCombineNumber(this.getElement('combinePatterns', 'input')[0]);
+				
+				if (markArray()) {
+					$(`${optionPad} .combineBy`).removeClass('hide');
+				} else { 
+					$(`${optionPad} .combineBy`).addClass('hide');
 				}
+
 				setSeparateWordValue(this.getElement('separateWordSearch', 'input')[0]);
+				switchUnicode(this.getElement('characterSets', 'input')[0]);
 				break;
 
 			case 'regexp' :
@@ -680,16 +684,14 @@ function setBlockElements(elem) {
 }
 
 // also DOM 'onchange' event
-function setCacheAndCombine(elem) {
-	$(`${optionPad} .combineNumber`).addClass('hide');
+function setCombineby(elem) {
+	$(`${optionPad} .combineBy`).addClass('hide');
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
 
-	tab.switchElements(elem, '.combinePatterns');
-	tab.switchElements(elem, '.cacheTextNodes');
 	tab.switchElements(elem, '.separateWordValue');
-
-	if (isVisible('combinePatterns')) {
-		setCombineNumber($('#string_-combinePatterns')[0]);
+	
+	if (markArray()) {
+		$(`${optionPad} .combineBy`).removeClass('hide');
 	}
 }
 
@@ -699,13 +701,13 @@ function setSeparateWordValue(elem) {
 }
 
 // also DOM 'onchange' event
-function setCombineNumber(elem) {
-	tab.switchElements(elem, '.combineNumber');
+function setShadowDOMStyle(elem) {
+	tab.switchElements(elem, '.shadowStyle');
 }
 
 // also DOM 'onchange' event
-function setShadowDOMStyle(elem) {
-	tab.switchElements(elem, '.shadowStyle');
+function switchUnicode(elem) {
+	tab.switchElements(elem, '.unicode');
 }
 
 // also DOM 'onchange' event
@@ -1027,10 +1029,6 @@ const importer = {
 							tab.getElement('acrossElementsValue', 'select').val(saved || 'true');
 							saved = true;
 
-						} else if (option === 'combinePatterns') {
-							tab.getElement('combineNumber', 'input').val(parseInt(saved) || 10);
-							saved = !isNullOrUndefined(json.section[option]);
-
 						} else if (option === 'shadowDOM' && notBoolean) {
 							const editor = tab.getOptionEditor('shadowStyle');
 							editor.updateCode(saved);
@@ -1327,7 +1325,7 @@ const codeBuilder = {
 		} else { // internal
 			const time = `\n    time = performance.now();`;
 			code += this.buildContextCode(code);
-			
+
 			const iframes = location.protocol === 'file:' ? '' : 'iframes : true,\n  ';
 
 			unmarkOpt = `element :  '*',\n  ${iframes}shadowDOM : true,\n  `;
@@ -1463,15 +1461,7 @@ const instance = new Mark(context);`;
 						}
 
 						if (value !== opt.value) {
-							if (option === 'combinePatterns') {
-								if (markArray()) {
-									value = tab.getNumericalValue('combineNumber', 10);
-
-								} else {
-									value = null;
-								}
-
-							} else if (option === 'shadowDOM') {
+							if (option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
 								value = editor && (text = editor.toString().trim()) ? text : value;
 
@@ -1479,9 +1469,6 @@ const instance = new Mark(context);`;
 								if ( !(currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges')) {
 									value = null;
 								}
-
-							} else if (option === 'cacheTextNodes') {
-								if ( !markArray()) value = null;
 
 							} else if (option === 'blockElementsBoundary') {
 								if (across) {
@@ -1535,12 +1522,17 @@ const instance = new Mark(context);`;
 						break;
 
 					case 'number' :
-						if (option === 'iframesTimeout' && !tab.isChecked('iframes')
-							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
-
-						value = parseInt($(input).val().trim()) || opt.value;
-
-						if (value !== opt.value) {
+						value = null;
+						
+						if (option === 'iframesTimeout' && tab.isChecked('iframes') || option === 'ignoreGroups' && !tab.isChecked('separateGroups')) {
+							value = parseInt($(input).val().trim()) || opt.value;
+						}
+						
+						if (option === 'combineBy' && markArray) {
+							value = tab.getNumericalValue('combineBy', 10);
+						}
+						
+						if ( !isNullOrUndefined(value) && value !== opt.value) {
 							code += `${indent}${option} : ${value},\n`;
 						}
 						break;
@@ -1714,12 +1706,7 @@ const Json = {
 						}
 
 						if (value !== opt.value) {
-							if (option === 'combinePatterns') {
-								if (markArray()) {
-									json += `,"combinePatterns":${tab.getNumericalValue('combineNumber', 10)}`;
-								}
-
-							} else if (option === 'shadowDOM') {
+							if (option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
 
 								if (editor && (text = editor.toString().trim())) {
@@ -1731,11 +1718,6 @@ const Json = {
 
 							} else if (option === 'wrapAllRanges') {
 								if (currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges') {
-									json += `,"${option}":${value}`;
-								}
-
-							} else if (option === 'cacheTextNodes') {
-								if (markArray()) {
 									json += `,"${option}":${value}`;
 								}
 
@@ -1791,12 +1773,18 @@ const Json = {
 						break;
 
 					case 'number' :
-						if (option === 'iframesTimeout' && !tab.isChecked('iframes')
-							|| option === 'ignoreGroups' && tab.isChecked('separateGroups')) break;
-
-						value = parseInt($(input).val().trim()) || opt.value;
-
-						if (value !== opt.value) {
+						value = null;
+						
+						if (option === 'iframesTimeout' && tab.isChecked('iframes') || option === 'ignoreGroups' && !tab.isChecked('separateGroups')) {
+							value = parseInt($(input).val().trim()) || opt.value;
+						}
+						
+						if (option === 'combineBy') {
+							if (markArray()) {
+								value = tab.getNumericalValue('combineBy', 10);
+							}
+						}
+						if ( !isNullOrUndefined(value) && value !== opt.value) {
 							json += `,"${option}":${value}`;
 						}
 						break;
@@ -2208,7 +2196,7 @@ function isVisible(klass) {
 }
 
 function isNullOrUndefined(prop) {
-	return typeof prop === 'undefined' || prop === null;
+	return prop == null;
 }
 
 function isDirty() {
