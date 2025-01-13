@@ -1,4 +1,4 @@
-/* cacheTextNodes synonyms */
+
 'use strict';
 
 const version = '3.0.0';
@@ -24,8 +24,8 @@ let currentTabId = '',
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryString',
 		testEditorMode : 'text',
 		customCodeEditor : null,
@@ -33,8 +33,8 @@ const types = {
 	},
 
 	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
+		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
 		queryEditor : 'queryArray',
 		testEditorMode : 'text',
 		customCodeEditor : null,
@@ -69,6 +69,7 @@ const defaultOptions = {
 	separateWordSearch : { value : true, type : 'checkbox' },
 	diacritics : { value : true, type : 'checkbox' },
 	accuracy : { value : 'partially', type : 'select' },
+	synonyms : { value : {}, type : 'editor' },
 	iframes : { value : false, type : 'checkbox' },
 	iframesTimeout : { value : 5000, type : 'number' },
 	acrossElements : { value : false, type : 'checkbox' },
@@ -224,10 +225,10 @@ const tab = {
 			case 'array' :
 				setAccuracy(this.getElement('accuracy', 'select')[0]);
 				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
-				
+
 				if (markArray()) {
 					$(`${optionPad} .combineBy`).removeClass('hide');
-				} else { 
+				} else {
 					$(`${optionPad} .combineBy`).addClass('hide');
 				}
 
@@ -689,7 +690,7 @@ function setCombineby(elem) {
 	$(`${optionPad} .wrapAllRanges`).addClass('hide');
 
 	tab.switchElements(elem, '.separateWordValue');
-	
+
 	if (markArray()) {
 		$(`${optionPad} .combineBy`).removeClass('hide');
 	}
@@ -1523,15 +1524,15 @@ const instance = new Mark(context);`;
 
 					case 'number' :
 						value = null;
-						
+
 						if (option === 'iframesTimeout' && tab.isChecked('iframes') || option === 'ignoreGroups' && !tab.isChecked('separateGroups')) {
 							value = parseInt($(input).val().trim()) || opt.value;
 						}
-						
+
 						if (option === 'combineBy' && markArray) {
 							value = tab.getNumericalValue('combineBy', 10);
 						}
-						
+
 						if ( !isNullOrUndefined(value) && value !== opt.value) {
 							code += `${indent}${option} : ${value},\n`;
 						}
@@ -1774,11 +1775,11 @@ const Json = {
 
 					case 'number' :
 						value = null;
-						
+
 						if (option === 'iframesTimeout' && tab.isChecked('iframes') || option === 'ignoreGroups' && !tab.isChecked('separateGroups')) {
 							value = parseInt($(input).val().trim()) || opt.value;
 						}
-						
+
 						if (option === 'combineBy') {
 							if (markArray()) {
 								value = tab.getNumericalValue('combineBy', 10);

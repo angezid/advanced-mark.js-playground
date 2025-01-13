@@ -36,7 +36,7 @@ const highlighter = {
 
 		const hl = this,
 			settings = this.getCurrentSettings();
-		
+
 		const options = {
 			'element' : settings.element,
 			'className' : settings.className,
@@ -55,6 +55,7 @@ const highlighter = {
 			'accuracy' : settings.accuracy,
 			'wildcards' : settings.wildcards,
 
+			'synonyms' : settings.synonyms,
 			'ignorePunctuation' : settings.ignorePunctuation,
 			'exclude' : settings.exclude,
 
@@ -72,7 +73,7 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (t) => { noMatchTerms.push(t); }
 		};
-		
+
 		this.markContext(parameter, options, settings, 'mark');
 	},
 
@@ -265,6 +266,7 @@ const highlighter = {
 			obj.accuracy = $(`${optionPad} .accuracy select`).val();
 			obj.wildcards = $(`${optionPad} .wildcards select`).val();
 
+			obj.synonyms = this.tryToEvaluate('synonyms', 8) || {};
 			obj.ignorePunctuation = this.tryToEvaluate('ignorePunctuation', 3) || [];
 
 			if (isAccuracyValue(obj.accuracy)) {
@@ -273,7 +275,7 @@ const highlighter = {
 					obj.accuracy = accuracy;
 				}
 			}
-			
+
 			if (markArray()) {
 				obj.combineBy = tab.getNumericalValue('combineBy', 10);
 			}
