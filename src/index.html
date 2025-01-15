@@ -189,10 +189,10 @@
 <label for="string_-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
 <div class="characterSets advanced">
-<input name="characterSets" id="string_-characterSets" type="checkbox" onchange="switchUnicode(this)">
+<input name="characterSets" id="string_-characterSets" type="checkbox">
 <label for="string_-characterSets" name="characterSets">Character Sets</label>
 </div>
-<div class="unicode advanced dependable hide">
+<div class="unicode advanced">
 <input name="unicode" id="string_-unicode" type="checkbox">
 <label for="string_-unicode" name="unicode">Unicode</label>
 </div>
@@ -412,10 +412,10 @@
 <label for="array-caseSensitive" name="caseSensitive">Case sensitive</label>
 </div>
 <div class="characterSets advanced">
-<input name="characterSets" id="array-characterSets" type="checkbox" onchange="switchUnicode(this)">
+<input name="characterSets" id="array-characterSets" type="checkbox">
 <label for="array-characterSets" name="characterSets">Character Sets</label>
 </div>
-<div class="unicode advanced dependable hide">
+<div class="unicode advanced">
 <input name="unicode" id="array-unicode" type="checkbox">
 <label for="array-unicode" name="unicode">Unicode</label>
 </div>
@@ -886,11 +886,11 @@
 <div id="className"><span><code>className</code></span><span><em class="type">string</em></span><span> <code>''</code></span><div>A custom class to be added to mark elements. </div></div>
 
 <div id="exclude"><span><code>exclude</code></span><span><em class="type">string <span class="or">or</span> string[]</em></span><span> <code>[]</code></span><div>A string or an array of selectors. Specifies DOM elements that should be excluded from searching. 
-<p>See <a href="../doc-v2/options.html#exclude-option" target="_blank">exclude</a> for more details.</div></div>
+<p>See <a href="../doc-v3/options.html#exclude-option" target="_blank">exclude</a> option for more details.</div></div>
 
 <div id="separateWordSearch"><span><code>separateWordSearch</code></span><span><em class="type">boolean <span class="or">or</span> string</em></span><span> <code>true</code></span><div>A <b>boolean</b> value <code>true</code> specifies to break term(s) into separate words and search for each individual word. 
 <p>A <b>string</b> value <code>'preserveTerms'</code> preserved term(s) surrounding by double quotes from breaking into separate words.
-See <a href="../doc-v2/options.html#separatewordsearch-option" target="_blank">separateWordSearch</a> for more details.</div></div>
+See <a href="../doc-v3/options.html#separatewordsearch-option" target="_blank">separateWordSearch</a> option for more details.</div></div>
 
 <div id="diacritics"><span><code>diacritics</code></span><span><em class="type">boolean</em></span><span> <code>true</code></span><div>Whether to match diacritic characters </div></div>
 
@@ -924,13 +924,20 @@ e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;()&quot
 <li><code>enabled</code>:
 <ul>
 <li>The character <code>?</code> match any non-white-space character zero or one time.</li>
-<li>The character <code>*</code> match any non-white-space character zero or more time.</li>
+<li>The character <code>*</code> match any non-white-space character zero or more times.</li>
 </ul>
 </li>
 <li><code>withSpaces</code>:
 <ul>
 <li>The character <code>?</code> match any character zero or one time.</li>
-<li>The character <code>*</code> match any character zero or more time, but as few times as possible.</ul></ul></div></div>
+<li>The character <code>*</code> match any character zero or more times, but as few times as possible.</ul></ul></div></div>
+
+<div id="characterSets"><span><code>characterSets</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to use in search strings RegExp character sets 
+<p>See <a href="../doc-v3/options.html#charsets-option" target="_blank">character sets</a> option for more details.</div></div>
+
+<div id="unicode"><span><code>unicode</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to use RegExp <code>u</code> flag which allows using unicode class <code>\p{..}</code>, <code>\P{..}</code>, etc. 
+<p>It can be used with <code>characterSets</code>, <code>ignorePunctuation</code> options, and custom <code>accuracy</code> object to determine words boundaries.</p>
+  </div></div>
 
 <div id="ignoreJoiners"><span><code>ignoreJoiners</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to find matches that contain soft hyphen, zero width space, zero width non-joiner and zero width joiner </div></div>
 
@@ -941,26 +948,13 @@ e.g. <code>{ value : &quot;exactly&quot;, limiters : &quot;,.;:?!'\&quot;()&quot
 The value can be an array, e.g. <code>{ 'be': ['am', 'is', 'are'] }</code>.</p>
  </div></div>
 
-<div id="acrossElements"><span><code>acrossElements</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search for matches across elements </div></div>
+<div id="acrossElements"><span><code>acrossElements</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to search for matches across elements 
+<p>See <a href="../doc-v3/options.html#acrosselements-option" target="_blank">acrossElements</a> option for more details.</div></div>
 
-<div id="combineBy"><span><code>combineBy</code></span><span><em class="type">number <span class="or">or</span> boolean</em></span><span> <code>10</code></span><div>Combine a specified number of individual term patterns into one 
-<p>See <a href="../doc-v2/performance.html#ways-to-boost-performance" target="_blank">Performance</a> for more details.</div></div>
-
-<div id="cacheTextNodes"><span><code>cacheTextNodes</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Caching information to improve performance 
-<p>See <a href="../doc-v2/performance.html#ways-to-boost-performance" target="_blank">Performance</a> for more details.</div></div>
-
-<div id="blockElementsBoundary"><span><code>blockElementsBoundary</code></span><span><em class="type">boolean <span class="or">or</span> object</em></span><span> <code>undefined</code></span><div>Whether to limit matches within default HTML block elements and/or custom elements 
-<p>See <a href="../doc-v2/elements-boundaries.html" target="_blank">Elements boundaries</a> for more details.</p>
-<ul>
-<li><code>tagNames</code> <em class="type">string[]</em> - An array of custom HTML tag names</li>
-<li><code>extend</code> <em class="type">boolean</em> - <code>true</code> extends default boundary elements by the custom elements
-otherwise only the custom elements do have boundaries</li>
-<li><code>char</code> <em class="type">string</em> - A custom boundary character. The default is <code>\x01</code>.</li>
-</ul>
-</div></div>
+<div id="blockElementsBoundary"><span><code>blockElementsBoundary</code></span><span><em class="type">boolean <span class="or">or</span> object</em></span><span> <code>undefined</code></span><div>Whether to limit matches within default HTML block elements and/or custom elements
 
 <div id="shadowDOM"><span><code>shadowDOM</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Whether to mark inside shadow DOMs 
-<p>See <a href="../doc-v2/shadow-dom.html" target="_blank">Highlighting in shadow DOM</a> for more details.</div></div>
+<p>See <a href="../doc-v3/shadow-dom.html" target="_blank">Highlighting in shadow DOM</a> for more details.</div></div>
 
 <div id="iframes"><span><code>iframes</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to mark inside iframes </div></div>
 
@@ -974,21 +968,21 @@ otherwise only the custom elements do have boundaries</li>
 <div id="noMatch"><span><code>noMatch</code></span><span><em class="type">function</em></span><span> </span><div>A callback that is called when a term has no match at all 
 <br><b>noMatch : (term) => {}</b>
 <ul>
-<li><code>term</code> <em class="type">string <span class="or">or</span> string[]</em> - The not found term(s); the parameter is an array when <code>combineBy</code> option is used</ul></div></div>
+<li><code>term</code> <em class="type">string[]</em> - An array containing not found term(s)</ul></div></div>
 
 <div id="wrapAllRanges"><span><code>wrapAllRanges</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Mark nesting/overlapping capturing groups 
-<p>See <a href="../doc-v2/nesting-overlapping.html" target="_blank">Marking nesting and overlapping ranges and match groups</a> for more details.</p>
+<p>See <a href="../doc-v3/nesting-overlapping.html" target="_blank">Marking nesting and overlapping ranges and match groups</a> for more details.</p>
 </div></div>
 
 <div id="markLines"><span><code>markLines</code></span><span><em class="type">boolean</em></span><span> <code>undefined</code></span><div>Whether to mark ranges of lines instead of ranges of texts 
-<p>See <a href="../doc-v2/mark-lines.html" target="_blank">Highlighting line ranges</a> for more details.</div></div>
+<p>See <a href="../doc-v3/mark-lines.html" target="_blank">Highlighting line ranges</a> for more details.</div></div>
 
 <div id="ignoreGroups"><span><code>ignoreGroups</code></span><span><em class="type">number</em></span><span> <code>0</code></span><div>The number of adjacent capturing groups that should be ignored from the start of RegExp 
 <p>e.g. <code>/(\w+)(.)(\w+)(?!\2)/g</code>, <code>ignoreGroups : 2</code> - mark the group 3</div></div>
 
 <div id="separateGroups"><span><code>separateGroups</code></span><span><em class="type">boolean</em></span><span> <code>false</code></span><div>Whether to mark RegExp capturing groups instead of whole match 
-<p>See <a href="../doc-v2/separate-groups.html" target="_blank">Highlighting separate groups</a> for more details.</div></div>
-</div>
+<p>See <a href="../doc-v3/separate-groups.html" target="_blank">Highlighting separate groups</a> for more details.</div></div>
+</div></div></div>
 
 
 <div id="accuracyObject">

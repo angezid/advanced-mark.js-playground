@@ -219,7 +219,6 @@ const tab = {
 				setAccuracy(this.getElement('accuracy', 'select')[0]);
 				setAcrossElementsDependable(this.getElement('acrossElements', 'input')[0]);
 				setCombineby(this.getElement('separateWordSearch', 'input')[0]);
-				switchUnicode(this.getElement('characterSets', 'input')[0]);
 				break;
 
 			case 'array' :
@@ -233,7 +232,6 @@ const tab = {
 				}
 
 				setSeparateWordValue(this.getElement('separateWordSearch', 'input')[0]);
-				switchUnicode(this.getElement('characterSets', 'input')[0]);
 				break;
 
 			case 'regexp' :
@@ -704,11 +702,6 @@ function setSeparateWordValue(elem) {
 // also DOM 'onchange' event
 function setShadowDOMStyle(elem) {
 	tab.switchElements(elem, '.shadowStyle');
-}
-
-// also DOM 'onchange' event
-function switchUnicode(elem) {
-	tab.switchElements(elem, '.unicode');
 }
 
 // also DOM 'onchange' event
