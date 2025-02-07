@@ -11,7 +11,6 @@ let currentTabId = '',
 	markElementSelector = '',
 	markElement = '',
 	optionPad = '',
-	dFlagSupport = true,
 	isScrolled = false,
 	canBeNested = false,
 	flagEveryElement = false,
@@ -92,8 +91,6 @@ const defaultOptions = {
 
 $(document).ready(function() {
 	let t0 = performance.now();
-
-	try { new RegExp('\\w', 'd'); } catch (e) { dFlagSupport = false; }
 
 	registerEvents();
 	tab.selectTab();
@@ -340,11 +337,10 @@ const tab = {
 				highlighter.highlightRawHtml(div, html);
 
 			} else {
-				// .innerText removes/normalizes white spaces
-				div.innerHTML = util.entitize(html);
+				div.textContent = html;
 			}
 			this.initializeEditors();
-
+			
 		} else {
 			this.getTestEditor().updateCode('');
 		}
@@ -896,11 +892,21 @@ function clearEditor(elem) {
 		editor = obj.editors[className];
 
 	if (editor) {
+		let editorElem;
+
 		if (className === 'testString') {
 			tab.destroyTestEditor();
 			tab.initializeEditors();
 
+			if (editorElem = tab.getTestElement()) {
+				editorElem.focus();
+			}
+
 		} else {
+			if (editorElem = parent.querySelector('.editor')) {
+				editorElem.focus();
+				editor.recordHistory();
+			}
 			editor.updateCode('');
 		}
 
@@ -1574,7 +1580,8 @@ const instance = new Mark(context);`;
 			}
 
 		} else if ($('#callbacks').prop('checked')) {
-			code = `${indent}filter : ${this.getFilterParameters()} => {},\n`;
+			code = `${indent}// the filter must return true to accept or false to reject the match\n`;
+			code += `${indent}filter : ${this.getFilterParameters()} => { return true; },\n`;
 			code += `${indent}each : ${this.getEachParameters()} => {},\n`;
 			code = `${code}${indent}done : ${this.getDoneParameters()} => {}\n`;
 		}
@@ -2042,7 +2049,7 @@ const util = {
 
 const settings = {
 	loadDefault : true,
-	showTooltips : false,
+	showTooltips : true,
 	showWarning : true,
 	runOnchange : false,
 
