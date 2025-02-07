@@ -1,7 +1,7 @@
 
 'use strict';
 
-const version = '2.4.1';
+const version = '2.6.0';
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -337,8 +337,7 @@ const tab = {
 				highlighter.highlightRawHtml(div, html);
 
 			} else {
-				// .innerText removes/normalizes white spaces
-				div.innerHTML = util.entitize(html);
+				div.textContent = html;
 			}
 			this.initializeEditors();
 
@@ -387,7 +386,7 @@ const tab = {
 		for (const key in obj.editors) {
 			if (obj.editors[key] === null) {
 				if (key === 'testString') {
-					obj.editors[key] = this.initTestEditor(obj.editors[key]);
+					obj.editors[key] = this.initTestEditor();
 
 				} else {
 					let selector = `${currentSection} .${key} .editor`;
@@ -407,7 +406,7 @@ const tab = {
 		});
 	},
 
-	initTestEditor : function(editor) {
+	initTestEditor : function() {
 		if ( !document.querySelector('shadow-dom-' + currentType).shadowRoot) {
 			this.defineCustomElements();
 		}
@@ -415,7 +414,7 @@ const tab = {
 		const elem = this.getTestElement();
 		elem.addEventListener('scroll', testContainerScrolled);
 
-		editor = CodeJar(elem, null, { tab : '  ' });
+		const editor = CodeJar(elem, null, { tab : '  ' });
 		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
 		return editor;
 	},
@@ -900,11 +899,21 @@ function clearEditor(elem) {
 		editor = obj.editors[className];
 
 	if (editor) {
+		let editorElem;
+
 		if (className === 'testString') {
 			tab.destroyTestEditor();
 			tab.initializeEditors();
 
+			if (editorElem = tab.getTestElement()) {
+				editorElem.focus();
+			}
+
 		} else {
+			if (editorElem = parent.querySelector('.editor')) {
+				editorElem.focus();
+				editor.recordHistory();
+			}
 			editor.updateCode('');
 		}
 
@@ -1327,7 +1336,7 @@ const codeBuilder = {
 		} else { // internal
 			const time = `\n    time = performance.now();`;
 			code += this.buildContextCode(code);
-			
+
 			const iframes = location.protocol === 'file:' ? '' : 'iframes : true,\n  ';
 
 			unmarkOpt = `element :  '*',\n  ${iframes}shadowDOM : true,\n  `;
@@ -1588,7 +1597,8 @@ const instance = new Mark(context);`;
 			}
 
 		} else if ($('#callbacks').prop('checked')) {
-			code = `${indent}filter : ${this.getFilterParameters()} => {},\n`;
+			code = `${indent}// the filter must return true to accept or false to reject the match\n`;
+			code += `${indent}filter : ${this.getFilterParameters()} => { return true; },\n`;
 			code += `${indent}each : ${this.getEachParameters()} => {},\n`;
 			code = `${code}${indent}done : ${this.getDoneParameters()} => {}\n`;
 		}
@@ -2060,7 +2070,7 @@ const util = {
 
 const settings = {
 	loadDefault : true,
-	showTooltips : false,
+	showTooltips : true,
 	showWarning : true,
 	runOnchange : false,
 
