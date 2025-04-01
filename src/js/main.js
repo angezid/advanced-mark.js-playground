@@ -424,9 +424,9 @@ const tab = {
 		return root.querySelector('.editor');
 	},
 
-	initEditor : function(editor, selector) {
-		editor = CodeJar(document.querySelector(selector), null, { tab : '  ' });
-		//editor = CodeJar(document.querySelector(selector), null, { tab : '\t' });
+	initEditor : function(editor, selector, highlighter) {
+		editor = CodeJar(document.querySelector(selector), highlighter, { tab : '  ' });
+		//editor = CodeJar(document.querySelector(selector), highlighter, { tab : '\t' });
 		editor.onUpdate(code => this.onUpdateEditor(code, selector));
 		return editor;
 	},
@@ -507,9 +507,14 @@ const tab = {
 			editor = obj.customCodeEditor;
 
 		if ( !editor) {
-			types[currentType].customCodeEditor = tab.initEditor(editor, selector);
+			types[currentType].customCodeEditor = tab.initEditor(editor, selector, highlight);
 		}
 		return { selector, editor : types[currentType].customCodeEditor };
+
+		function highlight() {
+			hljs.configure({ ignoreUnescapedHTML: true });
+			hljs.highlightElement($(selector)[0]);
+		}
 	},
 
 	getTestEditor : function() {
@@ -2070,7 +2075,7 @@ const util = {
 
 const settings = {
 	loadDefault : true,
-	showTooltips : true,
+	showTooltips : false,
 	showWarning : true,
 	runOnchange : false,
 
