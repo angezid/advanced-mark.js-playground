@@ -42,6 +42,9 @@ mark[data-markjs].current,
 *[data-markjs].custom-element.current { font-size: 110%; background: #ffe408; border-color: #ffe408; border-bottom: #444 2px solid; }
 mark[data-markjs].mark-term { background: #ffe408; }
 mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
+
+::highlight(markjs) { background-color: #d8e8ff; }
+
 @media only screen and (max-width: 980px) {
     .left-column, .right-column, .column { width: 100%; }
     .editor { min-height: 20vh; max-height: 35vh; }
@@ -163,7 +166,7 @@ const examples = {
             "diacritics": false,
             "exclude": "'#ifr2'",
             "iframes": true,
-            "customCode": "// don't foget to launch a sever (see README)\\n// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "customCode": "// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "iframe test lorem ipsum",
             "testString": {
                 "mode": "html",
@@ -209,7 +212,7 @@ const examples = {
             "acrossElements": true,
             "separateGroups": true,
             "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match[3] && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
-            "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/g",
+            "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/dg",
             "testString": {
                 "mode": "html",
                 "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n\\nIt demonstrates requirement of a group 2 to correctly highlight groups without 'd' flag.\\nIf the parenthesis of the group 2 are removed, the wrong 'BC' is highlighted.\\nWith 'd' flag it's highlighted correctly."

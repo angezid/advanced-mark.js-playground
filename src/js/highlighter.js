@@ -19,6 +19,12 @@ const highlighter = {
 	},
 
 	markContext : function(parameter, options, settings, fn) {
+		time = performance.now();
+		
+		if (types[currentType].highlight) {
+			types[currentType].highlight.clear();
+		}
+		
 		settings.testContainer.unmark({
 			'element' : '*',
 			'iframes' : location.protocol !== 'file:', // avoids unnecessary delay when protocol is 'file:'
@@ -43,8 +49,6 @@ const highlighter = {
 			'separateWordSearch' : settings.separateWordSearch,
 			'diacritics' : settings.diacritics,
 			'caseSensitive' : settings.caseSensitive,
-			'characterSets' : settings.characterSets,
-			'unicode' : settings.unicode,
 			'ignoreJoiners' : settings.ignoreJoiners,
 			'acrossElements' : settings.acrossElements,
 			'combineBy' : settings.combineBy,
@@ -73,6 +77,8 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (t) => { noMatchTerms.push(t); }
 		};
+			
+		this.setHighlight(settings, options);
 
 		this.markContext(parameter, options, settings, 'mark');
 	},
@@ -107,6 +113,8 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (reg) => { noMatchTerms.push(reg); }
 		};
+			
+		this.setHighlight(settings, options);
 
 		this.markContext(regex, options, settings, 'markRegExp');
 	},
@@ -139,10 +147,18 @@ const highlighter = {
 			'done' : hl.finish,
 			'noMatch' : (o) => { noMatchTerms.push(JSON.stringify(o)); }
 		};
-
+		
+		this.setHighlight(settings, options);
+			
 		this.markContext(ranges, options, settings, 'markRanges');
 	},
 
+	setHighlight : function(settings, options) {
+		if (settings.highlight) {
+			options.highlight = types[currentType].highlight;
+		}
+	},
+	
 	highlightRawHtml : function(elem, text) {
 		time = performance.now();
 		tab.clear(true);
@@ -245,6 +261,8 @@ const highlighter = {
 
 		obj.exclude = this.tryToEvaluate('exclude', 3) || [];
 		obj.debug = tab.isChecked('debug');
+		
+		obj.highlight = tab.isChecked('highlight');
 
 		obj.iframes = tab.isChecked('iframes');
 		if (obj.iframes) {
@@ -259,8 +277,6 @@ const highlighter = {
 			}
 			obj.diacritics = tab.isChecked('diacritics');
 			obj.caseSensitive = tab.isChecked('caseSensitive');
-			obj.characterSets = tab.isChecked('characterSets');
-			obj.unicode = tab.isChecked('unicode');
 			obj.ignoreJoiners = tab.isChecked('ignoreJoiners');
 
 			obj.accuracy = $(`${optionPad} .accuracy select`).val();

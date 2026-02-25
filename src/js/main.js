@@ -11,6 +11,8 @@ let currentTabId = '',
 	markElementSelector = '',
 	markElement = '',
 	optionPad = '',
+	dFlagSupport = true,
+	highlightSupport = typeof Highlight !== 'undefined',
 	isScrolled = false,
 	canBeNested = false,
 	flagEveryElement = false,
@@ -23,74 +25,79 @@ let currentTabId = '',
 
 const types = {
 	string_ : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryString' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
-		queryEditor : 'queryString',
-		testEditorMode : 'text',
-		customCodeEditor : null,
-		isDirty : false
+		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors: { 'queryString': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
+		queryEditor: 'queryString',
+		testEditorMode: 'text',
+		customCodeEditor: null,
+		highlight: null,
+		isDirty: false
 	},
 
-	array : {
-		options : [ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'characterSets', 'unicode', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryArray' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'synonyms' : null, 'ignorePunctuation' : null, 'accuracyObject' : null, 'blockElements' : null, 'shadowStyle' : null },
-		queryEditor : 'queryArray',
-		testEditorMode : 'text',
-		customCodeEditor : null,
-		isDirty : false
+	array: {
+		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors: { 'queryArray': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
+		queryEditor: 'queryArray',
+		testEditorMode: 'text',
+		customCodeEditor: null,
+		highlight: null,
+		isDirty: false
 	},
 
-	regexp : {
-		options : [ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'debug' ],
-		editors : { 'queryRegExp' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'blockElements' : null, 'shadowStyle' : null },
-		queryEditor : 'queryRegExp',
-		testEditorMode : 'text',
-		customCodeEditor : null,
-		isDirty : false
+	regexp: {
+		options:[ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'highlight', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		editors: { 'queryRegExp': null, 'selectors': null, 'testString': null, 'exclude': null, 'blockElements': null, 'shadowStyle': null },
+		queryEditor: 'queryRegExp',
+		testEditorMode: 'text',
+		customCodeEditor: null,
+		highlight: null,
+		isDirty: false
 	},
 
-	ranges : {
-		options : [ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'wrapAllRanges', 'shadowDOM', 'markLines', 'debug' ],
-		editors : { 'queryRanges' : null, 'selectors' : null, 'testString' : null, 'exclude' : null, 'shadowStyle' : null },
-		queryEditor : 'queryRanges',
-		testEditorMode : 'text',
-		customCodeEditor : null,
-		isDirty : false
+	ranges: {
+		options:[ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'highlight', 'wrapAllRanges', 'shadowDOM', 'markLines', 'debug' ],
+		editors: { 'queryRanges': null, 'selectors': null, 'testString': null, 'exclude': null, 'shadowStyle': null },
+		queryEditor: 'queryRanges',
+		testEditorMode: 'text',
+		customCodeEditor: null,
+		highlight: null,
+		isDirty: false
 	}
 };
 
-const newOptions = ['blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'markLines', 'characterSets', 'unicode'];
+const newOptions = ['blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'markLines', 'highlight'];
 
 const defaultOptions = {
-	element : { value : 'mark', type : 'text' },
-	className : { value : '', type : 'text' },
-	exclude : { value : [], type : 'editor' },
-	separateWordSearch : { value : true, type : 'checkbox' },
-	diacritics : { value : true, type : 'checkbox' },
-	accuracy : { value : 'partially', type : 'select' },
-	synonyms : { value : {}, type : 'editor' },
-	iframes : { value : false, type : 'checkbox' },
-	iframesTimeout : { value : 5000, type : 'number' },
-	acrossElements : { value : false, type : 'checkbox' },
-	caseSensitive : { value : false, type : 'checkbox' },
-	ignoreJoiners : { value : false, type : 'checkbox' },
-	ignorePunctuation : { value : [], type : 'editor' },
-	wildcards : { value : 'disabled', type : 'select' },
-	ignoreGroups : { value : 0, type : 'number' },
-	combineBy : { value : 10, type : 'number' },
-	characterSets : { value : false, type : 'checkbox' },
-	unicode : { value : false, type : 'checkbox' },
-	wrapAllRanges : { value : false, type : 'checkbox' },
-	separateGroups : { value : false, type : 'checkbox' },
-	blockElementsBoundary : { value : false, type : 'checkbox' },
-	shadowDOM : { value : false, type : 'checkbox' },
-	markLines : { value : false, type : 'checkbox' },
-	debug : { value : false, type : 'checkbox' },
-	log : { value : false, type : 'checkbox' },
+	element : { value: 'mark', type: 'text' },
+	className: { value: '', type: 'text' },
+	exclude: { value:[], type: 'editor' },
+	separateWordSearch: { value: true, type: 'checkbox' },
+	diacritics: { value: true, type: 'checkbox' },
+	accuracy: { value: 'partially', type: 'select' },
+	synonyms: { value: {}, type: 'editor' },
+	iframes: { value: false, type: 'checkbox' },
+	iframesTimeout: { value: 5000, type: 'number' },
+	acrossElements: { value: false, type: 'checkbox' },
+	caseSensitive : { value: false, type: 'checkbox' },
+	ignoreJoiners: { value: false, type: 'checkbox' },
+	ignorePunctuation: { value:[], type: 'editor' },
+	wildcards: { value: 'disabled', type: 'select' },
+	ignoreGroups: { value: 0, type: 'number' },
+	combineBy: { value: 10, type: 'number' },
+	highlight: { value: false, type: 'checkbox' },
+	wrapAllRanges: { value: false, type: 'checkbox' },
+	separateGroups: { value: false, type: 'checkbox' },
+	blockElementsBoundary: { value: false, type: 'checkbox' },
+	shadowDOM: { value: false, type: 'checkbox' },
+	markLines: { value: false, type: 'checkbox' },
+	debug: { value: false, type: 'checkbox' },
+	log: { value: false, type: 'checkbox' },
 };
 
 $(document).ready(function() {
 	let t0 = performance.now();
+
+	try { new RegExp('\\w', 'd'); } catch (e) { dFlagSupport = false; }
 
 	registerEvents();
 	tab.selectTab();
@@ -110,14 +117,14 @@ const code = {
 	},
 
 	// code.setHtml(iframes);
-	setHtml : function(html) {
+	setHtml: function(html) {
 		tab.setHtmlMode(html, false);
 		tab.setTextMode(null);
 	},
 
 	// code.setListener('keyup', runCode);
 	// allows adding several events to the search editor.
-	setListener : function(event, fn) {
+	setListener: function(event, fn) {
 		const elem = document.querySelector(tab.getSearchEditorInfo().selector),
 			data = elem.getAttribute('data-event');
 
@@ -127,7 +134,7 @@ const code = {
 		}
 	},
 
-	setSelectors : function(selectors, all = false) {
+	setSelectors: function(selectors, all = false) {
 		const info = tab.getSelectorsEditorInfo();
 		if (info.editor) {
 			info.editor.updateCode(selectors);
@@ -156,10 +163,14 @@ const tab = {
 			}
 		}
 
+		if ( !types[currentType].highlight && highlightSupport) {
+			types[currentType].highlight = new Highlight();
+		}
+
 		this.setVisibility();
 	},
 
-	selectTab : function(type) {
+	selectTab: function(type) {
 		if ( !type) {
 			type = settings.loadValue('tabType');
 			if ( !type) type = 'string_';
@@ -195,7 +206,7 @@ const tab = {
 		isScrolled = false;
 	},
 
-	setVisibility : function() {
+	setVisibility: function() {
 		showInstructions(false);
 
 		$(`${currentSection} .dependable`).addClass('hide');
@@ -224,6 +235,7 @@ const tab = {
 
 				if (markArray()) {
 					$(`${optionPad} .combineBy`).removeClass('hide');
+
 				} else {
 					$(`${optionPad} .combineBy`).addClass('hide');
 				}
@@ -240,19 +252,19 @@ const tab = {
 		}
 	},
 
-	buildHtmlSelector : function() {
+	buildHtmlSelector: function() {
 		const options = this.buildSelectorOptions(defaultHtmls);
 
 		$('select.default-html').html(options);
 	},
 
-	buildExampleSelector : function() {
+	buildExampleSelector: function() {
 		const options = this.buildSelectorOptions(examples);
 
 		$('header select#examples').html(options);
 	},
 
-	buildSelectorOptions : function(obj) {
+	buildSelectorOptions: function(obj) {
 		let options = '<option value="">' + obj['name'] + '</option>';
 
 		for (const key in obj) {
@@ -265,7 +277,7 @@ const tab = {
 		return options;
 	},
 
-	buildSelector : function(selector, obj) {
+	buildSelector: function(selector, obj) {
 		let options = '';
 
 		for (const key in obj) {
@@ -277,7 +289,7 @@ const tab = {
 		$(selector).html(options);
 	},
 
-	switchElements : function(elem, selector, negate) {
+	switchElements: function(elem, selector, negate) {
 		const div = $(`${optionPad} ${selector}`),
 			checked = $(elem).prop('checked');
 
@@ -291,7 +303,7 @@ const tab = {
 		}
 	},
 
-	loadDefaultHtml : function(force) {
+	loadDefaultHtml: function(force) {
 		const testEditor = this.getTestEditor();
 
 		if (force || testEditor.toString().trim() === '') {
@@ -303,7 +315,7 @@ const tab = {
 		}
 	},
 
-	loadSearchParameter : function() {
+	loadSearchParameter: function() {
 		const info = this.getSearchEditorInfo();
 
 		if (info.editor.toString().trim() === '') {
@@ -318,7 +330,7 @@ const tab = {
 		}
 	},
 
-	setHtmlMode : function(content, highlight, removeMarks = false) {
+	setHtmlMode: function(content, highlight, removeMarks = false) {
 		if (types[currentType].testEditorMode === 'html' && !content) return;
 
 		types[currentType].testEditorMode = 'html';
@@ -337,10 +349,11 @@ const tab = {
 				highlighter.highlightRawHtml(div, html);
 
 			} else {
-				div.textContent = html;
+				// .innerText removes/normalizes white spaces
+				div.innerHTML = util.entitize(html);
 			}
 			this.initializeEditors();
-			
+
 		} else {
 			this.getTestEditor().updateCode('');
 		}
@@ -348,7 +361,7 @@ const tab = {
 		this.highlightButton('.html');
 	},
 
-	setTextMode : function(content, highlight = false) {
+	setTextMode: function(content, highlight = false) {
 		if (types[currentType].testEditorMode === 'text' && !content) return;
 
 		types[currentType].testEditorMode = 'text';
@@ -373,14 +386,14 @@ const tab = {
 		this.highlightButton('.text');
 	},
 
-	highlightButton : function(selector) {
+	highlightButton: function(selector) {
 		const button = $(`${currentSection} .testString ${selector}`);
 
 		$(`${currentSection} .testString button`).removeClass('pressed');
 		button.addClass('pressed');
 	},
 
-	initializeEditors : function() {
+	initializeEditors: function() {
 		const obj = types[currentType];
 
 		for (const key in obj.editors) {
@@ -396,17 +409,17 @@ const tab = {
 		}
 	},
 
-	defineCustomElements : function() {
+	defineCustomElements: function() {
 		customElements.define('shadow-dom-' + currentType, class extends HTMLElement {
 			constructor() {
 				super();
-				const root = this.attachShadow({ mode : 'open' });
+				const root = this.attachShadow({ mode: 'open' });
 				root.innerHTML = shadowStyle + '<div class="editor"></div>';
 			}
 		});
 	},
 
-	initTestEditor : function(editor) {
+	initTestEditor: function(editor) {
 		if ( !document.querySelector('shadow-dom-' + currentType).shadowRoot) {
 			this.defineCustomElements();
 		}
@@ -414,24 +427,24 @@ const tab = {
 		const elem = this.getTestElement();
 		elem.addEventListener('scroll', testContainerScrolled);
 
-		editor = CodeJar(elem, null, { tab : '  ' });
+		editor = CodeJar(elem, null, { tab: '  ' });
 		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
 		return editor;
 	},
 
-	getTestElement : function() {
+	getTestElement: function() {
 		const root = document.querySelector('shadow-dom-' + currentType).shadowRoot;
 		return root.querySelector('.editor');
 	},
 
-	initEditor : function(editor, selector) {
-		editor = CodeJar(document.querySelector(selector), null, { tab : '  ' });
+	initEditor: function(editor, selector) {
+		editor = CodeJar(document.querySelector(selector), null, { tab: '  ' });
 		//editor = CodeJar(document.querySelector(selector), null, { tab : '\t' });
 		editor.onUpdate(code => this.onUpdateEditor(code, selector));
 		return editor;
 	},
 
-	isInitialize : function() {
+	isInitialize: function() {
 		const obj = types[currentType];
 		for (const key in obj.editors) {
 			if (obj.editors[key] !== null) return true;
@@ -440,7 +453,7 @@ const tab = {
 	},
 
 	// for performance reason it destroys an old editor, and replaces the old editor div element by the new one
-	destroyTestEditor : function() {
+	destroyTestEditor: function() {
 		tab.setEditableAttribute(false);
 
 		const obj = types[currentType];
@@ -461,7 +474,7 @@ const tab = {
 		return null;
 	},
 
-	updateTestEditor : function(code, event) {
+	updateTestEditor: function(code, event) {
 		if (event && (event.type === 'paste' || event.type === 'drop')) {
 			if (types[currentType].testEditorMode === 'html') {
 				this.setHtmlMode(importer.sanitizeHtml(code), true);
@@ -470,13 +483,13 @@ const tab = {
 		this.setDirty(true);
 	},
 
-	onUpdateEditor : function(code, selector) {
+	onUpdateEditor: function(code, selector) {
 		$(selector).parent('div').find('button.clear').toggleClass('hide', code.length === 0);
 
 		this.setDirty(true);
 	},
 
-	updateCustomCode : function(content) {
+	updateCustomCode: function(content) {
 		const info = this.getCodeEditorInfo();
 		info.editor.updateCode(content);
 
@@ -484,16 +497,16 @@ const tab = {
 		hljs.highlightElement($(info.selector)[0]);
 	},
 
-	getSelectorsEditorInfo : function() {
+	getSelectorsEditorInfo: function() {
 		const obj = types[currentType],
 			checkbox = `${currentSection} .selectors .selector-all>input`,
 			selector = `${currentSection} .selectors .editor`,
 			editor = obj.editors['selectors'];
 
-		return { selector, editor, all : checkbox };
+		return { selector, editor, all: checkbox };
 	},
 
-	getSearchEditorInfo : function() {
+	getSearchEditorInfo: function() {
 		const obj = types[currentType],
 			selector = `${currentSection} .${obj.queryEditor} .editor`,
 			editor = obj.editors[obj.queryEditor];
@@ -501,7 +514,7 @@ const tab = {
 		return { selector, editor };
 	},
 
-	getCodeEditorInfo : function() {
+	getCodeEditorInfo: function() {
 		const obj = types[currentType],
 			selector = `${optionPad} .customCode .editor`,
 			editor = obj.customCodeEditor;
@@ -509,10 +522,10 @@ const tab = {
 		if ( !editor) {
 			types[currentType].customCodeEditor = tab.initEditor(editor, selector);
 		}
-		return { selector, editor : types[currentType].customCodeEditor };
+		return { selector, editor: types[currentType].customCodeEditor };
 	},
 
-	getTestEditor : function() {
+	getTestEditor: function() {
 		const editor = types[currentType].editors.testString;
 		if ( !editor) {
 			types[currentType].editors.testString = tab.initTestEditor(editor);
@@ -520,11 +533,11 @@ const tab = {
 		return types[currentType].editors.testString;
 	},
 
-	getOptionEditor : function(option) {
+	getOptionEditor: function(option) {
 		return types[currentType].editors[option];
 	},
 
-	clear : function(keep) {
+	clear: function(keep) {
 		$('.results code').empty();
 		$('.internal-code code').empty();
 		if ( !keep) $('.generated-code code').empty();
@@ -533,12 +546,12 @@ const tab = {
 		startElements = $();
 	},
 
-	setEditableAttribute : function(on) {
+	setEditableAttribute: function(on) {
 		const elem = this.getTestElement();
 		$(elem).attr('contenteditable', on);
 	},
 
-	setLoadButton : function() {
+	setLoadButton: function() {
 		const value = settings.loadValue(currentTabId),
 			button = $('header button.load');
 
@@ -548,24 +561,24 @@ const tab = {
 		return value;
 	},
 
-	setDirty : function(value) {
+	setDirty: function(value) {
 		types[currentType].isDirty = value;
 		$('header .save').toggleClass('dirty', value);
 	},
 
-	getNumericalValue : function(option, defaultValue) {
+	getNumericalValue: function(option, defaultValue) {
 		return parseInt($(`${optionPad} .${option} input`).val().trim()) || defaultValue;
 	},
 
-	getElement : function(option, name) {
+	getElement: function(option, name) {
 		return $(`${optionPad} .${option} ${name}`)
 	},
 
-	isChecked : function(option) {
+	isChecked: function(option) {
 		return this.getElement(option, 'input').prop('checked');
 	},
 
-	getInnerHTML : function() {
+	getInnerHTML: function() {
 		const elem = tab.getTestElement();
 
 		if (tab.isChecked('iframes') || tab.isChecked('shadowDOM')) {
@@ -574,7 +587,7 @@ const tab = {
 		return elem.innerHTML;
 	},
 
-	innerHTML : function(root) {
+	innerHTML: function(root) {
 		const array = [],
 			stack = [],
 			iframe = tab.isChecked('iframes'),
@@ -586,9 +599,9 @@ const tab = {
 					const node = parent.childNodes[i];
 
 					if (node.nodeType === Node.ELEMENT_NODE && !util.isVoidElement(node)) {
-						stack.push({ node : null, closeTag : `</${node.nodeName.toLowerCase()}>` });
+						stack.push({ node: null, closeTag: `</${node.nodeName.toLowerCase()}>` });
 					}
-					stack.push({ node : node, closeTag : null });
+					stack.push({ node: node, closeTag: null });
 				}
 			}
 		};
@@ -698,6 +711,24 @@ function setSeparateWordValue(elem) {
 // also DOM 'onchange' event
 function setShadowDOMStyle(elem) {
 	tab.switchElements(elem, '.shadowStyle');
+	switchShadowDOMStyle(elem);
+}
+
+// also DOM 'onchange' event
+function switchShadowDOMStyle(elem) {
+	$(`${optionPad} .useHighlight, ${optionPad} .useElement`).addClass('hide');
+
+	const highlight = tab.isChecked('highlight');
+	if (highlight) {
+		if (highlightSupport) {
+			$(`${optionPad} .useHighlight`).removeClass('hide');
+			return; 
+
+		} else {
+			log('This browser does not supported Highlight API', false, true);
+		}
+	}
+	$(`${optionPad} .useElement`).removeClass('hide');
 }
 
 // also DOM 'onchange' event
@@ -929,7 +960,7 @@ const importer = {
 		}
 	},
 
-	loadJson : function(str) {
+	loadJson: function(str) {
 		if (str) {
 			const json = Json.parseJson(str);
 			if ( !json) {
@@ -950,7 +981,7 @@ const importer = {
 		}
 	},
 
-	resetOptions : function() {
+	resetOptions: function() {
 		const obj = types[currentType];
 
 		obj.options.every(option => {
@@ -998,7 +1029,7 @@ const importer = {
 		}
 	},
 
-	setOptions : function(json) {
+	setOptions: function(json) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements'),
 			textMode = obj.testEditorMode === 'text';
@@ -1088,7 +1119,7 @@ const importer = {
 
 					} else {
 						if (/^defaultHtmls\[(['"])\w+\1\]$/.test(content)) {
-							const match = /^defaultHtmls\[['"](\w+)['"]\]([^]*)/.exec(content); // defaultHtmls['lorem']
+							const match = /^defaultHtmls\[['"](\w+)['"]\]([^]*)/.exec(content);    // defaultHtmls['lorem']
 							tab.setHtmlMode(defaultHtmls[match[1]] + (match[2] || ''), false);
 
 						} else {
@@ -1124,7 +1155,7 @@ const importer = {
 		tab.setDirty(false);
 	},
 
-	sanitizeHtml : function(str) {
+	sanitizeHtml: function(str) {
 		const doc = new DOMParser().parseFromString(str, "text/html"),
 			iterator = document.createNodeIterator(doc.documentElement, NodeFilter.SHOW_ALL),
 			report = {};
@@ -1268,11 +1299,11 @@ function runCode(reset) {
 }
 
 const codeBuilder = {
-	comment : '\n// your code before',
-	defaultSnippet : `\n<<markjsCode>> // don't remove this line\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
-	snippet : '',
+	comment: '\n// your code before',
+	defaultSnippet: `\n<<markjsCode>> // don't remove this line\n\nfunction filter() {\n  return true;\n}\n\nfunction each() {}\n\nfunction done() {}`,
+	snippet: '',
 
-	build : function(kind) {
+	build: function(kind) {
 		const jsCode = this.buildCode('js');
 		if ( !jsCode) return '';
 
@@ -1287,7 +1318,7 @@ const codeBuilder = {
 		return this.buildCode(kind);
 	},
 
-	buildCode : function(kind) {
+	buildCode: function(kind) {
 		const info = tab.getSearchEditorInfo(),
 			unmark = kind === 'internal' || $('.unmark-method input').prop('checked'),
 			optionCode = this.buildOptions(kind, unmark);
@@ -1299,39 +1330,39 @@ const codeBuilder = {
 
 		const name = tab.getElement('element', 'input').val().trim();
 		if (name && name.toLowerCase() !== 'mark') {
-			unmarkOpt = `element :  '${name}',\n  `;
+			unmarkOpt = `element:  '${name}',\n  `;
 		}
 		const klass = tab.getElement('className', 'input').val().trim();
 		if (klass) {
-			unmarkOpt += `className :  '${klass}',\n  `;
+			unmarkOpt += `className:  '${klass}',\n  `;
 		}
 
-		if(tab.isChecked('iframes')) {
-			unmarkOpt += `iframes : true,\n  `;
+		if (tab.isChecked('iframes')) {
+			unmarkOpt += `iframes: true,\n  `;
 			const timeout = tab.getNumericalValue('iframesTimeout', 5000);
-			if(timeout !== 5000) {
-				unmarkOpt += `iframesTimeout : ${timeout},\n  `;
+			if (timeout !== 5000) {
+				unmarkOpt += `iframesTimeout: ${timeout},\n  `;
 			}
 		}
 
-		unmarkOpt += tab.isChecked('shadowDOM') ? 'shadowDOM : true,\n  ' : '';
+		unmarkOpt += tab.isChecked('shadowDOM') ? 'shadowDOM: true,\n  ' : '';
 
 		if (kind === 'jq') {
-			code = `$('selector')` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    $('selector')` : '');
+			code = `$('selector')` + (unmark ? `.unmark({\n  ${unmarkOpt}done: () => {\n    $('selector')`: '');
 
 		} else if (kind === 'js') {
-			code = `const instance = new Mark('selector');\ninstance` + (unmark ? `.unmark({\n  ${unmarkOpt}done : () => {\n    instance` : '');
+			code = `const instance = new Mark('selector');\ninstance` + (unmark ? `.unmark({\n  ${unmarkOpt}done: () => {\n    instance`: '');
 
-		} else { // internal
+		} else {    // internal
 			const time = `\n    time = performance.now();`;
 			code += this.buildContextCode(code);
 
-			const iframes = location.protocol === 'file:' ? '' : 'iframes : true,\n  ';
+			const iframes = location.protocol === 'file:' ? '' : 'iframes: true,\n  ';
 
-			unmarkOpt = `element :  '*',\n  ${iframes}shadowDOM : true,\n  `;
+			unmarkOpt = `element:  '*',\n  ${iframes}shadowDOM: true,\n  `;
 
 			code += `\n// unmarks whole editor regardless of selectors or other options`;
-			code += `\nnew Mark(editor).unmark({\n  ${unmarkOpt}done : () => {${time}\n    instance`;
+			code += `\nnew Mark(editor).unmark({\n  ${unmarkOpt}done: () => {${time}\n    instance`;
 		}
 
 		if (text = info.editor.toString().trim()) {
@@ -1376,7 +1407,7 @@ const codeBuilder = {
 		return code;
 	},
 
-	buildContextCode : function(code) {
+	buildContextCode: function(code) {
 		code = `const editor = tab.getTestElement();
 let options, context = editor;
 // checks selector editor
@@ -1387,12 +1418,15 @@ if (selectors) {
 	context = $(info.all).prop('checked') ? context.querySelectorAll(selectors) : context.querySelector(selectors);
 }
 
+const highlight = types[currentType].highlight;
+if (highlight) highlight.clear();
+
 const instance = new Mark(context);`;
 
 		return code;
 	},
 
-	buildCustomCode : function(code, kind) {
+	buildCustomCode: function(code, kind) {
 		let text;
 		const reg = /\s+/g,
 			editor = types[currentType].customCodeEditor;
@@ -1421,7 +1455,7 @@ const instance = new Mark(context);`;
 		return code;
 	},
 
-	buildOptions : function(kind, unmark) {
+	buildOptions: function(kind, unmark) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements'),
 			indent = ' '.repeat(unmark ? 6 : 2),
@@ -1446,7 +1480,7 @@ const instance = new Mark(context);`;
 							const selectValue = tab.getElement('separateWordValue', 'select').val();
 
 							if (selectValue && selectValue != 'true') {
-								code += `${indent}${option} : '${selectValue}',\n`;
+								code += `${indent}${option}: '${selectValue}',\n`;
 								break;
 							}
 						}
@@ -1455,13 +1489,19 @@ const instance = new Mark(context);`;
 							const selectValue = tab.getElement('acrossElementsValue', 'select').val();
 
 							if (selectValue && selectValue != 'true') {
-								code += `${indent}${option} : '${selectValue}',\n`;
+								code += `${indent}${option}: '${selectValue}',\n`;
 								break;
 							}
 						}
 
 						if (value !== opt.value) {
-							if (option === 'shadowDOM') {
+							if (option === 'highlight') {
+								if (types[currentType].highlight) {
+									code += `${indent}highlight: highlight,\n`;
+								}
+								break;
+
+							} else if (option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
 								value = editor && (text = editor.toString().trim()) ? text : value;
 
@@ -1481,7 +1521,7 @@ const instance = new Mark(context);`;
 							}
 
 							if (value !== null) {
-								code += `${indent}${option} : ${value},\n`;
+								code += `${indent}${option}: ${value},\n`;
 							}
 						}
 						break;
@@ -1490,7 +1530,7 @@ const instance = new Mark(context);`;
 						text = $(input).val().trim();
 
 						if (text && text !== opt.value) {
-							code += `${indent}${option} : '${text}',\n`;
+							code += `${indent}${option}: '${text}',\n`;
 						}
 						break;
 
@@ -1499,7 +1539,7 @@ const instance = new Mark(context);`;
 							const editor = tab.getOptionEditor(option);
 
 							if (editor && (text = editor.toString().trim())) {
-								code += `${indent}${option} : ${text},\n`;
+								code += `${indent}${option}: ${text},\n`;
 							}
 						}
 						break;
@@ -1509,7 +1549,7 @@ const instance = new Mark(context);`;
 						if (isNullOrUndefined(value)) break;
 
 						if (value !== opt.value) {
-							code += `${indent}${option} : `;
+							code += `${indent}${option}: `;
 
 							if (option === 'accuracy' && isAccuracyValue(value)) {
 								const editor = tab.getOptionEditor('accuracyObject');
@@ -1533,7 +1573,7 @@ const instance = new Mark(context);`;
 						}
 
 						if ( !isNullOrUndefined(value) && value !== opt.value) {
-							code += `${indent}${option} : ${value},\n`;
+							code += `${indent}${option}: ${value},\n`;
 						}
 						break;
 
@@ -1549,7 +1589,7 @@ const instance = new Mark(context);`;
 		return code;
 	},
 
-	buildCallbacks : function(kind, unmark) {
+	buildCallbacks: function(kind, unmark) {
 		let text,
 			code = '',
 			indent = ' '.repeat(unmark ? 6 : 2),
@@ -1560,36 +1600,36 @@ const instance = new Mark(context);`;
 
 			if (editor && (text = editor.toString())) {
 				if (/\bfunction\s+filter\s*\(/.test(text)) {
-					code += `${indent}filter : filter,\n`;
+					code += `${indent}filter: filter,\n`;
 				}
 
 				if (/\bfunction\s+each\s*\(/.test(text)) {
-					code += `${indent}each : each,\n`;
+					code += `${indent}each: each,\n`;
 				}
 
 				if (/\bfunction\s+done\s*\(/.test(text)) {
-					code += `${indent}done : done,\n`;
+					code += `${indent}done: done,\n`;
 				}
 
 				if (kind === 'internal') {
-					code += `${indent}noMatch : (t) => { noMatchTerms.push(t); }\n`;
+					code += `${indent}noMatch: (t) => { noMatchTerms.push(t); }\n`;
 				}
 
 			} else {
-				code = `${code}${indent}done : highlighter.finish\n`;
+				code = `${code}${indent}done: highlighter.finish\n`;
 			}
 
 		} else if ($('#callbacks').prop('checked')) {
-			code = `${indent}// the filter must return true to accept or false to reject the match\n`;
-			code += `${indent}filter : ${this.getFilterParameters()} => { return true; },\n`;
-			code += `${indent}each : ${this.getEachParameters()} => {},\n`;
-			code = `${code}${indent}done : ${this.getDoneParameters()} => {}\n`;
+			// the filter must return true to accept or false to reject the match\n`;
+			code = `${indent}filter: ${this.getFilterParameters()} => { return true; },\n`;
+			code += `${indent}each: ${this.getEachParameters()} => {},\n`;
+			code = `${code}${indent}done: ${this.getDoneParameters()} => {}\n`;
 		}
 
 		return code + end;
 	},
 
-	getFilterParameters : function() {
+	getFilterParameters: function() {
 		if (currentType === 'string_' || currentType === 'array') {
 			return `(textNode, term, matchesSoFar, termMatchesSoFar, info)`;
 
@@ -1599,19 +1639,19 @@ const instance = new Mark(context);`;
 		return `(textNode, range, matchString, index)`;
 	},
 
-	getEachParameters : function() {
+	getEachParameters: function() {
 		if (currentType === 'ranges') {
 			return `(element, range, info)`;
 		}
 		return `(element, info)`;
 	},
 
-	getDoneParameters : function() {
+	getDoneParameters: function() {
 		const stats = currentType === 'string_' || currentType === 'array';
 		return `(totalMarks, totalMatches${stats ? ', termStats' : ''})`;
 	},
 
-	initCodeSnippet : function() {
+	initCodeSnippet: function() {
 		this.snippet = (this.comment + this.defaultSnippet).replace(/\bfilter\(\)/g, 'filter' + codeBuilder.getFilterParameters())
 			.replace(/\beach\(\)/g, 'each' + codeBuilder.getEachParameters())
 			.replace(/\bdone\(\)/g, 'done' + codeBuilder.getDoneParameters());
@@ -1670,7 +1710,7 @@ const Json = {
 		return json;
 	},
 
-	serialiseOptions : function(json) {
+	serialiseOptions: function(json) {
 		const obj = types[currentType],
 			across = tab.isChecked('acrossElements');
 
@@ -1799,7 +1839,7 @@ const Json = {
 		return json;
 	},
 
-	serialiseCustomCode : function() {
+	serialiseCustomCode: function() {
 		let code;
 		const editor = types[currentType].customCodeEditor;
 
@@ -1809,7 +1849,7 @@ const Json = {
 		return '';
 	},
 
-	parseJson : function(str) {
+	parseJson: function(str) {
 		let json;
 		try { json = JSON.parse(str); } catch (e) {
 			log('\nFailed to parse this json\n' + e.message, e.stack);
@@ -1973,7 +2013,7 @@ function registerEvents() {
 			name = (name || getFileName());
 
 			this.download = name;
-			this.href = URL.createObjectURL(new Blob([json], { type : 'text/json' }));
+			this.href = URL.createObjectURL(new Blob([json], { type: 'text/json' }));
 			//URL.revokeObjectURL(this.href);
 
 			$('.file-form .file-name').val(name);
@@ -2006,13 +2046,13 @@ function registerEvents() {
 }
 
 const util = {
-	voidElements : ['meta', 'link', 'br', 'col', 'hr', 'input', 'img', 'area', 'menuitem', 'wbr', 'param', 'source', 'track', 'base', 'basefont', 'embed', 'frame', 'isindex', 'keygen', 'nextid', 'nobr', 'plaintext'],
+	voidElements :['meta', 'link', 'br', 'col', 'hr', 'input', 'img', 'area', 'menuitem', 'wbr', 'param', 'source', 'track', 'base', 'basefont', 'embed', 'frame', 'isindex', 'keygen', 'nextid', 'nobr', 'plaintext'],
 
-	isVoidElement : function(node) {
+	isVoidElement: function(node) {
 		return this.voidElements.indexOf(node.nodeName.toLowerCase()) !== -1;
 	},
 
-	entitize : function(text) {
+	entitize: function(text) {
 		text = text.replace(/[<>&"']/g, m => {
 			return m === '<' ? '&lt;' : m === '>' ? '&gt;' : m === '&' ? '&amp;' : m === '"' ? '&quot;' : '&#039;';
 		});
@@ -2020,13 +2060,13 @@ const util = {
 	},
 
 	// stringifies a str if it isn't a real string
-	stringify : function(str) {
+	stringify: function(str) {
 		const reg = /^(?:(['"])(?:(?:(?!\1|\\).)|(?:\\.))+\1|`(?:(?:(?![`\\])[^])|(?:\\.))+`)$/;
 
 		return reg.test(str.trim()) ? str : JSON.stringify(str);
 	},
 
-	distinct : function(arr) {
+	distinct: function(arr) {
 		const array = [];
 
 		for (let i = 0; i < arr.length; ++i) {
@@ -2035,7 +2075,7 @@ const util = {
 		return array;
 	},
 
-	removeMarks : function(text) {
+	removeMarks: function(text) {
 		// removes all mark elements from the text
 		const regex = new RegExp(`<${markElement} data-markjs=[^>]+>((?:(?!</${markElement}>)[^])+)</${markElement}>`, 'g');
 		let max = 20;    // just to be on the safe side
@@ -2048,17 +2088,17 @@ const util = {
 };
 
 const settings = {
-	loadDefault : true,
-	showTooltips : true,
-	showWarning : true,
-	runOnchange : false,
+	loadDefault: true,
+	showTooltips: true,
+	showWarning: true,
+	runOnchange: false,
 
-	save : function() {
+	save: function() {
 		const str = JSON.stringify(settings);
 		this.saveValue('settings', str);
 	},
 
-	load : function() {
+	load: function() {
 		const str = this.loadValue('settings');
 		if (str) {
 			const json = Json.parseJson(str);
@@ -2083,14 +2123,14 @@ const settings = {
 		}
 	},
 
-	setCheckboxes : function() {
+	setCheckboxes: function() {
 		$('#load-default').prop('checked', this.loadDefault);
 		$('#show-tooltips').prop('checked', this.showTooltips);
 		$('#unsaved').prop('checked', this.showWarning);
 		$('#run-onchange').prop('checked', this.runOnchange);
 	},
 
-	changed : function(elem) {
+	changed: function(elem) {
 		this.loadDefault = $('#load-default').prop('checked');
 		this.showTooltips = $('#show-tooltips').prop('checked');
 		this.showWarning = $('#unsaved').prop('checked');
@@ -2098,7 +2138,7 @@ const settings = {
 		this.save();
 	},
 
-	loadValue : function(key) {
+	loadValue: function(key) {
 		try {
 			return localStorage.getItem(key);
 		} catch (e) {
@@ -2107,7 +2147,7 @@ const settings = {
 		return null;
 	},
 
-	saveValue : function(key, value) {
+	saveValue: function(key, value) {
 		try {
 			const saved = localStorage.getItem(key);
 			if (value !== saved) {
@@ -2137,14 +2177,14 @@ function showTooltip(id, elem, e) {
 	showHideInfo(id);
 
 	elem.data('powertiptarget', id).powerTip({
-		intentPollInterval : 300,
-		fadeInTime : 100,
-		smartPlacement : true,
-		mouseOnToPopup : true,
-		placement : 'w',
-		offset : 30,
+		intentPollInterval: 300,
+		fadeInTime: 100,
+		smartPlacement: true,
+		mouseOnToPopup: true,
+		placement: 'w',
+		offset: 30,
 	}).on({
-		powerTipClose : function() {
+		powerTipClose: function() {
 			elem.powerTip('destroy');
 		}
 	});
@@ -2359,26 +2399,4 @@ function scrollIntoView(elem) {
 		setTimeout(function() { isScrolled = false; }, 150);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

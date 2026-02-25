@@ -85,6 +85,8 @@ header select#examples { font-size: 0.875em; float: left; width: 160px; margin: 
 header button.show-instructions { width: 18px; height: 18px; margin-left: -10px; border: #ccc 1px solid; border-radius: 8px; }
 #playground-instructions { display: none; }
 
+::highlight('markjs') { background-color: #d8e8ff; }
+
 .setting-form,
 .file-form,
 .json-form { -webkit-box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2), 4px 4px 20px 0 rgba(0, 0, 0, 0.3), 0 -1px 2px #dcdcdc inset; -moz-box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2), 4px 4px 20px 0 rgba(0, 0, 0, 0.3), 0 -1px 2px #dcdcdc inset; box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2), 4px 4px 20px 0 rgba(0, 0, 0, 0.3), 0 -1px 2px #dcdcdc inset; }
