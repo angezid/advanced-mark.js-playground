@@ -55,7 +55,7 @@ mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
 const examples = {
 	name : 'Examples',
-	
+
 	exclude : `{
         "version": "3.0.0",
         "section": {
@@ -69,7 +69,7 @@ const examples = {
             }
         }
     }`,
-    
+
 	preserveTerms : ` {
         "version": "3.0.0",
         "section": {
@@ -126,23 +126,6 @@ const examples = {
         }
     }`,
 
-	characterSetsUnicode : `{
-        "version": "3.0.0",
-        "library": "advanced",
-        "section": {
-            "type": "string_",
-            "diacritics": false,
-            "characterSets": true,
-            "unicode": true,
-            "debug": true,
-            "queryString": "hello [\\\\p{Sc}][\\\\d.]+ [\\\\p{sc=Han}] [\\\\p{Nl}] [\\\\u{1d4b3}]",
-            "testString": {
-                "mode": "html",
-                "content": "  <p>Prices: $19.99, \\"€18.99, ¥2000</p>\\n  <p>Hello 你好 123 Ⅻ</p>\\n  𝒳 x"
-            }
-        }
-    }`,
-
 	shadowDOM : `{
 		"version": "3.0.0",
         "section": {
@@ -188,7 +171,7 @@ const examples = {
             "selectorAll": true
         }
     }`,
-    
+
 	markWhileTyping : `{
         "version": "3.0.0",
         "section": {
@@ -295,7 +278,7 @@ const examples = {
             }
         }
     }`,
-    
+
 	performance : `{
         "version": "3.0.0",
         "library": "advanced",
@@ -316,17 +299,17 @@ const examples = {
 
 const defaultHtmls = {
     name : 'HTMLs',
-    
+
     iframes : '<h1>Iframe 1</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="500" height="100" src="html/nested-iframe.html"></iframe>',
-    
+
     loremIframe : `<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit.</p>
     <iframe width="500" height="120" src="html/iframe.html"></iframe>`,
-    
+
     lorem : `<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit.</p>
 <p>Lorem <em>ipsum</em> <a href="#">dolor</a> sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 'sit' amet.</p>`,
 
     fox : `<p>The quick, brown <em>fox</em> jumps over a lazy <em>dog</em>.</p>`,
-    
+
     wikipedia : `<p><b>Wikipedia</b> (<span><span lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>ɪ</span><span>ˈ</span><span>p</span><span>iː</span><span>d</span><span>i</span><span>ə</span></span>/</a></span> <span style="font-size:85%">(<span><span><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#">listen</a></span></span>)</span></span> <a href="#"><i>wik-ih-<span style="font-size:90%">PEE</span>-dee-ə</i></a> or <span><span lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>i</span></span>-/</a></span> <span style="font-size:85%">(<span><span><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#">listen</a></span></span>)</span></span> <a href="#"><i>wik-ee-</i></a>) is a <a href="#">multilingual</a> <a href="#">free online encyclopedia</a> written and maintained by a community of <a href="#">volunteers</a> through <a href="#">open collaboration</a> and a <a href="#">wiki</a>-based editing system. Individual contributors, also called editors, are known as <a href="#">Wikipedians</a>. Wikipedia is the largest and most-read <a href="#">reference work</a> in history.<sup><a href="#">[3]</a></sup> It is consistently one of the 10 <a href="#">most popular websites</a> ranked by the <a href="#">Similarweb</a> and former <a href="#">Alexa</a>; as of 2022,<sup style="display:none;"><a href="#">[update]</a></sup> Wikipedia was ranked the 7th most popular site.<sup><a href="#">[3]</a></sup><sup><a href="#">[4]</a></sup><sup><a href="#">[5]</a></sup> It is hosted by the <a href="#">Wikimedia Foundation</a>, an <a href="#">American non-profit organization</a> funded mainly through donations.<sup><a href="#">[6]</a></sup></p>
 <p>On January 15, 2001, <a href="#">Jimmy Wales</a><sup><a href="#">[7]</a></sup> and <a href="#">Larry Sanger</a> launched Wikipedia.Sanger coined its name as a <a href="#">blend</a> of  "wiki" and "encyclopedia."<sup><a href="#">[8]</a></sup><sup><a href="#">[9]</a></sup>Wales was influenced by the "<a href="#">spontaneous order</a>" ideas associated with <a href="#">Friedrich Hayek</a> and the <a href="#">Austrian School</a> of economics, after being exposed to these ideas by Austrian economist and <a href="#">Mises Institute</a> Senior Fellow <a href="#">Mark Thornton</a>.<sup><a href="#">[10]</a></sup> Initially available only in English, versions in other languages werequickly developed. Its combined editions comprise more than 58 millionarticles, attracting around 2<span>&nbsp;</span>billion unique device visits per month and more than 17 million edits per month (1.9<span>&nbsp;</span>edits per second) as of November&nbsp;2020<sup style="display:none;"><a href="#">[update]</a></sup>.<sup><a href="#">[11]</a></sup><sup><a href="#">[12]</a></sup>In 2006, <i><a href="#">Time magazine</a></i> stated that the policy of allowing anyone to edit had made Wikipedia the "biggest (and perhaps best) encyclopedia in the world."<sup><a href="#">[7]</a></sup></p>
     `,

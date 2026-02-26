@@ -12,7 +12,7 @@ let currentTabId = '',
 	markElement = '',
 	optionPad = '',
 	dFlagSupport = true,
-	highlightSupport = typeof Highlight !== 'undefined',
+	highlightSupported = typeof Highlight !== 'undefined',
 	isScrolled = false,
 	canBeNested = false,
 	flagEveryElement = false,
@@ -163,7 +163,7 @@ const tab = {
 			}
 		}
 
-		if ( !types[currentType].highlight && highlightSupport) {
+		if (highlightSupported && !types[currentType].highlight) {
 			types[currentType].highlight = new Highlight();
 		}
 
@@ -720,9 +720,9 @@ function switchShadowDOMStyle(elem) {
 
 	const highlight = tab.isChecked('highlight');
 	if (highlight) {
-		if (highlightSupport) {
+		if (highlightSupported) {
 			$(`${optionPad} .useHighlight`).removeClass('hide');
-			return; 
+			return;
 
 		} else {
 			log('This browser does not supported Highlight API', false, true);
@@ -1251,6 +1251,10 @@ function runCode(reset) {
 
 	if (reset) {
 		currentIndex = 0;
+	}
+
+	if (highlightSupported && !types[currentType].highlight) {
+		types[currentType].highlight = new Highlight();
 	}
 
 	const editor = types[currentType].customCodeEditor;
