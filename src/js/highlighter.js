@@ -21,8 +21,12 @@ const highlighter = {
 	markContext: function(parameter, options, settings, fn) {
 		time = performance.now();
 
-		if (types[currentType].highlight) {
-			types[currentType].highlight.clear();
+		if (highlightSupported) {
+			CSS.highlights.delete(highlightName);
+
+			if (types[currentType].highlight) {
+				types[currentType].highlight.clear();
+			}
 		}
 
 		settings.testContainer.unmark({
@@ -156,6 +160,9 @@ const highlighter = {
 	setHighlight: function(settings, options) {
 		if (settings.highlight) {
 			options.highlight = types[currentType].highlight;
+			options.highlightName = highlightName;
+			options.staticRanges = settings.staticRanges;
+			options.rangeAcrossElements = settings.rangeAcrossElements;
 		}
 	},
 
@@ -263,6 +270,10 @@ const highlighter = {
 		obj.debug = tab.isChecked('debug');
 
 		obj.highlight = tab.isChecked('highlight');
+		if (obj.highlight) {
+			obj.staticRanges = tab.isChecked('staticRanges');
+			obj.rangeAcrossElements = tab.isChecked('rangeAcrossElements');
+		}
 
 		obj.iframes = tab.isChecked('iframes');
 		if (obj.iframes) {

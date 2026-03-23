@@ -13,6 +13,7 @@ let currentTabId = '',
 	optionPad = '',
 	dFlagSupport = true,
 	highlightSupported = typeof Highlight !== 'undefined',
+	highlightName = 'playground',
 	isScrolled = false,
 	canBeNested = false,
 	flagEveryElement = false,
@@ -25,7 +26,7 @@ let currentTabId = '',
 
 const types = {
 	string_ : {
-		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'staticRanges', 'rangeAcrossElements', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
 		editors: { 'queryString': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
 		queryEditor: 'queryString',
 		testEditorMode: 'text',
@@ -35,7 +36,7 @@ const types = {
 	},
 
 	array: {
-		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'iframes', 'iframesTimeout', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'staticRanges', 'rangeAcrossElements', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
 		editors: { 'queryArray': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
 		queryEditor: 'queryArray',
 		testEditorMode: 'text',
@@ -45,7 +46,7 @@ const types = {
 	},
 
 	regexp: {
-		options:[ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'highlight', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'debug' ],
+		options:[ 'element', 'className', 'exclude', 'highlight', 'staticRanges', 'rangeAcrossElements', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
 		editors: { 'queryRegExp': null, 'selectors': null, 'testString': null, 'exclude': null, 'blockElements': null, 'shadowStyle': null },
 		queryEditor: 'queryRegExp',
 		testEditorMode: 'text',
@@ -55,7 +56,7 @@ const types = {
 	},
 
 	ranges: {
-		options:[ 'element', 'className', 'exclude', 'iframes', 'iframesTimeout', 'highlight', 'wrapAllRanges', 'shadowDOM', 'markLines', 'debug' ],
+		options:[ 'element', 'className', 'exclude', 'wrapAllRanges', 'highlight', 'staticRanges', 'rangeAcrossElements', 'shadowDOM', 'markLines', 'iframes', 'iframesTimeout', 'debug' ],
 		editors: { 'queryRanges': null, 'selectors': null, 'testString': null, 'exclude': null, 'shadowStyle': null },
 		queryEditor: 'queryRanges',
 		testEditorMode: 'text',
@@ -65,7 +66,7 @@ const types = {
 	}
 };
 
-const newOptions = ['blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'markLines', 'highlight'];
+const newOptions = ['blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'markLines', 'highlight', 'staticRanges', 'rangeAcrossElements'];
 
 const defaultOptions = {
 	element : { value: 'mark', type: 'text' },
@@ -75,8 +76,6 @@ const defaultOptions = {
 	diacritics: { value: true, type: 'checkbox' },
 	accuracy: { value: 'partially', type: 'select' },
 	synonyms: { value: {}, type: 'editor' },
-	iframes: { value: false, type: 'checkbox' },
-	iframesTimeout: { value: 5000, type: 'number' },
 	acrossElements: { value: false, type: 'checkbox' },
 	caseSensitive : { value: false, type: 'checkbox' },
 	ignoreJoiners: { value: false, type: 'checkbox' },
@@ -85,11 +84,15 @@ const defaultOptions = {
 	ignoreGroups: { value: 0, type: 'number' },
 	combineBy: { value: 10, type: 'number' },
 	highlight: { value: false, type: 'checkbox' },
+	staticRanges: { value: true, type: 'checkbox' },
+	rangeAcrossElements: { value: true, type: 'checkbox' },
 	wrapAllRanges: { value: false, type: 'checkbox' },
 	separateGroups: { value: false, type: 'checkbox' },
 	blockElementsBoundary: { value: false, type: 'checkbox' },
 	shadowDOM: { value: false, type: 'checkbox' },
 	markLines: { value: false, type: 'checkbox' },
+	iframes: { value: false, type: 'checkbox' },
+	iframesTimeout: { value: 5000, type: 'number' },
 	debug: { value: false, type: 'checkbox' },
 	log: { value: false, type: 'checkbox' },
 };
@@ -163,11 +166,16 @@ const tab = {
 			}
 		}
 
+		this.getHighlight();
+
+		this.setVisibility();
+	},
+
+	getHighlight: function() {
 		if (highlightSupported && !types[currentType].highlight) {
 			types[currentType].highlight = new Highlight();
 		}
-
-		this.setVisibility();
+		return types[currentType].highlight;
 	},
 
 	selectTab: function(type) {
@@ -711,17 +719,19 @@ function setSeparateWordValue(elem) {
 // also DOM 'onchange' event
 function setShadowDOMStyle(elem) {
 	tab.switchElements(elem, '.shadowStyle');
-	switchShadowDOMStyle(elem);
+	setHighlight(elem);
 }
 
 // also DOM 'onchange' event
-function switchShadowDOMStyle(elem) {
+function setHighlight(elem) {
+	$(`${optionPad} .staticRanges, ${optionPad} .rangeAcrossElements`).addClass('hide');
 	$(`${optionPad} .useHighlight, ${optionPad} .useElement`).addClass('hide');
 
 	const highlight = tab.isChecked('highlight');
 	if (highlight) {
 		if (highlightSupported) {
 			$(`${optionPad} .useHighlight`).removeClass('hide');
+			$(`${optionPad} .staticRanges, ${optionPad} .rangeAcrossElements`).removeClass('hide');
 			return;
 
 		} else {
@@ -793,14 +803,13 @@ function setIframesTimeout(elem) {
 	tab.switchElements(elem, '.iframesTimeout');
 }
 
-// DOM 'onchange' event
-function selectDefaultHtml(elem) {
+/*function selectDefaultHtml(elem) {
 	const title = $(elem).val();
 	let content = defaultHtmls[title];
 
 	tab.setHtmlMode(content, false);
 	tab.setTextMode(null);
-}
+}*/
 
 // DOM 'onchange' event
 function selectExample(elem) {
@@ -1253,9 +1262,7 @@ function runCode(reset) {
 		currentIndex = 0;
 	}
 
-	if (highlightSupported && !types[currentType].highlight) {
-		types[currentType].highlight = new Highlight();
-	}
+	tab.getHighlight();
 
 	const editor = types[currentType].customCodeEditor;
 
@@ -1421,11 +1428,13 @@ const info = tab.getSelectorsEditorInfo(),
 if (selectors) {
 	context = $(info.all).prop('checked') ? context.querySelectorAll(selectors) : context.querySelector(selectors);
 }
+`;
 
-const highlight = types[currentType].highlight;
-if (highlight) highlight.clear();
+		if (tab.isChecked('highlight')) {
+			code +=`const highlight = tab.getHighlight();\nif (highlight) highlight.clear();\n`;
+		}
 
-const instance = new Mark(context);`;
+		code +=`\nconst instance = new Mark(context);`;
 
 		return code;
 	},

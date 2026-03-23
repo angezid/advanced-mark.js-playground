@@ -44,6 +44,7 @@ mark[data-markjs].mark-term { background: #ffe408; }
 mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
 
 ::highlight(markjs) { background-color: #d8e8ff; }
+::highlight(playground) { background-color: #d8e8ff; }
 
 @media only screen and (max-width: 980px) {
     .left-column, .right-column, .column { width: 100%; }

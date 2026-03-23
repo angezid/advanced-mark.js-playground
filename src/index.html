@@ -177,9 +177,18 @@
 
 <div class="checkboxes">
 <div class="highlight advanced">
-<input name="highlight" id="string_-highlight" type="checkbox" onchange="switchShadowDOMStyle(this)">
+<input name="highlight" id="string_-highlight" type="checkbox" onchange="setHighlight(this)">
 <label for="string_-highlight" name="highlight">Use Highlight API</label>
 </div>
+<div class="staticRanges advanced dependable hide">
+<input name="staticRanges" id="string_-staticRanges" type="checkbox" checked>
+<label for="string_-staticRanges" name="staticRanges">staticRanges</label>
+</div>
+<div class="rangeAcrossElements advanced dependable hide">
+<input name="rangeAcrossElements" id="string_-rangeAcrossElements" type="checkbox" checked>
+<label for="string_-rangeAcrossElements" name="rangeAcrossElements">rangeAcrossElements</label>
+</div>
+
 <div class="separateWordSearch">
 <input name="separateWordSearch" id="string_-separateWordSearch" type="checkbox" checked onchange="setCombineby(this)">
 <label for="string_-separateWordSearch" name="separateWordSearch">Separate words</label>
@@ -254,14 +263,6 @@
 <option value="disabled" selected>disabled</option>
 <option value="enabled">enabled</option>
 <option value="withSpaces">withSpaces</option>
-</select>
-</div>
-
-<div class="acrossElementsValue advanced dependable hide disable">
-<label for="string_-acrossElementsValue" name="acrossElements">Across elements</label>
-<select name="acrossElements" id="string_-acrossElementsValue">
-<option value="true" selected>true</option>
-<option value="inline">inline</option>
 </select>
 </div>
 
@@ -396,9 +397,18 @@
 
 <div class="checkboxes">
 <div class="highlight advanced">
-<input name="highlight" id="array-highlight" type="checkbox" onchange="switchShadowDOMStyle(this)">
+<input name="highlight" id="array-highlight" type="checkbox" onchange="setHighlight(this)">
 <label for="array-highlight" name="highlight">Use Highlight API</label>
 </div>
+<div class="staticRanges advanced dependable hide">
+<input name="staticRanges" id="array-staticRanges" type="checkbox" checked>
+<label for="array-staticRanges" name="staticRanges">staticRanges</label>
+</div>
+<div class="rangeAcrossElements advanced dependable hide">
+<input name="rangeAcrossElements" id="array-rangeAcrossElements" type="checkbox" checked>
+<label for="array-rangeAcrossElements" name="rangeAcrossElements">rangeAcrossElements</label>
+</div>
+
 <div class="separateWordSearch">
 <input name="separateWordSearch" id="array-separateWordSearch" type="checkbox" checked onchange="setSeparateWordValue(this)">
 <label for="array-separateWordSearch" name="separateWordSearch">Separate words</label>
@@ -473,14 +483,6 @@
 <option value="disabled" selected>disabled</option>
 <option value="enabled">enabled</option>
 <option value="withSpaces">withSpaces</option>
-</select>
-</div>
-
-<div class="acrossElementsValue advanced dependable hide disable">
-<label for="array-acrossElementsValue" name="acrossElements">Across elements</label>
-<select name="acrossElements" id="array-acrossElementsValue">
-<option value="true" selected>true</option>
-<option value="inline">inline</option>
 </select>
 </div>
 
@@ -613,9 +615,18 @@
 
 <div class="checkboxes">
 <div class="highlight advanced">
-<input name="highlight" id="regexp-highlight" type="checkbox" onchange="switchShadowDOMStyle(this)">
+<input name="highlight" id="regexp-highlight" type="checkbox" onchange="setHighlight(this)">
 <label for="regexp-highlight" name="highlight">Use Highlight API</label>
 </div>
+<div class="staticRanges advanced dependable hide">
+<input name="staticRanges" id="regexp-staticRanges" type="checkbox" checked>
+<label for="regexp-staticRanges" name="staticRanges">staticRanges</label>
+</div>
+<div class="rangeAcrossElements advanced dependable hide">
+<input name="rangeAcrossElements" id="regexp-rangeAcrossElements" type="checkbox" checked>
+<label for="regexp-rangeAcrossElements" name="rangeAcrossElements">rangeAcrossElements</label>
+</div>
+
 <div class="acrossElements">
 <input name="acrossElements" id="regexp-acrossElements" type="checkbox" onchange="setBlockElementsBoundary(this)">
 <label for="regexp-acrossElements" name="acrossElements">Across elements</label>
@@ -761,9 +772,18 @@
 
 <div class="checkboxes">
 <div class="highlight advanced">
-<input name="highlight" id="ranges-highlight" type="checkbox" onchange="switchShadowDOMStyle(this)">
+<input name="highlight" id="ranges-highlight" type="checkbox" onchange="setHighlight(this)">
 <label for="ranges-highlight" name="highlight">Use Highlight API</label>
 </div>
+<div class="staticRanges advanced dependable hide">
+<input name="staticRanges" id="ranges-staticRanges" type="checkbox" checked>
+<label for="ranges-staticRanges" name="staticRanges">staticRanges</label>
+</div>
+<div class="rangeAcrossElements advanced dependable hide">
+<input name="rangeAcrossElements" id="ranges-rangeAcrossElements" type="checkbox" checked>
+<label for="ranges-rangeAcrossElements" name="rangeAcrossElements">rangeAcrossElements</label>
+</div>
+
 <div class="wrapAllRanges advanced">
 <input name="wrapAllRanges" id="ranges-wrapAllRanges" type="checkbox">
 <label for="ranges-wrapAllRanges" name="wrapAllRanges">Wrap nesting/overlaping</label>
