@@ -23,9 +23,11 @@ const highlighter = {
 
 		if (highlightSupported) {
 			CSS.highlights.delete(highlightName);
+			
+			const highlight = tab.getHighlight();
 
-			if (types[currentType].highlight) {
-				types[currentType].highlight.clear();
+			if (highlight) {
+				highlight.clear();
 			}
 		}
 
@@ -159,7 +161,7 @@ const highlighter = {
 
 	setHighlight: function(settings, options) {
 		if (settings.highlight) {
-			options.highlight = types[currentType].highlight;
+			options.highlight = settings.highlight;
 			options.highlightName = highlightName;
 			options.staticRanges = settings.staticRanges;
 			options.rangeAcrossElements = settings.rangeAcrossElements;
@@ -269,8 +271,8 @@ const highlighter = {
 		obj.exclude = this.tryToEvaluate('exclude', 3) || [];
 		obj.debug = tab.isChecked('debug');
 
-		obj.highlight = tab.isChecked('highlight');
-		if (obj.highlight) {
+		if (tab.isChecked('highlight')) {
+			obj.highlight = tab.getHighlight();
 			obj.staticRanges = tab.isChecked('staticRanges');
 			obj.rangeAcrossElements = tab.isChecked('rangeAcrossElements');
 		}

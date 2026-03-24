@@ -31,8 +31,8 @@ const test = {
 		]
 	},
 
+	// TODO dependable "staticRanges":true,"rangeAcrossElements":true,
 	// for testing options, which are dependable on other option(s)
-	// "staticRanges":true,"rangeAcrossElements":true,
 	dependables : {
 		string_ : [
 			{ json : `{"section":{"type":"string_","separateWordSearch":false,"combineBy":100,"blockElementsBoundary":true,"queryString":"query test"}}`, options : [ 'blockElementsBoundary'] },
@@ -163,8 +163,7 @@ const test = {
 			return;
 		}
 		// contains properties which are not mark.js options
-		//let array = ['type', 'queryString', 'queryArray', 'queryRegExp', 'queryRanges', 'testString', 'selectors', 'selectorAll'];
-		let array = ['type', 'queryString', 'queryArray', 'queryRegExp', 'queryRanges', 'testString', 'selectors', 'selectorAll','highlight',];
+		let array = ['type', 'queryString', 'queryArray', 'queryRegExp', 'queryRanges', 'testString', 'selectors', 'selectorAll'];
 		let value, setValue, success = true;
 
 		for (const name in obj.section) {

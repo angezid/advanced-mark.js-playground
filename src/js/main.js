@@ -114,8 +114,9 @@ $(document).ready(function() {
 });
 
 const code = {
+	n: 0,
 	// code.setText(text);
-	setText : function(text) {
+	setText: function(text) {
 		tab.setTextMode(text);
 	},
 
@@ -881,7 +882,7 @@ function save() {
 
 // DOM 'onclick' event
 function load() {
-	if (types[currentType].isDirty) {
+	if (settings.showWarning && types[currentType].isDirty) {
 		if ( !window.confirm("Are you sure you want to reload the current tab and lose the changes made in it?")) {
 			return;
 		}
