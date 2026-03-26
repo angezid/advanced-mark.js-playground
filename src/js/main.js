@@ -217,6 +217,11 @@ const tab = {
 
 	setVisibility: function() {
 		showInstructions(false);
+		
+		if ( !highlightSupported) {
+			$(`${optionPad} .highlight input`)[0].disabled = true;
+			$(`${optionPad} .highlight label`).css('opacity', '0.5');
+		}
 
 		$(`${currentSection} .dependable`).addClass('hide');
 		$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
