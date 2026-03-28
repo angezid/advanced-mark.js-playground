@@ -853,7 +853,7 @@ function save() {
 
 // DOM 'onclick' event
 function load() {
-	if (types[currentType].isDirty) {
+	if (settings.showWarning && types[currentType].isDirty) {
 		if ( !window.confirm("Are you sure you want to reload the current tab and lose the changes made in it?")) {
 			return;
 		}
