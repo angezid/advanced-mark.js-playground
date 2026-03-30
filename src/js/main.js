@@ -2197,7 +2197,7 @@ function showTooltip(id, elem, e) {
 
 	elem.data('powertiptarget', id).powerTip({
 		intentPollInterval: 300,
-		fadeInTime: 100,
+		fadeInTime: 200,
 		smartPlacement: true,
 		mouseOnToPopup: true,
 		placement: 'w',
