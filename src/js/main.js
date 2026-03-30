@@ -217,7 +217,7 @@ const tab = {
 
 	setVisibility: function() {
 		showInstructions(false);
-		
+
 		if ( !highlightSupported) {
 			$(`${optionPad} .highlight input`)[0].disabled = true;
 			$(`${optionPad} .highlight label`).css('opacity', '0.5');
@@ -363,8 +363,7 @@ const tab = {
 				highlighter.highlightRawHtml(div, html);
 
 			} else {
-				// .innerText removes/normalizes white spaces
-				div.innerHTML = util.entitize(html);
+				div.textContent = html;
 			}
 			this.initializeEditors();
 
@@ -413,7 +412,7 @@ const tab = {
 		for (const key in obj.editors) {
 			if (obj.editors[key] === null) {
 				if (key === 'testString') {
-					obj.editors[key] = this.initTestEditor(obj.editors[key]);
+					obj.editors[key] = this.initTestEditor();
 
 				} else {
 					let selector = `${currentSection} .${key} .editor`;
@@ -433,7 +432,7 @@ const tab = {
 		});
 	},
 
-	initTestEditor: function(editor) {
+	initTestEditor: function() {
 		if ( !document.querySelector('shadow-dom-' + currentType).shadowRoot) {
 			this.defineCustomElements();
 		}
@@ -441,7 +440,7 @@ const tab = {
 		const elem = this.getTestElement();
 		elem.addEventListener('scroll', testContainerScrolled);
 
-		editor = CodeJar(elem, null, { tab: '  ' });
+		const editor = CodeJar(elem, null, { tab: '  ' });
 		editor.onUpdate((code, event) => this.updateTestEditor(code, event));
 		return editor;
 	},
@@ -808,14 +807,6 @@ function selectHtml(elem) {
 function setIframesTimeout(elem) {
 	tab.switchElements(elem, '.iframesTimeout');
 }
-
-/*function selectDefaultHtml(elem) {
-	const title = $(elem).val();
-	let content = defaultHtmls[title];
-
-	tab.setHtmlMode(content, false);
-	tab.setTextMode(null);
-}*/
 
 // DOM 'onchange' event
 function selectExample(elem) {
@@ -1639,7 +1630,7 @@ if (selectors) {
 			}
 
 		} else if ($('#callbacks').prop('checked')) {
-			// the filter must return true to accept or false to reject the match\n`;
+			code = `${indent}// the filter must return true to accept or false to reject the match\n`;
 			code = `${indent}filter: ${this.getFilterParameters()} => { return true; },\n`;
 			code += `${indent}each: ${this.getEachParameters()} => {},\n`;
 			code = `${code}${indent}done: ${this.getDoneParameters()} => {}\n`;

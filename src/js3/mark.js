@@ -1068,8 +1068,8 @@
           filterNodes = [],
           e;
         var wrapAllRanges = this.opt.wrapAllRanges,
-          highlight = this.opt.highlight,
-          singleRange = highlight && this.opt.rangeAcrossElements;
+          highlightAPI = !!this.opt.highlight,
+          singleRange = highlightAPI && this.opt.rangeAcrossElements;
         if (wrapAllRanges) {
           while (i > 0 && dict.nodes[i].start > start) {
             i--;
@@ -1090,7 +1090,7 @@
                 if (rangeStart) {
                   startInfo = [n.node, s, n.start + s];
                 }
-              } else if (!highlight && wrapAllRanges) {
+              } else if (!highlightAPI && wrapAllRanges) {
                 var obj = this.wrapRangeInsert(dict, n, s, e, start, i);
                 n = obj.nodeInfo;
                 eachCb(obj.mark, rangeStart);
@@ -1098,7 +1098,7 @@
                 n.node = this.wrapRange(n, s, e, function (node) {
                   eachCb(node, rangeStart);
                 });
-                if (!highlight) n.start += e;
+                if (!highlightAPI) n.start += e;
               }
               rangeStart = false;
             }
@@ -1120,8 +1120,8 @@
         var lastIndex = 0,
           offset = 0,
           i = 0,
+          highlightAPI = this.opt.highlight,
           isWrapped = false,
-          node = n.node,
           group,
           start,
           end = 0;
@@ -1132,24 +1132,23 @@
             if (start >= lastIndex) {
               end = match.indices[i][1];
               if (filterCb(n.node, group, i)) {
-                node = this.wrapRange(n, start - offset, end - offset, function (node) {
+                n.node = this.wrapRange(n, start - offset, end - offset, function (node) {
                   eachCb(node, i);
                 });
                 if (end > lastIndex) {
                   lastIndex = end;
                 }
-                offset = end;
+                if (!highlightAPI) offset = end;
                 isWrapped = true;
               }
             }
           }
         }
         if (isWrapped) {
-          if (!this.opt.highlight) regex.lastIndex = 0;
+          if (!highlightAPI) regex.lastIndex = 0;
         } else if (match[0].length === 0) {
           this.setLastIndex(regex, end);
         }
-        return node;
       }
     }, {
       key: "wrapGroupsAcross",
@@ -1208,7 +1207,7 @@
             while ((match = regex.exec(n.node.textContent)) !== null) {
               info.match = match;
               filterStart = eachStart = true;
-              n.node = _this6.wrapGroups(n, match, regex, function (node, group, grIndex) {
+              _this6.wrapGroups(n, match, regex, function (node, group, grIndex) {
                 info.matchStart = filterStart;
                 info.groupIndex = grIndex;
                 filterStart = false;
@@ -1621,47 +1620,46 @@
       value: function unmark(opt) {
         var _this14 = this;
         this.opt = opt;
-        var highlight = this.opt.highlight;
-        if (highlight) {
-          if (highlight.size) {
-            this.registerHighlight(true);
-            highlight.forEach(function (range) {
-              var node = range.startContainer;
-              if (node.nodeType === 3) {
-                node = node.parentNode;
-              }
-              if (!_this14.excluded(node)) {
-                highlight["delete"](range);
-              }
-            });
-            this.registerHighlight();
-          }
-          this.opt.done();
-        } else {
-          var selector = this.opt.element + '[data-markjs]';
-          if (this.opt.className) {
-            selector += ".".concat(this.opt.className);
-          }
-          this.log("Removal selector \"".concat(selector, "\""));
-          this.iterator.forEachNode(this.filter.SHOW_ELEMENT, function (node) {
-            _this14.unwrapMatches(node);
-          }, function (node) {
-            return DOMIterator.matches(node, selector) && !_this14.excluded(node);
-          }, this.opt.done);
+        var registry = CSS.highlights;
+        if (registry) {
+          var names = this.opt.highlightName || 'markjs',
+            highlight;
+          if (typeof names === 'string') names = [names];
+          names.forEach(function (name) {
+            if ((highlight = registry.get(name)) && highlight.size) {
+              registry["delete"](name);
+              highlight.forEach(function (range) {
+                var node = range.startContainer;
+                if (node.nodeType === 3) node = node.parentNode;
+                if (!_this14.excluded(node)) highlight["delete"](range);
+              });
+              if (highlight.size) registry.set(name, highlight);
+            }
+          });
         }
+        if (this.opt.highlight) {
+          this.opt.done();
+          return;
+        }
+        var selector = this.opt.element + '[data-markjs]';
+        if (this.opt.className) {
+          selector += ".".concat(this.opt.className);
+        }
+        this.log("Removal selector \"".concat(selector, "\""));
+        this.iterator.forEachNode(this.filter.SHOW_ELEMENT, function (node) {
+          _this14.unwrapMatches(node);
+        }, function (node) {
+          return DOMIterator.matches(node, selector) && !_this14.excluded(node);
+        }, this.opt.done);
       }
     }, {
       key: "registerHighlight",
-      value: function registerHighlight(remove) {
+      value: function registerHighlight() {
         var _this15 = this;
         var highlight = this.opt.highlight;
         if (highlight) {
           var name = this.opt.highlightName || 'markjs',
             registry = CSS.highlights;
-          if (remove) {
-            registry["delete"](name);
-            return;
-          }
           if (this.rangeArray.length) {
             registry["delete"](name);
             if (highlight.size) {
@@ -1676,6 +1674,7 @@
             this.rangeArray.forEach(function (range) {
               highlight.add(range);
             });
+            this.rangeArray = [];
           }
           if (highlight.size) registry.set(name, highlight);
         }

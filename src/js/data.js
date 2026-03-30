@@ -196,10 +196,10 @@ const examples = {
             "acrossElements": true,
             "separateGroups": true,
             "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match[3] && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
-            "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/dg",
+            "queryRegExp": "/(AB)\\\\b.+?\\\\b(BC)(?!D)/dg",
             "testString": {
                 "mode": "html",
-                "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n\\nIt demonstrates requirement of a group 2 to correctly highlight groups without 'd' flag.\\nIf the parenthesis of the group 2 are removed, the wrong 'BC' is highlighted.\\nWith 'd' flag it's highlighted correctly."
+                "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n"
             }
         }
     }`,
