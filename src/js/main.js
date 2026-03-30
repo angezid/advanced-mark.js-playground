@@ -775,15 +775,6 @@ function setIframesTimeout(elem) {
 }
 
 // DOM 'onchange' event
-function selectDefaultHtml(elem) {
-	const title = $(elem).val();
-	let content = defaultHtmls[title];
-
-	tab.setHtmlMode(content, false);
-	tab.setTextMode(null);
-}
-
-// DOM 'onchange' event
 function selectExample(elem) {
 	const title = $(elem).val();
 	let str = examples[title];
@@ -2164,7 +2155,7 @@ function showTooltip(id, elem, e) {
 
 	elem.data('powertiptarget', id).powerTip({
 		intentPollInterval : 300,
-		fadeInTime : 100,
+		fadeInTime : 200,
 		smartPlacement : true,
 		mouseOnToPopup : true,
 		placement : 'w',
