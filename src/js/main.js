@@ -27,7 +27,7 @@ let currentTabId = '',
 const types = {
 	string_ : {
 		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'staticRanges', 'rangeAcrossElements', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
-		editors: { 'queryString': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
+		editors: { 'queryString': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null, 'iframesStyle': null },
 		queryEditor: 'queryString',
 		testEditorMode: 'text',
 		customCodeEditor: null,
@@ -37,7 +37,7 @@ const types = {
 
 	array: {
 		options:[ 'element', 'className', 'exclude', 'separateWordSearch', 'accuracy', 'diacritics', 'synonyms', 'acrossElements', 'caseSensitive', 'ignoreJoiners', 'ignorePunctuation', 'wildcards', 'highlight', 'staticRanges', 'rangeAcrossElements', 'blockElementsBoundary', 'combineBy', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
-		editors: { 'queryArray': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null },
+		editors: { 'queryArray': null, 'selectors': null, 'testString': null, 'exclude': null, 'synonyms': null, 'ignorePunctuation': null, 'accuracyObject': null, 'blockElements': null, 'shadowStyle': null, 'iframesStyle': null },
 		queryEditor: 'queryArray',
 		testEditorMode: 'text',
 		customCodeEditor: null,
@@ -47,7 +47,7 @@ const types = {
 
 	regexp: {
 		options:[ 'element', 'className', 'exclude', 'highlight', 'staticRanges', 'rangeAcrossElements', 'acrossElements', 'ignoreGroups', 'separateGroups', 'blockElementsBoundary', 'wrapAllRanges', 'shadowDOM', 'iframes', 'iframesTimeout', 'debug' ],
-		editors: { 'queryRegExp': null, 'selectors': null, 'testString': null, 'exclude': null, 'blockElements': null, 'shadowStyle': null },
+		editors: { 'queryRegExp': null, 'selectors': null, 'testString': null, 'exclude': null, 'blockElements': null, 'shadowStyle': null, 'iframesStyle': null },
 		queryEditor: 'queryRegExp',
 		testEditorMode: 'text',
 		customCodeEditor: null,
@@ -57,7 +57,7 @@ const types = {
 
 	ranges: {
 		options:[ 'element', 'className', 'exclude', 'wrapAllRanges', 'highlight', 'staticRanges', 'rangeAcrossElements', 'shadowDOM', 'markLines', 'iframes', 'iframesTimeout', 'debug' ],
-		editors: { 'queryRanges': null, 'selectors': null, 'testString': null, 'exclude': null, 'shadowStyle': null },
+		editors: { 'queryRanges': null, 'selectors': null, 'testString': null, 'exclude': null, 'shadowStyle': null, 'iframesStyle': null },
 		queryEditor: 'queryRanges',
 		testEditorMode: 'text',
 		customCodeEditor: null,
@@ -226,7 +226,7 @@ const tab = {
 		$(`${currentSection} .dependable`).addClass('hide');
 		$(`${currentSection} .advanced:not(.dependable)`).removeClass('hide');
 
-		setIframesTimeout($(`${optionPad} .iframes input`)[0]);
+		setIframesDependable($(`${optionPad} .iframes input`)[0]);
 
 		$('body.playground>main>article>section').addClass('hide');
 		$(currentSection).removeClass('hide');
@@ -728,6 +728,13 @@ function setShadowDOMStyle(elem) {
 }
 
 // also DOM 'onchange' event
+function setIframesDependable(elem) {
+	tab.switchElements(elem, '.iframesTimeout');
+	tab.switchElements(elem, '.iframesStyle');
+	setHighlight(elem);
+}
+
+// also DOM 'onchange' event
 function setHighlight(elem) {
 	$(`${optionPad} .staticRanges, ${optionPad} .rangeAcrossElements`).addClass('hide');
 	$(`${optionPad} .useHighlight, ${optionPad} .useElement`).addClass('hide');
@@ -801,11 +808,6 @@ function selectHtml(elem) {
 
 	tab.setHtmlMode(content, false);
 	tab.setTextMode(null);
-}
-
-// also DOM 'onchange' event
-function setIframesTimeout(elem) {
-	tab.switchElements(elem, '.iframesTimeout');
 }
 
 // DOM 'onchange' event
@@ -1071,6 +1073,11 @@ const importer = {
 							editor.updateCode(saved);
 							saved = true;
 
+						} else if (option === 'iframes' && notBoolean) {
+							const editor = tab.getOptionEditor('iframesStyle');
+							editor.updateCode(saved);
+							saved = true;
+
 						} else if (option === 'blockElementsBoundary' && notBoolean) {
 							const editor = tab.getOptionEditor('blockElements');
 							editor.updateCode(saved);
@@ -1105,7 +1112,7 @@ const importer = {
 		});
 
 		for (const key in obj.editors) {
-			if (key === 'accuracyObject' || key === 'blockElements' || key === 'shadowStyle') continue;
+			if (key === 'accuracyObject' || key === 'blockElements' || key === 'shadowStyle' || key === 'iframesStyle') continue;
 			const editor = obj.editors[key];
 			saved = json.section[key];
 
@@ -1515,6 +1522,10 @@ if (selectors) {
 								const editor = tab.getOptionEditor('shadowStyle');
 								value = editor && (text = editor.toString().trim()) ? text : value;
 
+							} else if (option === 'iframes') {
+								const editor = tab.getOptionEditor('iframesStyle');
+								value = editor && (text = editor.toString().trim()) ? text : value;
+
 							} else if (option === 'wrapAllRanges') {
 								if ( !(currentType === 'regexp' && tab.isChecked('separateGroups') || currentType === 'ranges')) {
 									value = null;
@@ -1759,6 +1770,16 @@ const Json = {
 						if (value !== opt.value) {
 							if (option === 'shadowDOM') {
 								const editor = tab.getOptionEditor('shadowStyle');
+
+								if (editor && (text = editor.toString().trim())) {
+									json += `,"${option}":${JSON.stringify(text)}`;
+
+								} else {
+									json += `,"${option}":${value}`;
+								}
+
+							} else if (option === 'iframes') {
+								const editor = tab.getOptionEditor('iframesStyle');
 
 								if (editor && (text = editor.toString().trim())) {
 									json += `,"${option}":${JSON.stringify(text)}`;

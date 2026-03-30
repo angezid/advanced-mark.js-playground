@@ -214,7 +214,7 @@
 <label for="string_-shadowDOM" name="shadowDOM">Shadow DOM</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="string_-iframes" type="checkbox" onchange="setIframesTimeout(this)">
+<input name="iframes" id="string_-iframes" type="checkbox" onchange="setIframesDependable(this)">
 <label for="string_-iframes" name="iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -330,6 +330,15 @@
 </div>
 </div>
 
+<div class="iframesStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom iframes style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight hide">"::highlight(markjs) { color:red; }"</span> }</p>
+<div class="editor" name="iframesStyle">
+</div>
+</div>
+
 <div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearCodeEditor(this);"></button>
@@ -434,7 +443,7 @@
 <label for="array-shadowDOM" name="shadowDOM">Shadow DOM</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="array-iframes" type="checkbox" onchange="setIframesTimeout(this)">
+<input name="iframes" id="array-iframes" type="checkbox" onchange="setIframesDependable(this)">
 <label for="array-iframes" name="iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -550,6 +559,15 @@
 </div>
 </div>
 
+<div class="iframesStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom iframes style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight hide">"::highlight(markjs) { color:red; }"</span> }</p>
+<div class="editor" name="iframesStyle">
+</div>
+</div>
+
 <div class="customCode">
 <div class="actions right">
 <button class="clear hide" type="button" onclick="clearCodeEditor(this);"></button>
@@ -644,7 +662,7 @@
 <label for="regexp-shadowDOM" name="shadowDOM">Shadow DOM</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="regexp-iframes" type="checkbox" onchange="setIframesTimeout(this)">
+<input name="iframes" id="regexp-iframes" type="checkbox" onchange="setIframesDependable(this)">
 <label for="regexp-iframes" name="iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -704,6 +722,15 @@
 </div>
 <p>Custom shadow DOM style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight">"::highlight(markjs) { color:red; }"</span> }</p>
 <div class="editor" name="shadowStyle">
+</div>
+</div>
+
+<div class="iframesStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom iframes style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight hide">"::highlight(markjs) { color:red; }"</span> }</p>
+<div class="editor" name="iframesStyle">
 </div>
 </div>
 
@@ -793,7 +820,7 @@
 <label for="ranges-markLines" name="markLines">Mark lines</label>
 </div>
 <div class="iframes">
-<input name="iframes" id="ranges-iframes" type="checkbox" onchange="setIframesTimeout(this)">
+<input name="iframes" id="ranges-iframes" type="checkbox" onchange="setIframesDependable(this)">
 <label for="ranges-iframes" name="iframes">Iframes</label>
 </div>
 <div class="debug">
@@ -839,6 +866,15 @@
 </div>
 <p>Custom shadow DOM style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight">"::highlight(markjs) { color:red; }"</span> }</p>
 <div class="editor" name="shadowStyle">
+</div>
+</div>
+
+<div class="iframesStyle advanced dependable hide">
+<div class="actions right">
+<button class="clear hide" type="button" onclick="clearEditor(this);"></button>
+</div>
+<p>Custom iframes style e.g. { style : <span class="useElement">"mark[data-markjs] { color:red; }"</span><span class="useHighlight hide">"::highlight(markjs) { color:red; }"</span> }</p>
+<div class="editor" name="iframesStyle">
 </div>
 </div>
 

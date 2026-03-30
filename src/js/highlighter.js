@@ -23,7 +23,7 @@ const highlighter = {
 
 		if (highlightSupported) {
 			CSS.highlights.delete(highlightName);
-			
+
 			const highlight = tab.getHighlight();
 
 			if (highlight) {
@@ -277,11 +277,6 @@ const highlighter = {
 			obj.rangeAcrossElements = tab.isChecked('rangeAcrossElements');
 		}
 
-		obj.iframes = tab.isChecked('iframes');
-		if (obj.iframes) {
-			obj.iframesTimeout = tab.getNumericalValue('iframesTimeout', 5000);
-		}
-
 		if (currentType === 'string_' || currentType === 'array') {
 			obj.separateWordSearch = tab.isChecked('separateWordSearch');
 			if (obj.separateWordSearch) {
@@ -329,6 +324,19 @@ const highlighter = {
 
 			} else {
 				obj.shadowDOM = true;
+			}
+		}
+
+		const iframes = tab.isChecked('iframes');
+		if (iframes) {
+			obj.iframesTimeout = tab.getNumericalValue('iframesTimeout', 5000);
+
+			const styleObj = this.tryToEvaluate('iframesStyle', 16);
+			if (styleObj) {
+				obj.iframes = styleObj;
+
+			} else {
+				obj.iframes = true;
 			}
 		}
 

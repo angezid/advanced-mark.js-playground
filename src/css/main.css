@@ -203,7 +203,7 @@ select.default-html { float: left; width: 100px; font-size: 0.875em; margin-righ
 .mixed-options .separateWordValue,
 .mixed-options .accuracy,
 .mixed-options .ignoreGroups,
-.mixed-options .combineNumber,
+.mixed-options .combineBy,
 .mixed-options .iframesTimeout,
 .mixed-options .acrossElementsValue,
 .mixed-options .wildcards { padding-bottom: 30px; }
