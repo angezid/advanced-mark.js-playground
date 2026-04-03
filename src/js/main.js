@@ -13,7 +13,7 @@ let currentTabId = '',
 	optionPad = '',
 	dFlagSupport = true,
 	highlightSupported = typeof Highlight !== 'undefined',
-	highlightName = 'playground',
+	highlightName = 'advanced-markjs',
 	isScrolled = false,
 	canBeNested = false,
 	flagEveryElement = false,
@@ -108,7 +108,6 @@ $(document).ready(function() {
 	settings.setCheckboxes();
 	tab.setDirty(false);
 	tab.buildExampleSelector();
-	tab.buildHtmlSelector();
 
 	console.log('total time - ' + (performance.now() - t0));
 });
@@ -150,6 +149,8 @@ const code = {
 const tab = {
 
 	initTab : function() {
+		tab.buildHtmlSelector();
+		
 		const saved = this.setLoadButton();
 
 		if ( !this.isInitialize()) {
@@ -269,7 +270,8 @@ const tab = {
 	buildHtmlSelector: function() {
 		const options = this.buildSelectorOptions(defaultHtmls);
 
-		$('select.default-html').html(options);
+		//$('select.default-html').html(options);
+		$(`${currentSection} select.default-html`).html(options);
 	},
 
 	buildExampleSelector: function() {
@@ -801,13 +803,140 @@ function isAccuracyValue(value) {
 	return value === 'exactly' || value === 'complementary' || value === 'startsWith';
 }
 
-// DOM 'onchange' event
+// also DOM 'onchange' event
 function selectHtml(elem) {
 	const title = $(elem).val();
 	let content = defaultHtmls[title];
 
+	if (/^text_\d+/i.test(title)) {
+		const htmlSize = parseInt(title.replace(/^text_(\d+).*/i, '$1')) * 1000,
+			arrayName = $('#arrays').val()?.replace(/^[^.]+\./, '') || 'words_50';
+
+		const words = [],
+			wordArray = [];
+
+		for (const key in wordArrays) {
+			const value = wordArrays[key];
+
+			if (arrayName === key) {
+				wordArray.push(...value);
+
+			} else if (key !== 'name' && key !== 'default') {
+				words.push(...value);
+			}
+		}
+		content = buildHtmlContent(words, wordArray, htmlSize, 5000);
+	}
+
 	tab.setHtmlMode(content, false);
 	tab.setTextMode(null);
+}
+
+function buildHtmlContent(words, wordArray, htmlSize, matches) {
+	const results = [],
+		array = [],
+		wordsLength = wordArray.length,
+		acrossElements = tab.isChecked('acrossElements');
+
+	if ( !wordsLength) {
+		return;
+	}
+
+	htmlSize -= (matches / wordsLength) * wordArray.join('').length + htmlSize / 5;
+	let length = 0;
+
+	while (length < htmlSize) {
+		shuffle(words);
+		let section = words.slice(0, Math.floor((Math.random() * (words.length - 1001)) + 1000));
+		array.push(section);
+		length += section.join('').length;
+	}
+
+	let offset = Math.floor(wordsLength / 4),
+		start = 0;
+	length = 0;
+
+	while (length < matches) {
+		const arr = wordArray.slice(start, start + offset),
+			len = arr.length;
+
+		for (let i = 0; i < array.length; i++) {
+			if (length >= matches) break;
+
+			if (length + len > matches) {
+				array[i].push(...wordArray.slice(wordsLength - (matches - length)));
+				length = Infinity;
+				break;
+			}
+
+			array[i].push(...arr);
+			length += len;
+		}
+		start = start + offset > wordsLength ? 0 : start + offset;
+	}
+
+	results.push('<h1>Randomly generated text</h1>\n');
+
+	array.forEach((arr, index) => {
+		shuffle(arr);
+
+		let i = 0,
+			start = 0,
+			next = getNext(0);
+
+		results.push('<section>\n<p>');
+
+		for (; i < arr.length; i++) {
+			const word = arr[i];
+
+			if (acrossElements && word.length > 5 && i % 10 === 0) {
+				arr[i] = generateAcross(word);
+			}
+
+			if (i > next) {
+				results.push(arr.slice(start, i).join(' '), '</p>\n<p>');
+				next = getNext(i);
+				start = i;
+			}
+		}
+		if (i < next) {
+			results.push(arr.slice(start, i).join(' '));
+		}
+		results.push('</p>\n</section>\n');
+	});
+
+	return results.join('');
+}
+
+function getNext(num) {
+	return num + Math.floor((Math.random() * 150) + 50);
+}
+
+function generateAcross(word) {
+	const index = Math.floor(word.length / 2);
+	const num = Math.floor(Math.random() * 3) - 1;
+	if (num > 0) {
+		word = '<b>' + word.slice(0, index) + '</b>' + word.slice(index);
+
+	} else if (num < 0) {
+		word = word.slice(0, index) + '<b>' + word.slice(index) + '</b>';
+
+	} else {
+		word = word.slice(0, 2) + '<b>' + word.slice(2, 4) + '</b>' + word.slice(4);
+	}
+	return word;
+}
+
+function shuffle(array) {
+	let i = array.length;
+
+	while (--i > 1) {
+		let n = Math.floor((Math.random() * i) + 1);
+		let temp = array[i];
+		array[i] = array[n];
+		array[n] = temp;
+	}
+	return array;
 }
 
 // DOM 'onchange' event
@@ -832,6 +961,7 @@ function selectExample(elem) {
 function selectArray(elem) {
 	const info = tab.getSearchEditorInfo();
 	info.editor.updateCode($(elem).val());
+	selectHtml($(`${currentSection} select.default-html`)[0]);
 }
 
 // DOM 'onclick' event
