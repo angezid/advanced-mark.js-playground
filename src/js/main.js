@@ -150,7 +150,7 @@ const tab = {
 
 	initTab : function() {
 		tab.buildHtmlSelector();
-		
+
 		const saved = this.setLoadButton();
 
 		if ( !this.isInitialize()) {
@@ -825,82 +825,96 @@ function selectHtml(elem) {
 				words.push(...value);
 			}
 		}
-		content = buildHtmlContent(words, wordArray, htmlSize, 5000);
+		content = buildHtmlContent(wordArray, words, htmlSize, 5000);
 	}
 
 	tab.setHtmlMode(content, false);
 	tab.setTextMode(null);
 }
 
-function buildHtmlContent(words, wordArray, htmlSize, matches) {
-	const results = [],
-		array = [],
-		wordsLength = wordArray.length,
+function buildHtmlContent(wordArray, words, htmlSize, matches) {
+	const wordsLength = wordArray.length,
 		acrossElements = tab.isChecked('acrossElements');
 
 	if ( !wordsLength) {
 		return;
 	}
 
-	htmlSize -= (matches / wordsLength) * wordArray.join('').length + htmlSize / 5;
-	let length = 0;
-
-	while (length < htmlSize) {
-		shuffle(words);
-		let section = words.slice(0, Math.floor((Math.random() * (words.length - 1001)) + 1000));
-		array.push(section);
-		length += section.join('').length;
-	}
-
-	let offset = Math.floor(wordsLength / 4),
-		start = 0;
-	length = 0;
-
-	while (length < matches) {
-		const arr = wordArray.slice(start, start + offset),
-			len = arr.length;
-
-		for (let i = 0; i < array.length; i++) {
-			if (length >= matches) break;
-
-			if (length + len > matches) {
-				array[i].push(...wordArray.slice(wordsLength - (matches - length)));
-				length = Infinity;
+	let length = 0,
+		matchesArray = [];
+	// fills the matchesArray by words equal number of matches
+	if (matches > wordsLength) {
+		while (length < matches) {
+			if (length + wordsLength > matches) {
+				matchesArray.push(...wordArray.slice(wordsLength - (matches - length)));
 				break;
 			}
-
-			array[i].push(...arr);
-			length += len;
+			matchesArray.push(...wordArray);
+			length += wordsLength;
 		}
-		start = start + offset > wordsLength ? 0 : start + offset;
+
+	} else {
+		matchesArray = wordArray.slice(wordsLength - matches);
 	}
 
+	shuffle(matchesArray);
+
+	htmlSize -= matchesArray.join(' ').length;
+
+	const array = [],
+		len = words.join(' ').length;
+	length = 0;
+	// fills the array of arrays by not matching words
+	while (length < htmlSize) {
+		shuffle(words);
+
+		if (length + len > htmlSize) {
+			array.push(words.slice(words.length - (htmlSize - length) / (len / words.length)));
+			break;
+		}
+		array.push(words.slice());
+		length += len;
+	}
+
+	// adds matches to the array of arrays
+	let step = Math.floor(matchesArray.length / array.length),
+		start = 0;
+
+	for (let i = 0; i < array.length; i++) {
+		const arr = matchesArray.slice(start, start + step);
+		array[i].push(...arr);
+		start += step;
+	}
+	if (start < matchesArray.length) {
+		array[array.length-1].push(...matchesArray.slice(start));
+	}
+
+	const results = [];
 	results.push('<h1>Randomly generated text</h1>\n');
 
-	array.forEach((arr, index) => {
+	// creates random HTML
+	array.forEach((arr) => {
 		shuffle(arr);
 
 		let i = 0,
 			start = 0,
 			next = getNext(0);
 
-		results.push('<section>\n<p>');
+		//results.push('<section>\n<p' + (enableExclude.checked && exclude ? ' class="skip">' : '>'));
 
 		for (; i < arr.length; i++) {
-			const word = arr[i];
-
-			if (acrossElements && word.length > 5 && i % 10 === 0) {
-				arr[i] = generateAcross(word);
+			if (acrossElements && arr[i].length > 5 && i % 10 === 0) {
+				arr[i] = generateAcross(arr[i]);
 			}
 
-			if (i > next) {
+			if (i >= next) {
 				results.push(arr.slice(start, i).join(' '), '</p>\n<p>');
 				next = getNext(i);
 				start = i;
 			}
 		}
-		if (i < next) {
-			results.push(arr.slice(start, i).join(' '));
+		if (start < arr.length) {
+			results.push(arr.slice(start).join(' '));
 		}
 		results.push('</p>\n</section>\n');
 	});
