@@ -764,9 +764,150 @@ function isAccuracyValue(value) {
 function selectHtml(elem) {
 	const title = $(elem).val();
 	let content = defaultHtmls[title];
+	
+	if (/^text_\d+/i.test(title)) {
+		const htmlSize = parseInt(title.replace(/^text_(\d+).*/i, '$1')) * 1000,
+			arrayName = $('#arrays').val()?.replace(/^[^.]+\./, '') || 'words_50';
+
+		const words = [],
+			wordArray = [];
+
+		for (const key in wordArrays) {
+			const value = wordArrays[key];
+
+			if (arrayName === key) {
+				wordArray.push(...value);
+
+			} else if (key !== 'name' && key !== 'default') {
+				words.push(...value);
+			}
+		}
+		content = buildHtmlContent(wordArray, words, htmlSize, 5000);
+	}
 
 	tab.setHtmlMode(content, false);
 	tab.setTextMode(null);
+}
+
+function buildHtmlContent(wordArray, words, htmlSize, matches) {
+	const wordsLength = wordArray.length,
+		acrossElements = tab.isChecked('acrossElements');
+
+	if ( !wordsLength) {
+		return;
+	}
+
+	let length = 0,
+		matchesArray = [];
+	// fills the matchesArray by words equal number of matches
+	if (matches > wordsLength) {
+		while (length < matches) {
+			if (length + wordsLength > matches) {
+				matchesArray.push(...wordArray.slice(wordsLength - (matches - length)));
+				break;
+			}
+			matchesArray.push(...wordArray);
+			length += wordsLength;
+		}
+
+	} else {
+		matchesArray = wordArray.slice(wordsLength - matches);
+	}
+
+	shuffle(matchesArray);
+
+	htmlSize -= matchesArray.join(' ').length;
+
+	const array = [],
+		len = words.join(' ').length;
+	length = 0;
+	// fills the array of arrays by not matching words
+	while (length < htmlSize) {
+		shuffle(words);
+
+		if (length + len > htmlSize) {
+			array.push(words.slice(words.length - (htmlSize - length) / (len / words.length)));
+			break;
+		}
+		array.push(words.slice());
+		length += len;
+	}
+
+	// adds matches to the array of arrays
+	let step = Math.floor(matchesArray.length / array.length),
+		start = 0;
+
+	for (let i = 0; i < array.length; i++) {
+		const arr = matchesArray.slice(start, start + step);
+		array[i].push(...arr);
+		start += step;
+	}
+	if (start < matchesArray.length) {
+		array[array.length-1].push(...matchesArray.slice(start));
+	}
+
+	const results = [];
+	results.push('<h1>Randomly generated text</h1>\n');
+
+	// creates random HTML
+	array.forEach((arr) => {
+		shuffle(arr);
+
+		let i = 0,
+			start = 0,
+			next = getNext(0);
+
+		//results.push('<section>\n<p' + (enableExclude.checked && exclude ? ' class="skip">' : '>'));
+
+		for (; i < arr.length; i++) {
+			if (acrossElements && arr[i].length > 5 && i % 10 === 0) {
+				arr[i] = generateAcross(arr[i]);
+			}
+
+			if (i >= next) {
+				results.push(arr.slice(start, i).join(' '), '</p>\n<p>');
+				next = getNext(i);
+				start = i;
+			}
+		}
+		if (start < arr.length) {
+			results.push(arr.slice(start).join(' '));
+		}
+		results.push('</p>\n</section>\n');
+	});
+
+	return results.join('');
+}
+
+function getNext(num) {
+	return num + Math.floor((Math.random() * 150) + 50);
+}
+
+function generateAcross(word) {
+	const index = Math.floor(word.length / 2);
+	const num = Math.floor(Math.random() * 3) - 1;
+	if (num > 0) {
+		word = '<b>' + word.slice(0, index) + '</b>' + word.slice(index);
+
+	} else if (num < 0) {
+		word = word.slice(0, index) + '<b>' + word.slice(index) + '</b>';
+
+	} else {
+		word = word.slice(0, 2) + '<b>' + word.slice(2, 4) + '</b>' + word.slice(4);
+	}
+	return word;
+}
+
+function shuffle(array) {
+	let i = array.length;
+
+	while (--i > 1) {
+		let n = Math.floor((Math.random() * i) + 1);
+		let temp = array[i];
+		array[i] = array[n];
+		array[n] = temp;
+	}
+	return array;
 }
 
 // also DOM 'onchange' event
@@ -796,6 +937,7 @@ function selectExample(elem) {
 function selectArray(elem) {
 	const info = tab.getSearchEditorInfo();
 	info.editor.updateCode($(elem).val());
+	selectHtml($(`${currentSection} select.default-html`)[0]);
 }
 
 // DOM 'onclick' event
@@ -1228,7 +1370,7 @@ function runCode(reset) {
 	if (reset) {
 		currentIndex = 0;
 	}
-
+ 
 	const editor = types[currentType].customCodeEditor;
 
 	if (editor && editor.toString().trim()) {
