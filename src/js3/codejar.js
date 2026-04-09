@@ -1,6 +1,4 @@
 /*!*******************************************
-* @angezid/codejar.js 1.0.0
-* https://github.com/angezid/codejar.js
 * Modified version of https://github.com/antonmedv/codejar
 * MIT licensed
 *********************************************/
