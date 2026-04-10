@@ -1,7 +1,7 @@
 {
   "name": "advanced-mark.js-playground",
-  "version": "2.7.1",
-  "description": "Demonstrate the capabilities of the advanced-mark.js library.",
+  "version": "3.0.0",
+  "description": "Demonstrate the abilities of advanced-mark.js library.",
   "keywords": [
     "playground",
     "advanced",
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/angezid/advanced-mark.js-playground#readme",
   "license": "MIT",
   "dependencies": {
-    "advanced-mark.js": "^2.7.1",
+    "advanced-mark.js": "^2.7.0",
     "jquery": "^3.6.0",
     "jquery-powertip": "^1.3.2",
     "terser": "^5.39.0"

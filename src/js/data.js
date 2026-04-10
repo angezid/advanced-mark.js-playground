@@ -40,19 +40,25 @@ mark[data-markjs],
 *[data-markjs].custom-element { background: #c1e8ec; padding: 0; border: #c0e6ea 1px solid; }
 mark[data-markjs].current,
 *[data-markjs].custom-element.current { font-size: 110%; background: #ffe763; border-color: #ffe763; border-bottom: #444 2px solid; }
+mark[data-markjs].mark-term { background: #ffe408; }
+mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
+
+::highlight(advanced-markjs) { background-color: #b3e7f0; }
+::highlight(playground) { background-color: #b3e7f0; }
+
 @media only screen and (max-width: 980px) {
     .left-column, .right-column, .column { width: 100%; }
     .editor { min-height: 20vh; max-height: 35vh; }
 }
 </style>`;
-
+// a8e2e8
 // exported json requires replacing backslash \ by \\
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
 const examples = {
 	name : 'Examples',
-	
+
 	exclude : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "array",
             "exclude": "'.exclude, .exclude *'",
@@ -64,14 +70,13 @@ const examples = {
             }
         }
     }`,
-    
+
 	preserveTerms : ` {
-        "version": "2.1.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": "preserveTerms",
             "diacritics": false,
-            "combinePatterns": 10,
             "queryString": "word \\"preserved term\\" \\"\\"quoted term\\"\\"",
             "testString": {
                 "mode": "html",
@@ -81,7 +86,7 @@ const examples = {
     }`,
 
 	accuracyExactly : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "{ value: 'exactly', limiters : ',.;:?!/\\"\\\\'[]{}()~@#$%^&*+=|\\\\\\\\-' }",
@@ -94,13 +99,12 @@ const examples = {
     }`,
 
 	accuracyStartsWith : `{
-        "version": "2.2.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": "preserveTerms",
             "accuracy": "startsWith",
             "diacritics": false,
-            "combinePatterns": 10,
             "queryString": "acc opt \\"st w val\\"",
             "testString": {
                 "mode": "html",
@@ -110,7 +114,7 @@ const examples = {
     }`,
 
 	ignorePunctuation : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -124,11 +128,11 @@ const examples = {
     }`,
 
 	shadowDOM : `{
-		"version": "2.0.0",
+		"version": "3.0.0",
         "section": {
             "type": "array",
             "diacritics": false,
-            "shadowDOM": "{ 'style' : \\"mark[data-markjs] { color:red; }\\" }",
+            "shadowDOM": "{ 'style' : \\"mark[data-markjs] { color:red; } ::highlight(advanced-markjs) { color:red; }\\" }",
             "customCode": "// your code before\\nconst container = tab.getTestElement();\\nlet elem = container.querySelector('#shadow-dom');\\nif ( !elem) {\\n  const div = document.createElement(\\"div\\");\\n  div.id = 's2';\\n  div.innerHTML = '<h2>Shadow DOM test</h2><div id=\\"shadow-dom\\"></div>';\\n  container.appendChild(div);\\n  elem = container.querySelector('#shadow-dom');\\n}\\n\\nif (elem && !elem.shadowRoot) {\\n  const root2 = elem.attachShadow({ mode : 'open' });\\n  root2.innerHTML = defaultHtmls['loremIframe'];\\n}\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, term, marks, count, info) {\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryArray": "['lorem', 'ipsum', 'dolor']",
             "testString": {
@@ -139,15 +143,14 @@ const examples = {
 	}`,
 
 	iframes : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "exactly",
             "diacritics": false,
             "exclude": "'#ifr2'",
-            "iframes": true,
-            "combinePatterns": 10,
-            "customCode": "// don't foget to launch a sever (see README)\\n// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
+            "iframes": "{ 'style' : \\"mark[data-markjs] { color:red; } ::highlight(advanced-markjs) { color:red; }\\" }",
+            "customCode": "// dynamically loads the HTML on run\\ncode.setHtml('<h1>Iframe</h1><iframe src=\\"html/iframe.html\\" width=\\"500\\" height=\\"120\\"></iframe><h2>Iframe 2</h2><iframe src=\\"html/iframe2.html\\" width=\\"400\\" height=\\"100\\" id=\\"ifr2\\"></iframe><h3>Iframe 3</h3><iframe src=\\"html/nested-iframe.html\\" width=\\"500\\" height=\\"450\\"></iframe>');\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "iframe test lorem ipsum",
             "testString": {
                 "mode": "html",
@@ -157,21 +160,21 @@ const examples = {
     }`,
 
 	srcdocIframe : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "accuracy": "startsWith",
             "diacritics": false,
-            "iframes": true,
+            "iframes": "{ 'style' : \\"mark[data-markjs] { color:red; } ::highlight(advanced-markjs) { color:red; }\\" }",
             "customCode": "code.setHtml('<iframe srcdoc=\\"Hello world!\\"></iframe>');\\n// adds event listener to the search editor\\ncode.setListener('keyup', runCode);\\n\\n<<markjsCode>> // don't remove this line\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryString": "h",
             "selectors": "iframe",
             "selectorAll": true
         }
     }`,
-    
+
 	markWhileTyping : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "diacritics": false,
@@ -187,22 +190,22 @@ const examples = {
     }`,
 
 	markSeparateGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
             "separateGroups": true,
             "customCode": "// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(node, matchString, count, info) {\\n  if (info.match[3] && info.groupIndex === 2) return false;\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches) {}",
-            "queryRegExp": "/(AB)\\\\b(.+?)\\\\b(BC)(?!D)/g",
+            "queryRegExp": "/(AB)\\\\b.+?\\\\b(BC)(?!D)/dg",
             "testString": {
                 "mode": "html",
-                "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n\\nIt demonstrates requirement of a group 2 to correctly highlight groups without 'd' flag.\\nIf the parenthesis of the group 2 are removed, the wrong 'BC' is highlighted.\\nWith 'd' flag it's highlighted correctly."
+                "content": "AAB xxx BCD xx BC  AAB xxx BCD xx BC\\n"
             }
         }
     }`,
 
 	blockElementsBoundary : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "string_",
             "separateWordSearch": false,
@@ -219,7 +222,7 @@ const examples = {
 	}`,
 
 	markLineRanges : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "ranges",
             "wrapAllRanges": true,
@@ -233,7 +236,7 @@ const examples = {
     }`,
 
 	overlappedMatches : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -248,7 +251,7 @@ const examples = {
     }`,
 
 	overlappedGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -263,7 +266,7 @@ const examples = {
     }`,
 
 	randomGroups : `{
-        "version": "2.0.0",
+        "version": "3.0.0",
         "section": {
             "type": "regexp",
             "acrossElements": true,
@@ -276,20 +279,20 @@ const examples = {
             }
         }
     }`,
-    
+
 	performance : `{
-        "version": "2.4.0",
+        "version": "3.0.0",
         "library": "advanced",
         "section": {
             "type": "array",
             "accuracy": "exactly",
             "diacritics": false,
-            "combinePatterns": 200,
+            "combineBy": 200,
             "customCode": "let count = 0;\\n// your code before\\n<<markjsCode>> // don't remove this line\\n\\nfunction filter(textNode, term, matchesSoFar, termMatchesSoFar, info) {\\n   // if (++count > 100) { info.execution.abort = true; return false; }\\n  return true;\\n}\\n\\nfunction each(element, info) {}\\n\\nfunction done(totalMarks, totalMatches, termStats) {}",
             "queryArray": "wordArrays.words_50",
             "testString": {
                 "mode": "html",
-                "content": "defaultHtmls['text_100KB']"
+                "content": "Select desired HTML size by using HTML selector."
             }
         }
     }`,
@@ -297,19 +300,22 @@ const examples = {
 
 const defaultHtmls = {
     name : 'HTMLs',
-    
+
     iframes : '<h1>Iframe 1</h1><iframe width="500" height="120" src="html/iframe.html"></iframe><h2>Iframe 2</h2><iframe width="500" height="100" src="html/nested-iframe.html"></iframe>',
-    
+
     loremIframe : `<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit.</p>
     <iframe width="500" height="120" src="html/iframe.html"></iframe>`,
-    
+
     lorem : `<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit.</p>
 <p>Lorem <em>ipsum</em> <a href="#">dolor</a> sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 'sit' amet.</p>`,
 
     fox : `<p>The quick, brown <em>fox</em> jumps over a lazy <em>dog</em>.</p>`,
-    
+
     wikipedia : `<p><b>Wikipedia</b> (<span><span lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>ɪ</span><span>ˈ</span><span>p</span><span>iː</span><span>d</span><span>i</span><span>ə</span></span>/</a></span> <span style="font-size:85%">(<span><span><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#">listen</a></span></span>)</span></span> <a href="#"><i>wik-ih-<span style="font-size:90%">PEE</span>-dee-ə</i></a> or <span><span lang="en-fonipa"><a href="#">/<span style="border-bottom:1px dotted"><span>ˌ</span><span>w</span><span>ɪ</span><span>k</span><span>i</span></span>-/</a></span> <span style="font-size:85%">(<span><span><span style="white-space:nowrap;margin-right:.25em;"><a href="#"><img alt="" src="#" decoding="async" srcset="#" data-file-width="20" data-file-height="20" width="11" height="11"></a></span><a href="#">listen</a></span></span>)</span></span> <a href="#"><i>wik-ee-</i></a>) is a <a href="#">multilingual</a> <a href="#">free online encyclopedia</a> written and maintained by a community of <a href="#">volunteers</a> through <a href="#">open collaboration</a> and a <a href="#">wiki</a>-based editing system. Individual contributors, also called editors, are known as <a href="#">Wikipedians</a>. Wikipedia is the largest and most-read <a href="#">reference work</a> in history.<sup><a href="#">[3]</a></sup> It is consistently one of the 10 <a href="#">most popular websites</a> ranked by the <a href="#">Similarweb</a> and former <a href="#">Alexa</a>; as of 2022,<sup style="display:none;"><a href="#">[update]</a></sup> Wikipedia was ranked the 7th most popular site.<sup><a href="#">[3]</a></sup><sup><a href="#">[4]</a></sup><sup><a href="#">[5]</a></sup> It is hosted by the <a href="#">Wikimedia Foundation</a>, an <a href="#">American non-profit organization</a> funded mainly through donations.<sup><a href="#">[6]</a></sup></p>
 <p>On January 15, 2001, <a href="#">Jimmy Wales</a><sup><a href="#">[7]</a></sup> and <a href="#">Larry Sanger</a> launched Wikipedia.Sanger coined its name as a <a href="#">blend</a> of  "wiki" and "encyclopedia."<sup><a href="#">[8]</a></sup><sup><a href="#">[9]</a></sup>Wales was influenced by the "<a href="#">spontaneous order</a>" ideas associated with <a href="#">Friedrich Hayek</a> and the <a href="#">Austrian School</a> of economics, after being exposed to these ideas by Austrian economist and <a href="#">Mises Institute</a> Senior Fellow <a href="#">Mark Thornton</a>.<sup><a href="#">[10]</a></sup> Initially available only in English, versions in other languages werequickly developed. Its combined editions comprise more than 58 millionarticles, attracting around 2<span>&nbsp;</span>billion unique device visits per month and more than 17 million edits per month (1.9<span>&nbsp;</span>edits per second) as of November&nbsp;2020<sup style="display:none;"><a href="#">[update]</a></sup>.<sup><a href="#">[11]</a></sup><sup><a href="#">[12]</a></sup>In 2006, <i><a href="#">Time magazine</a></i> stated that the policy of allowing anyone to edit had made Wikipedia the "biggest (and perhaps best) encyclopedia in the world."<sup><a href="#">[7]</a></sup></p>
     `,
     text_100KB : `Something went wrong`,
+    text_250KB : `Something went wrong`,
+    text_500KB : `Something went wrong`,
+    text_1000KB : `Something went wrong`,
 };
