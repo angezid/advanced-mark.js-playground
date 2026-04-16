@@ -301,7 +301,7 @@ const highlighter = {
 			}
 
 			if (markArray()) {
-				obj.combineBy = tab.getNumericalValue('combineBy', 10);
+				obj.combineBy = tab.getNumericalValue('combineBy', combineByDefault);
 			}
 
 		} else if (currentType === 'regexp') {

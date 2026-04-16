@@ -1,7 +1,8 @@
 
 'use strict';
 
-const version = '3.0.0';
+const version = '3.0.0',
+	combineByDefault = 100;
 let currentTabId = '',
 	time = 0,
 	matchCount = 0,
@@ -82,7 +83,7 @@ const defaultOptions = {
 	ignorePunctuation: { value:[], type: 'editor' },
 	wildcards: { value: 'disabled', type: 'select' },
 	ignoreGroups: { value: 0, type: 'number' },
-	combineBy: { value: 10, type: 'number' },
+	combineBy: { value: combineByDefault, type: 'number' },
 	highlight: { value: false, type: 'checkbox' },
 	staticRanges: { value: true, type: 'checkbox' },
 	rangeAcrossElements: { value: true, type: 'checkbox' },
@@ -1734,7 +1735,7 @@ if (selectors) {
 						}
 
 						if (option === 'combineBy' && markArray) {
-							value = tab.getNumericalValue('combineBy', 10);
+							value = tab.getNumericalValue('combineBy', combineByDefault);
 						}
 
 						if ( !isNullOrUndefined(value) && value !== opt.value) {
@@ -1997,7 +1998,7 @@ const Json = {
 
 						if (option === 'combineBy') {
 							if (markArray()) {
-								value = tab.getNumericalValue('combineBy', 10);
+								value = tab.getNumericalValue('combineBy', combineByDefault);
 							}
 						}
 						if ( !isNullOrUndefined(value) && value !== opt.value) {

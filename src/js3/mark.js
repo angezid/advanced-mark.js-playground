@@ -389,20 +389,6 @@
         return str;
       }
     }, {
-      key: "createCombinePattern",
-      value: function createCombinePattern(array, capture) {
-        var _this3 = this;
-        if (!Array.isArray(array) || !array.length) {
-          return null;
-        }
-        var group = capture ? '(' : '(?:',
-          obj = this.create(array[0], true);
-        obj.pattern = this.distinct(array.map(function (str) {
-          return "".concat(group).concat(_this3.create(str, true).pattern, ")");
-        })).join('|');
-        return obj;
-      }
-    }, {
       key: "escape",
       value: function escape(str) {
         return str.replace(/[[\]/{}()*+?.\\^$|]/g, '\\$&');
@@ -429,7 +415,7 @@
     }, {
       key: "createSynonyms",
       value: function createSynonyms(str, flags) {
-        var _this4 = this;
+        var _this3 = this;
         var syn = this.opt.synonyms;
         for (var key in syn) {
           if (syn.hasOwnProperty(key)) {
@@ -441,10 +427,10 @@
                 return b.length - a.length;
               });
               array = array.map(function (term) {
-                return _this4.checkWildcardsEscape(term);
+                return _this3.checkWildcardsEscape(term);
               });
               var pattern = array.map(function (term) {
-                return _this4.escape(term);
+                return _this3.escape(term);
               }).join('|');
               str = str.replace(new RegExp(pattern, flags), "(?:".concat(array.join('|'), ")"));
             }
@@ -496,12 +482,12 @@
     }, {
       key: "createDiacritics",
       value: function createDiacritics(str) {
-        var _this5 = this;
+        var _this4 = this;
         var array = this.chars;
         return str.split('').map(function (ch) {
           for (var i = 0; i < array.length; i += 2) {
             var lowerCase = array[i].includes(ch);
-            if (_this5.opt.caseSensitive) {
+            if (_this4.opt.caseSensitive) {
               if (lowerCase) {
                 return '[' + array[i] + ']';
               }
@@ -521,7 +507,7 @@
         var chars = '!-/:-@[-`{-~¡¿';
         var accuracy = this.opt.accuracy,
           lookbehind = '()',
-          pattern = "(?:".concat(str, ")"),
+          pattern = str,
           lookahead = '',
           limiters;
         if (accuracy !== 'partially') {
@@ -536,6 +522,7 @@
           } else {
             var chs = limiters || chars,
               _charSet = "[^\\s".concat(chs, "]*");
+            pattern = "(?:".concat(str, ")");
             if (accuracy === 'complementary') {
               pattern = _charSet + pattern + _charSet;
             } else if (accuracy === 'startsWith') {
@@ -1201,7 +1188,10 @@
       key: "processGroups",
       value: function processGroups(regex, unused, info, filterCb, eachCb, endCb) {
         var _this6 = this;
-        var match, filterStart, eachStart;
+        var count = info.count,
+          match,
+          filterStart,
+          eachStart;
         this.getTextNodes(function (dict) {
           dict.nodes.every(function (n) {
             while ((match = regex.exec(n.node.textContent)) !== null) {
@@ -1213,23 +1203,27 @@
                 filterStart = false;
                 return filterCb(node, group, info);
               }, function (elemOrRange) {
-                if (eachStart) info.count++;
+                if (eachStart) count++;
+                info.count = count;
                 info.matchStart = eachStart;
                 eachStart = false;
                 eachCb(elemOrRange, info);
               });
-              if (info.execution.abort) break;
+              if (info.abort) break;
             }
-            return !info.execution.abort;
+            return !info.abort;
           });
-          endCb(info.count);
+          endCb(count);
         });
       }
     }, {
       key: "processGroupsAcross",
       value: function processGroupsAcross(regex, unused, info, filterCb, eachCb, endCb) {
         var _this7 = this;
-        var match, filterStart, eachStart;
+        var count = info.count,
+          match,
+          filterStart,
+          eachStart;
         this.getTextNodesAcross(function (dict) {
           while ((match = regex.exec(dict.text)) !== null) {
             info.match = match;
@@ -1241,15 +1235,16 @@
               filterStart = false;
               return filterCb(nodeOrArray, group, info);
             }, function (elemOrRange, groupStart) {
-              if (eachStart) info.count++;
+              if (eachStart) count++;
+              info.count = count;
               info.matchStart = eachStart;
               info.groupStart = groupStart;
               eachCb(elemOrRange, info);
               eachStart = false;
             });
-            if (info.execution.abort) break;
+            if (info.abort) break;
           }
-          endCb(info.count);
+          endCb(count);
         });
       }
     }, {
@@ -1257,7 +1252,9 @@
       value: function processMatches(regex, ignoreGroups, info, filterCb, eachCb, endCb) {
         var _this8 = this;
         var index = ignoreGroups === 0 ? 0 : ignoreGroups + 1;
-        var match, str;
+        var count = info.count,
+          match,
+          str;
         this.getTextNodes(function (dict) {
           dict.nodes.every(function (n) {
             while ((match = regex.exec(n.node.textContent)) !== null) {
@@ -1277,15 +1274,15 @@
                 }
               }
               n.node = _this8.wrapRange(n, start, start + str.length, function (elemOrRange) {
-                info.count++;
+                info.count = ++count;
                 eachCb(elemOrRange, info);
               });
               if (!_this8.opt.highlight) regex.lastIndex = 0;
-              if (info.execution.abort) break;
+              if (info.abort) break;
             }
-            return !info.execution.abort;
+            return !info.abort;
           });
-          endCb(info.count);
+          endCb(count);
         });
       }
     }, {
@@ -1293,7 +1290,10 @@
       value: function processMatchesAcross(regex, ignoreGroups, info, filterCb, eachCb, endCb) {
         var _this9 = this;
         var index = ignoreGroups === 0 ? 0 : ignoreGroups + 1;
-        var match, str, matchStart;
+        var count = info.count,
+          match,
+          str,
+          matchStart;
         this.getTextNodesAcross(function (dict) {
           while ((match = regex.exec(dict.text)) !== null) {
             if ((str = match[index]) === '') {
@@ -1314,13 +1314,14 @@
               matchStart = false;
               return filterCb(nodeOrArray, str, info);
             }, function (elemOrRange, mStart) {
-              if (mStart) info.count++;
+              if (mStart) count++;
+              info.count = count;
               info.matchStart = mStart;
               eachCb(elemOrRange, info);
             });
-            if (info.execution.abort) break;
+            if (info.abort) break;
           }
-          endCb(info.count);
+          endCb(count);
         });
       }
     }, {
@@ -1440,9 +1441,7 @@
         }
         var info = {
           count: 0,
-          execution: {
-            abort: false
-          }
+          abort: false
         };
         if (!regexp.global && !regexp.sticky) {
           var splits = regexp.toString().split('/');
@@ -1485,9 +1484,7 @@
           array = this.getRegExps(terms),
           info = {
             count: 0,
-            execution: {
-              abort: false
-            }
+            abort: false
           };
         var loop = function loop(_ref) {
           var regex = _ref.regex,
@@ -1512,7 +1509,7 @@
             if (noMatches.length) {
               _this12.opt.noMatch(noMatches);
             }
-            if (!info.execution.abort && ++index < array.length) {
+            if (!info.abort && ++index < array.length) {
               loop(array[index]);
             } else {
               _this12.registerHighlight();
@@ -1540,7 +1537,7 @@
           option = this.opt.combineBy || this.opt.combinePatterns,
           length = terms.length,
           array = [];
-        var num = 10,
+        var num = 100,
           value;
         if (option === Infinity) {
           num = length;

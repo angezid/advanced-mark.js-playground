@@ -51,7 +51,7 @@ mark[data-markjs].mark-element.current { background: #ddd; border-width: 0; }
     .editor { min-height: 20vh; max-height: 35vh; }
 }
 </style>`;
-// a8e2e8
+
 // exported json requires replacing backslash \ by \\
 // should be : backslash itself (\\) - 8, escape char (\b) - 4, escape double quote - 2
 const examples = {
